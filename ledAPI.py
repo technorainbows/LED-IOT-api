@@ -16,7 +16,7 @@ ledState = [False]
 class Light(Resource):
     '''Returns ledState (true or false)'''
     def get(self):
-        return jsonify({'ledsState': ledState[0]}), 201
+        return jsonify({'ledsState': ledState[0]})
 
 @api.route('/light/<string:state>')
 @api.doc(params={'state':'true or false'})
