@@ -1,2 +1,2 @@
-# led-iot-api
-Simple LED IOT api
+# LED-IOT-API
+Simple API for controlling networked LED devices.
