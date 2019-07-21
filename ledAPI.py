@@ -12,6 +12,7 @@ api = Api(app, version='0.1', title='LED API',
 
 ledState = [False]
 
+
 @api.route('/light')
 class Light(Resource):
     '''Returns ledState (true or false)'''
@@ -25,17 +26,23 @@ class States(Resource):
     def post(self, state):
         if (state=="true"):
             ledState[0] = True
-            return  200
+            return jsonify({'ledsState': ledState[0]})
         elif (state=="false"):
             ledState[0] = False
-            return  200
+            return jsonify({'ledsState': ledState[0]})
         else:
             # return 400
             api.abort(404, message="{} not found".format(state))
 
 @app.errorhandler(404)
 def not_found(error):
-    return make_response(jsonify({'error': 'Not found'}), 404)
+    return (jsonify({'error': 'Not found'}), 404)
+
+@app.after_request
+def allow_origin(response):
+    response.headers['Access-Control-Allow-Origin']='*'
+    return response
+
 
 if __name__ == '__main__':
     app.run(debug=True)
