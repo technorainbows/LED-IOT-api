@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 
-from flask import Flask, jsonify
-from flask_restplus import Api, Resource, fields
+from flask import Flask, jsonify, request
+from flask_restplus import Api, Resource, fields, cors
 
 
 app = Flask(__name__)
@@ -16,16 +16,20 @@ ledState = [False]
 @api.route('/light')
 class Light(Resource):
     '''Returns ledState (true or false)'''
+    @cors.crossdomain(origin='*', headers='content-type')
     def get(self):
+        print('get request')
         return jsonify({'ledsState': ledState[0]})
 
 @api.route('/light/<string:state>')
 @api.doc(params={'state':'true or false'})
 class States(Resource):
     '''Changes ledState to on or off (true or false)'''
+    @cors.crossdomain(origin='*', headers=['content-type'], methods=['post'])
     def post(self, state):
         if (state=="true"):
             ledState[0] = True
+            print("[post request]")
             return jsonify({'ledsState': ledState[0]})
         elif (state=="false"):
             ledState[0] = False
@@ -38,11 +42,15 @@ class States(Resource):
 def not_found(error):
     return (jsonify({'error': 'Not found'}), 404)
 
-@app.after_request
-def allow_origin(response):
-    response.headers['Access-Control-Allow-Origin']='*'
-    return response
+# @app.after_request
+# def after_request(response):
+#     response.headers.add('Access-Control-Allow-Origin', '*')
+#     return response
 
+# @app.before_request
+# def allow_origin(response):
+#     response.headers['Access-Control-Allow-Origin']='*'
+#     return response
 
 if __name__ == '__main__':
     app.run(debug=True)
