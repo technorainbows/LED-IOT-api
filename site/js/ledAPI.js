@@ -87,6 +87,6 @@ function getData() {
 }
 
 // postData('true');
-// getData();
+getData();
 
 // })(window);
