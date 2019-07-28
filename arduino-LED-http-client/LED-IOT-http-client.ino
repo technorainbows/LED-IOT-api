@@ -214,9 +214,9 @@ void loop() {
 
         // file found at server
         if (httpCode == HTTP_CODE_OK) {
-//          Serial.println("Found file at server");
+          Serial.print("Found file at server: ");
           String payload = http.getString();
-//                  Serial.println(payload);
+                  Serial.println(payload);
   
           // parse payload
 
