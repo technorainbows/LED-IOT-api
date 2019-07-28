@@ -18,22 +18,24 @@ class Light(Resource):
     '''Returns ledState (true or false)'''
     @cors.crossdomain(origin='*', headers='content-type')
     def get(self):
-        print('get request')
-        return jsonify({'ledsState': ledState[0]})
+        print('get request: ', ledState[0])
+        return jsonify({'ledState': ledState[0]})
 
-@api.route('/light/<string:state>')
+@api.route('/light/<string:stateType>/<string:state>')
 @api.doc(params={'state':'true or false'})
 class States(Resource):
     '''Changes ledState to on or off (true or false)'''
     @cors.crossdomain(origin='*', headers=['content-type'], methods=['post'])
-    def post(self, state):
+    def post(self, stateType, state):
+        print("[post request: " + state )
         if (state=="true"):
             ledState[0] = True
-            print("[post request]")
-            return jsonify({'ledsState': ledState[0]})
+            # print("[post request: " + state )
+            return jsonify({'ledState': ledState[0]})
         elif (state=="false"):
             ledState[0] = False
-            return jsonify({'ledsState': ledState[0]})
+
+            return jsonify({'ledState': ledState[0]})
         else:
             # return 400
             api.abort(404, message="{} not found".format(state))
