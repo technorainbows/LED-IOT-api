@@ -1,92 +1,92 @@
-// (function(global) {
-var apiURL = 'http://lvh.me:5000/light'
-// var apiURL = 'https://jsonplaceholder.typicode.com/posts'
-console.log('ledAPI running');
+(function(global) {
+
+    var dc = {}; // namespace for document content
+
+    // var apiUrl = 'http://lvh.me:5000'
+    // var apiUrl = 'http://10.0.0.59:5000/light' // ip address at home
+    var apiUrl = 'http://192.168.2.54:5000/light' // ip address when at CDA
+
+    // var apiURL = 'https://jsonplaceholder.typicode.com/posts' // test external json server
+    console.log('ledAPI running');
 
 
 
-// $(document).addEventListener("DOMContentLoaded", function (event) {
-	
+    document.addEventListener("DOMContentLoaded", function(event) {
+
+        // showLoading("#main-content");
+        $apiUtils.getData(apiUrl, "on", updateLedState);
+        // console.log("var ledState = " + lightState.);
 
 
-// when btn-ledState is clicked, calls postData to update ledState on API
-$(document).ready(function() {
+        function updateLedState(light) {
+        	console.log("light.ledState = " + light.ledState);
 
-    $("#btn-ledState :input").change(function() {
-        console.log(this.id); // points to the clicked input button
-        switch(this.id) {
-        	case "ledON":
-        		postData('true');
-        		break;
-        	case "ledOFF":
-        		postData('false');
-        		break;
+            switch (light.ledState) {
+                case true:
+                	console.log("light on");
+                	// $(#ledOn).
+                    // $("#ledON").setAttribute('active');
+                    document.querySelector('#ledON').closest('label').classList.add('active')
+                    document.querySelector('#ledOFF').closest('label').classList.remove('active')
+                    break;
+                case false:
+                	console.log("light off");
+                    // $("#ledOFF").setAttribute('active');
+                    document.querySelector('#ledOFF').closest('label').classList.add('active')
+                    document.querySelector('#ledON').closest('label').classList.remove('active')
+                    break;
+            }
         }
 
     });
 
 
-});
 
-// Posts state to API when called 
-function postData(state) {
-    url = apiURL + "/" + state;
-    console.log('POST request: ' + url)
-    fetch(url, {
-            "credentials": "omit",
-            "headers": {
-                "accept": "application/json",
-                // "content-type": "application/json",
-                // "Access-Control-Allow-Origin'":"*'"
-            },
-            "referrer": url,
-            "referrerPolicy": "no-referrer-when-downgrade",
-            "body": JSON.stringify(state),
-            "method": "POST",
-            "mode": "cors",
-        })
+    // when btn-ledState is clicked, calls postData to update ledState on API
+    $(document).ready(function() {
 
-        .then(function(response) {
-            console.log(response);
-            return response.json();
+        $("#btn-ledState :input").change(function() {
+            console.log(this.id); // points to the clicked input button
+            switch (this.id) {
+                case "ledON":
+                    $apiUtils.postRequest(apiUrl, 'on', 'true');
+                    break;
+                case "ledOFF":
+                    $apiUtils.postRequest(apiUrl, 'on', 'false');
+                    break;
+            }
 
-        })
-        .then(function(myJson) {
-            console.log(JSON.stringify(myJson));
         });
 
-}
 
-// Gets ledState from api
-function getData() {
-    url = apiURL;
-    console.log('GET request:' + url)
-    // GET
-    fetch(url, {
-            "credentials": "omit",
-            "headers": {
-                "accept": "application/json",
-                // "Access-Control-Allow-Origin'":"*'" 
-            },
-            "referrer": url,
-            "referrerPolicy": "no-referrer-when-downgrade",
-            "body": null,
-            "method": "GET",
-            "mode": "cors"
-        })
+    });
 
 
-        .then(function(response) {
-            console.log(response);
-            return response.json();
+})(window);
 
-        })
-        .then(function(myJson) {
-            console.log(JSON.stringify(myJson));
-        });
-}
 
-// postData('true');
-getData();
 
-// })(window);
+
+
+    // // Convenience function for inserting innerHTML for 'select'
+    // var insertHtml = function(selector, html) {
+    //     var targetElem = document.querySelector(selector);
+    //     targetElem.innerHTML = html;
+    // };
+
+    // // Show loading icon inside element identified by 'selector'.
+    // var showLoading = function(selector) {
+    //     var html = "<div class='text-center'>";
+    //     html += "<img src='images/ajax-loader.gif'></div>";
+    //     insertHtml(selector, html);
+    // };
+
+    // // Return substitute of '{{propName}}'
+    // // with propValue in given 'string'
+    // var insertProperty = function(string, propName, propValue) {
+    //     var propToReplace = "{{" + propName + "}}";
+    //     string = string
+    //         .replace(new RegExp(propToReplace, "g"), propValue);
+    //     return string;
+    // };
+
