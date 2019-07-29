@@ -3,49 +3,39 @@
     var dc = {}; // namespace for document content
 
     // var apiUrl = 'http://lvh.me:5000'
-    // var apiUrl = 'http://10.0.0.59:5000/light' // ip address at home
-    var apiUrl = 'http://192.168.2.54:5000/light' // ip address when at CDA
+    var apiUrl = 'http://10.0.0.59:5000/light' // ip address at home
+    // var apiUrl = 'http://192.168.2.54:5000/light' // ip address when at CDA
 
     // var apiURL = 'https://jsonplaceholder.typicode.com/posts' // test external json server
     console.log('ledAPI running');
 
 
+	/* Every X seconds send get request to server to check if connected/in sync. 
+	* If connected, main content is updated/enabled, otherwise main-content is disabled.
+	*/    
+    function checkConnection() {
+        $apiUtils.getData(apiUrl, "on", updateMainContent, disableMainContent);
+        setTimeout(checkConnection, 5000);
+    }
 
-    document.addEventListener("DOMContentLoaded", function(event) {
+    /*
+     * Initiates connection with API and also listens for events 	
+     */
+    function startLoadingPage() {
 
+        console.log("Initializing client.");
+
+        // show loading UI / message
         // showLoading("#main-content");
-        $apiUtils.getData(apiUrl, "on", updateLedState);
-        // console.log("var ledState = " + lightState.);
+
+        // connect to API (get request)
+        $apiUtils.getData(apiUrl, "on", updateMainContent, disableMainContent);
 
 
-        function updateLedState(light) {
-        	console.log("light.ledState = " + light.ledState);
-
-            switch (light.ledState) {
-                case true:
-                	console.log("light on");
-                	// $(#ledOn).
-                    // $("#ledON").setAttribute('active');
-                    document.querySelector('#ledON').closest('label').classList.add('active')
-                    document.querySelector('#ledOFF').closest('label').classList.remove('active')
-                    break;
-                case false:
-                	console.log("light off");
-                    // $("#ledOFF").setAttribute('active');
-                    document.querySelector('#ledOFF').closest('label').classList.add('active')
-                    document.querySelector('#ledON').closest('label').classList.remove('active')
-                    break;
-            }
-        }
-
-    });
-
-
-
-    // when btn-ledState is clicked, calls postData to update ledState on API
-    $(document).ready(function() {
-
+        // when btn-ledState is clicked, calls postData to update ledState on API
         $("#btn-ledState :input").change(function() {
+
+            console.log("User input received, now starting API request.");
             console.log(this.id); // points to the clicked input button
             switch (this.id) {
                 case "ledON":
@@ -58,35 +48,69 @@
 
         });
 
+    }
 
-    });
 
+
+    /*
+     *   Call this function with a successful response from the server (at end of API request)
+     *   When this is called, you know that the server is happy. When this function is done, the page should reflect that it's ready for more user interaction
+     * 	To rephrase that, at the end of this function the state of UI is "ready"
+     */
+    function updateMainContent(lightProps) {
+        updateOnButton(lightProps);
+        // TODO: update other properties as added
+        $("#main-content").show("slow");
+
+        console.log("Page updated from server, ready for user input.");
+
+    }
+
+    /*
+    * Call this function when the server is no longer connected. This will hide all content in "#main-content".
+    */
+    function disableMainContent() {
+        console.log("disabling main content");
+        $("#main-content").hide("slow");
+
+    }
+
+
+    function updateOnButton(lightProps) {
+        console.log("light.ledState = " + lightProps.ledState);
+
+        switch (lightProps.ledState) {
+            case true:
+                console.log("light on");
+                // $(#ledOn).
+                // $("#ledON").setAttribute('active');
+                $('#ledON').closest('label').toggleClass('active', true);
+
+                $('#ledOFF').closest('label').toggleClass('active', false);
+
+                // $('#ledON').closest('label').classList.add('active');                
+                // document.querySelector('#ledON').closest('label').classList.add('active')
+                // document.querySelector('#ledOFF').closest('label').classList.remove('active')
+                break;
+            case false:
+                console.log("light off");
+                $('#ledON').closest('label').toggleClass('active', false);
+                $('#ledOFF').closest('label').toggleClass('active', true);
+
+                // document.querySelector('#ledOFF').closest('label').classList.add('active')
+                // document.querySelector('#ledON').closest('label').classList.remove('active')
+                break;
+        }
+    }
+
+
+
+    // TODO: ADD ERROR RENDERING FUNCTIONALITY TO UI
+
+
+
+    document.addEventListener('DOMContentLoaded', startLoadingPage);
+    checkConnection();
 
 })(window);
-
-
-
-
-
-    // // Convenience function for inserting innerHTML for 'select'
-    // var insertHtml = function(selector, html) {
-    //     var targetElem = document.querySelector(selector);
-    //     targetElem.innerHTML = html;
-    // };
-
-    // // Show loading icon inside element identified by 'selector'.
-    // var showLoading = function(selector) {
-    //     var html = "<div class='text-center'>";
-    //     html += "<img src='images/ajax-loader.gif'></div>";
-    //     insertHtml(selector, html);
-    // };
-
-    // // Return substitute of '{{propName}}'
-    // // with propValue in given 'string'
-    // var insertProperty = function(string, propName, propValue) {
-    //     var propToReplace = "{{" + propName + "}}";
-    //     string = string
-    //         .replace(new RegExp(propToReplace, "g"), propValue);
-    //     return string;
-    // };
 

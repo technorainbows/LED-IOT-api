@@ -14,10 +14,13 @@
 <body>
     <header>
         <nav id="page-title" class="navbar navbar-light bg-light">
-            <span class="navbar-brand mb-0 h1">LED IOT Web Interface v0.0.1</span>
+            <span class="navbar-brand mb-0 h1">LED IOT Web Interface v0.0.5</span>
+      <span class="navbar-brand col-md-2">Server Status: <span id="serverStatus" class="btn btn-danger align-middle col-lg-1"></span></span>
         </nav>
     </header>
+
     <div id="main-content" class="container-fluid">
+
         <div id="btn-ledState" class="btn-group btn-group-toggle align-middle col-lg-3" data-toggle="buttons">
             <label class="btn btn-secondary btn-lg">
                 <input type="radio" name="options" id="ledON" autocomplete="off" > On
@@ -38,7 +41,8 @@
                 </button>
             </div>
         </div>
-    </div>
+    </div> <!-- main content div close -->
+
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
