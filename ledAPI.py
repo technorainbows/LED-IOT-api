@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, json
 from flask_restplus import Api, Resource, fields, cors
 # from werkzeug.contrib.fixers import ProxyFix
 
@@ -10,9 +10,9 @@ api = Api(app, version='0.2', title='LED API',
     description='A simple LED IOT API', doc='/docs'
 )
 
-# ns = api.namespace('Devices', description='DEVICES operations')
+ns = api.namespace('Devices', description='DEVICES operations')
 
-
+'''Initial dictionary of devices '''
 DEVICES = {
     'device1': 
         {
@@ -24,19 +24,19 @@ DEVICES = {
         {
             'OnState': True, 
             'Brightness': 100,
-            'Name':'Other"'
+            'Name':'Other'
         }
 }
 
-
+'''Single Device Data Model'''
 device = api.model('Device', {
-    'OnState': fields.Boolean(description='The on/off state', attribute='OnState', required=True, default=True),
+    'OnState': fields.Boolean(description='The on/off state', attribute='OnState', required=False, default=True),
     'Brightness': fields.Integer(description='The LED Brightness', attribute='Brightness', min=0, max=255, required=True, default=255),
-    'Name': fields.String(description="Name of the device", attribute='Name', default='None')
+    'Name': fields.String(description="Name of the device", attribute='Name', required=False, default='N/A')
 })
 
-
-listed_lights = api.model('ListedDevices', {
+'''Device List Data Model'''
+list_of_devices = api.model('ListedDevices', {
     'id': fields.String(required=True, description='The device ID'),
     'device': fields.Nested(device, description='The device')
 })
@@ -52,20 +52,21 @@ parser = api.parser()
 parser.add_argument('device',  required=True, help='The device details', location='form')
 
 
-@api.route('/<string:device_id>')
-@api.doc(responses={404: 'Device not found'}, params={'device_id': 'The Device ID'})
-@api.doc(description='device_id should be in {0}'.format(', '.join(DEVICES.keys())))
-# @cors.crossdomain(origin='*', headers='content-type')
+''''''''''''''''''''''''''''''''''''
+'''Single Device Response Methods'''
+''''''''''''''''''''''''''''''''''''
+@ns.route('/<string:device_id>/')
+@api.doc(responses={404: 'Device not found', 200: 'Device found'}, params={'device_id': 'The Device ID'},)
+@api.doc(description='device_id should be {0}'.format(', '.join(DEVICES.keys())))
 class Device(Resource):
     '''Show a single device's properties and lets you delete them or change them'''
-    @api.doc(description='device_id should be in {0}'.format(', '.join(DEVICES.keys())))
-    @api.marshal_with(device)
-    @cors.crossdomain(origin='*', headers='content-type')
+    @api.response(200, 'Success', device)
+    @cors.crossdomain(origin='*', headers='content-type', methods=['get'])
     def get(self, device_id):
         '''Fetch a given resource'''
         abort_if_device_not_found(device_id)
-        return jsonify(DEVICES[device_id])
-
+        return jsonify(DEVICES[device_id],200)
+        
     @api.doc(responses={204: 'Device deleted'})
     @cors.crossdomain(origin='*', headers=['content-type'], methods=['delete'])
     def delete(self, device_id):
@@ -76,8 +77,7 @@ class Device(Resource):
 
     @api.expect(device, validate=True)
     @api.doc(parser=parser)
-    @api.marshal_with(device)
-    @cors.crossdomain(origin='*', headers=['content-type'], methods=['put'])
+    @cors.crossdomain(origin='*',headers=['content-type'],methods=['put'])
     def put(self, device_id):
         '''Update a given resource's OnState or Brightness properties'''
         if 'OnState' in request.json:
@@ -89,25 +89,23 @@ class Device(Resource):
             print('brightness found')
         print(DEVICES[device_id])
         return jsonify(DEVICES[device_id])
-        # DEVICES[device_id] = device
-        # return device
 
-@api.route('/')
+
+''''''''''''''''''''''''''''''''''''''
+'''List of Devices Response Methods'''
+''''''''''''''''''''''''''''''''''''''
+@ns.route('/')
 class DeviceList(Resource):
     '''Shows a list of all devices, and lets you POST to add new tasks'''
-    @api.marshal_list_with(listed_lights)
-    # @cors.crossdomain(origin='*', headers=['content-type'], methods='get')
+    @api.response(200, 'Success', list_of_devices)
+    @cors.crossdomain(origin='*', headers=['content-type'], methods='get')
     def get(self):
-        '''List all devices'''
-        # return DEVICES
+        '''Return a list of all devices and their properties'''
         print("returning Device List: ", DEVICES)
-        # for id, ListedDevices in DEVICES.items():
-        #     return jsonify([{'id': id, 'device':ListedDevices}])
-        # return jsonify(DEVICES)    
-        return ([{'id': id, 'device': ListedDevices} for id, ListedDevices in DEVICES.items()],200)
+        return jsonify(DEVICES)    
+        # return ([{'id': id, 'device': ListedDevices} for id, ListedDevices in DEVICES.items()],
+                 # 200)
 
-    # @api.doc(params={'device'})
-    @api.marshal_with(device, code=201)
     @api.expect(device, validate=True)
     @cors.crossdomain(origin='*', headers=['content-type'], methods=['post'])
     def post(self):
@@ -134,6 +132,7 @@ class DeviceList(Resource):
 def not_found(error):
     return (jsonify({'error': 'Not found'}), 404)
 
+'''Add headers to bypass CORS issues'''
 @app.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
