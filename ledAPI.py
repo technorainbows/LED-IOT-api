@@ -16,23 +16,23 @@ ns = api.namespace('Devices', description='DEVICES operations')
 DEVICES = {
     'device1': 
         {
-            'OnState': False, 
-            'Brightness': 200,
-            'Name':'Ashley-Triangle'
+            'onState': False, 
+            'brightness': 200,
+            'name':'Ashley-Triangle'
         },
     'device2': 
         {
-            'OnState': True, 
-            'Brightness': 100,
-            'Name':'Other'
+            'onState': True, 
+            'brightness': 100,
+            'name':'Other'
         }
 }
 
 '''Single Device Data Model'''
 device = api.model('Device', {
-    'OnState': fields.Boolean(description='The on/off state', attribute='OnState', required=False, default=True),
-    'Brightness': fields.Integer(description='The LED Brightness', attribute='Brightness', min=0, max=255, required=True, default=255),
-    'Name': fields.String(description="Name of the device", attribute='Name', required=False, default='N/A')
+    'onState': fields.Boolean(description='The on/off state', attribute='onState', required=False, default=True),
+    'brightness': fields.Integer(description='The LED brightness', attribute='brightness', min=0, max=255, required=True, default=255),
+    'name': fields.String(description="name of the device", attribute='name', required=False, default='N/A')
 })
 
 '''Device List Data Model'''
@@ -48,8 +48,8 @@ def abort_if_device_not_found(device_id):
 
 
 
-parser = api.parser()
-parser.add_argument('device',  required=True, help='The device details', location='form')
+# parser = api.parser()
+# parser.add_argument('device',  required=True, help='The device details', location='form')
 
 
 ''''''''''''''''''''''''''''''''''''
@@ -76,17 +76,25 @@ class Device(Resource):
         return '', 204
 
     @api.expect(device, validate=True)
-    @api.doc(parser=parser)
+    # @api.doc(parser=parser)
     @cors.crossdomain(origin='*',headers=['content-type'],methods=['put'])
     def put(self, device_id):
-        '''Update a given resource's OnState or Brightness properties'''
-        if 'OnState' in request.json:
-            print("OnState found")
-            DEVICES[device_id]['OnState'] =request.json.get('OnState',DEVICES[device_id]['OnState'])
-            print(DEVICES[device_id]['OnState'])
-        if 'Brightness' in request.json:
-            DEVICES[device_id]['Brightness']=request.json.get('Brightness',DEVICES[device_id]['Brightness'])
-            print('brightness found')
+        '''Update a given resource's onState or brightness properties'''
+        if 'onState' in request.json:
+            # print("onState found")
+            DEVICES[device_id]['onState'] =request.json.get('onState',DEVICES[device_id]['onState'])
+            print('new onState value stored: ', DEVICES[device_id]['onState'])
+        if 'brightness' in request.json:
+            newbrightness=request.json.get('brightness',DEVICES[device_id]['brightness'])
+            # print('newbrightness =', newbrightness)
+            DEVICES[device_id]['brightness']=newbrightness
+            print('new brightness value stored: ', DEVICES[device_id]['brightness'])
+        if 'name' in request.json:
+            newbrightness=request.json.get('name',DEVICES[device_id]['name'])
+            # print('newbrightness =', newbrightness)
+            DEVICES[device_id]['name']=newbrightness
+            print('new name stored: ', DEVICES[device_id]['name'])
+
         print(DEVICES[device_id])
         return jsonify(DEVICES[device_id])
 
@@ -114,15 +122,15 @@ class DeviceList(Resource):
         DEVICES[device_id] = device
 
         '''populate device properties with request contents if there'''
-        if 'OnState' in request.json:
-            print("OnState found")
-            DEVICES[device_id]['OnState'] =request.json.get('OnState',DEVICES[device_id]['OnState'])
-            print(DEVICES[device_id]['OnState'])
-        if 'Brightness' in request.json:
-            DEVICES[device_id]['Brightness']=request.json.get('Brightness',DEVICES[device_id]['Brightness'])
+        if 'onState' in request.json:
+            print("onState found")
+            DEVICES[device_id]['onState'] =request.json.get('onState',DEVICES[device_id]['onState'])
+            print(DEVICES[device_id]['onState'])
+        if 'brightness' in request.json:
+            DEVICES[device_id]['brightness']=request.json.get('brightness',DEVICES[device_id]['brightness'])
             print('brightness found')
-        if 'Name' in request.json:
-            DEVICES[device_id]['Name']=request.json.get('Name',DEVICES[device_id]['Name'])
+        if 'name' in request.json:
+            DEVICES[device_id]['name']=request.json.get('name',DEVICES[device_id]['name'])
             print('name found')
             
         print(DEVICES[device_id])
