@@ -27,12 +27,12 @@
                 })
 
                 .then(function(response) {
-                    console.log(response);
+                    // console.log(response);
                     return response.json();
 
                 })
                 .then(function(myJson) {
-                    console.log(JSON.stringify(myJson));
+                    // console.log(JSON.stringify(myJson));
                 });
 
         };
@@ -68,8 +68,8 @@
             "mode": "cors"
         });
 
-        console.log('request started.');
-        console.dir(rec);
+        // console.log('request started.');
+        // console.dir(rec);
 
         let res;
         try {
@@ -85,14 +85,14 @@
         }
 
 
-        console.log('response recieved');
-        console.dir(res);
+        // console.log('response recieved');
+        // console.dir(res);
 
         // if no error, then get response 
         let light = await res.json();
-        console.log("light resp: ", light);
+        // console.log("light resp: ", light);
         let state = light.ledState;
-        console.log("state = ", state);
+        // console.log("state = ", state);
         updateServerStatus(true);
         responseHandler(light);
 
@@ -101,7 +101,7 @@
 
 
     function updateServerStatus(status) {
-        console.log("updating server status: " + status);
+        // console.log("updating server status: " + status);
 
         if (status) {
             $('#serverStatus').toggleClass('btn-danger', false);
