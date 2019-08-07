@@ -2,15 +2,15 @@
 
 from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields, cors
-from werkzeug.contrib.fixers import ProxyFix
+# from werkzeug.contrib.fixers import ProxyFix
 
 app = Flask(__name__)
-app.wsgi_app = ProxyFix(app.wsgi_app)
+# app.wsgi_app = ProxyFix(app.wsgi_app)
 api = Api(app, version='0.2', title='LED API',
     description='A simple LED IOT API', doc='/docs'
 )
 
-ns = api.namespace('Devices', description='DEVICES operations')
+# ns = api.namespace('Devices', description='DEVICES operations')
 
 
 DEVICES = {
@@ -52,9 +52,10 @@ parser = api.parser()
 parser.add_argument('device',  required=True, help='The device details', location='form')
 
 
-@ns.route('/<string:device_id>')
+@api.route('/<string:device_id>')
 @api.doc(responses={404: 'Device not found'}, params={'device_id': 'The Device ID'})
 @api.doc(description='device_id should be in {0}'.format(', '.join(DEVICES.keys())))
+# @cors.crossdomain(origin='*', headers='content-type')
 class Device(Resource):
     '''Show a single device's properties and lets you delete them or change them'''
     @api.doc(description='device_id should be in {0}'.format(', '.join(DEVICES.keys())))
@@ -91,7 +92,7 @@ class Device(Resource):
         # DEVICES[device_id] = device
         # return device
 
-@ns.route('/')
+@api.route('/')
 class DeviceList(Resource):
     '''Shows a list of all devices, and lets you POST to add new tasks'''
     @api.marshal_list_with(listed_lights)
@@ -133,6 +134,15 @@ class DeviceList(Resource):
 def not_found(error):
     return (jsonify({'error': 'Not found'}), 404)
 
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+# @app.before_request
+# def allow_origin(response):
+#     response.headers['Access-Control-Allow-Origin']='*'
+#     return response
 
 
 if __name__ == '__main__':
