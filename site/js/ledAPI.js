@@ -104,6 +104,7 @@
      */
     function updateMainContent(device) {
         updateOnButton(device);
+        updateBrightSlider(device);
         // TODO: update other properties as added
         $("#main-content").show("slow");
 
@@ -149,6 +150,10 @@
     }
 
 
+function updateBrightSlider(device) {
+
+   $('#brightness-value').html( device[0]['brightness']);
+}
 
     // TODO: ADD ERROR RENDERING FUNCTIONALITY TO UI
 
