@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from flask_cors import CORS
 from flask import Flask, jsonify, request, json
 from flask_restplus import Api, Resource, fields, cors
 # from werkzeug.contrib.fixers import ProxyFix
@@ -10,7 +10,8 @@ api = Api(app, version='0.2', title='LED API',
     description='A simple LED IOT API', doc='/docs'
 )
 
-ns = api.namespace('Devices', description='DEVICES operations')
+CORS(app)
+# ns = api.namespace('Devices', description='DEVICES operations')
 
 '''Initial dictionary of devices '''
 DEVICES = {
@@ -31,7 +32,7 @@ DEVICES = {
 '''Single Device Data Model'''
 device = api.model('Device', {
     'onState': fields.Boolean(description='The on/off state', attribute='onState', required=False, default=True),
-    'brightness': fields.Integer(description='The LED brightness', attribute='brightness', min=0, max=255, required=True, default=255),
+    'brightness': fields.Integer(description='The LED brightness', attribute='brightness', min=0, max=255, required=False, default=255),
     'name': fields.String(description="name of the device", attribute='name', required=False, default='N/A')
 })
 
@@ -55,20 +56,20 @@ def abort_if_device_not_found(device_id):
 ''''''''''''''''''''''''''''''''''''
 '''Single Device Response Methods'''
 ''''''''''''''''''''''''''''''''''''
-@ns.route('/<string:device_id>/')
+@api.route('/Devices/<string:device_id>', methods=['GET','POST','PUT'])
 @api.doc(responses={404: 'Device not found', 200: 'Device found'}, params={'device_id': 'The Device ID'},)
 @api.doc(description='device_id should be {0}'.format(', '.join(DEVICES.keys())))
 class Device(Resource):
     '''Show a single device's properties and lets you delete them or change them'''
     @api.response(200, 'Success', device)
-    @cors.crossdomain(origin='*', headers='content-type', methods=['get'])
+    # @cors.crossdomain(origin='*', headers='content-type', methods=['get'])
     def get(self, device_id):
         '''Fetch a given resource'''
         abort_if_device_not_found(device_id)
         return jsonify(DEVICES[device_id],200)
         
     @api.doc(responses={204: 'Device deleted'})
-    @cors.crossdomain(origin='*', headers=['content-type'], methods=['delete'])
+    # @cors.crossdomain(origin='*', headers=['content-type'], methods=['delete'])
     def delete(self, device_id):
         '''Delete a given resource'''
         abort_if_device_not_found(device_id)
@@ -77,7 +78,9 @@ class Device(Resource):
 
     @api.expect(device, validate=True)
     # @api.doc(parser=parser)
-    @cors.crossdomain(origin='*',headers=['content-type'],methods=['put'])
+    @api.response(200, 'Success', device)
+    # @cors.crossdomain(origin='*',headers=['content-type'],methods=['PUT','OPTIONS'],)
+    # @cross_origin(allow_headers=['content-type'])
     def put(self, device_id):
         '''Update a given resource's onState or brightness properties'''
         if 'onState' in request.json:
@@ -102,11 +105,11 @@ class Device(Resource):
 ''''''''''''''''''''''''''''''''''''''
 '''List of Devices Response Methods'''
 ''''''''''''''''''''''''''''''''''''''
-@ns.route('/')
+@api.route('/Devices/')
 class DeviceList(Resource):
     '''Shows a list of all devices, and lets you POST to add new tasks'''
     @api.response(200, 'Success', list_of_devices)
-    @cors.crossdomain(origin='*', headers=['content-type'], methods='get')
+    # @cors.crossdomain(origin='*', headers=['content-type'], methods='get')
     def get(self):
         '''Return a list of all devices and their properties'''
         print("returning Device List: ", DEVICES)
@@ -115,7 +118,7 @@ class DeviceList(Resource):
                  # 200)
 
     @api.expect(device, validate=True)
-    @cors.crossdomain(origin='*', headers=['content-type'], methods=['post'])
+    # @cors.crossdomain(origin='*', headers=['content-type'], methods=['post'],automatic_options=False)
     def post(self):
         '''Create a new device with next id'''       
         device_id = 'device%d' % (len(DEVICES) + 1)
@@ -141,15 +144,11 @@ def not_found(error):
     return (jsonify({'error': 'Not found'}), 404)
 
 '''Add headers to bypass CORS issues'''
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
-
-# @app.before_request
-# def allow_origin(response):
-#     response.headers['Access-Control-Allow-Origin']='*'
+# @app.after_request
+# def after_request(response):
+#     response.headers.add('Access-Control-Allow-Origin', '*')
 #     return response
+
 
 
 if __name__ == '__main__':
