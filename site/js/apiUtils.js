@@ -126,12 +126,12 @@
         // console.dir(res);
 
         // if no error, then get response 
-        let light = await res.json();
-        // console.log("light resp: ", light);
-        let state = light.ledState;
-        // console.log("state = ", state);
+        let device = await res.json();
+        console.log("device returned: ", device);
+        let state = device[0]['onState'];
+        console.log("state = ", state);
         updateServerStatus(true);
-        responseHandler(light);
+        responseHandler(device);
 
     };
 

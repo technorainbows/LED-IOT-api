@@ -31,7 +31,7 @@
      */
     function checkConnection() {
         $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
-        setTimeout(checkConnection, 5000);
+        setTimeout(checkConnection, 3000);
     }
 
     /*
@@ -102,8 +102,8 @@
      *   When this is called, you know that the server is happy. When this function is done, the page should reflect that it's ready for more user interaction
      * 	To rephrase that, at the end of this function the state of UI is "ready"
      */
-    function updateMainContent(lightProps) {
-        updateOnButton(lightProps);
+    function updateMainContent(device) {
+        updateOnButton(device);
         // TODO: update other properties as added
         $("#main-content").show("slow");
 
@@ -121,10 +121,10 @@
     }
 
 
-    function updateOnButton(lightProps) {
+    function updateOnButton(device) {
         // console.log("light.ledState = " + lightProps.ledState);
 
-        switch (lightProps.ledState) {
+        switch (device[0]['onState']) {
             case true:
                 // console.log("light on");
                 // $(#ledOn).
