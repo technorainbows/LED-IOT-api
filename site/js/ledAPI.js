@@ -12,18 +12,18 @@
 
 
     /************
-    * DEVICE INFO
-    ************/
+     * DEVICE INFO
+     ************/
     var brightness;
     var ledState;
     var name = "AshleyRoom"
 
     var jsonString = ''
     /************* 
-    * UI VARIABLES
-    *************/
+     * UI VARIABLES
+     *************/
 
-	var brightSlider = document.getElementById('slider-brightness');
+    var brightSlider = document.getElementById('slider-brightness');
 
 
     /* Every X seconds send get request to server to check if connected/in sync. 
@@ -66,31 +66,31 @@
 
 
         $('input[name=slider-brightness]').change('mousestop', function() {
-        	var value = Number(this.value);
-        	// value=value.toInteg();
+            var value = Number(this.value);
+            // value=value.toInteg();
             console.log("PUT request brightness value: ", value);
-            $apiUtils.putRequest(apiUrl, deviceID,'brightness',value);
+            $apiUtils.putRequest(apiUrl, deviceID, 'brightness', value);
         });
 
-		$(document).on('input change', '#slider-brightness', function() {
-			var sValue = $(this).val();
-			console.log("sValue changed: " + sValue);
-		    $('#brightness-value').html( sValue );
-		    
-		});
-		// var brightSlider = $"#slider-brightness";
-	
-    // brightSlider.oninput = function() {
-    //     console.log("slider value = ", brightSlider.value);
-    // }
-    // var sliderVal = document.getElementById('slider-brightness').value;
-    // console.log("sliderVal = ", sliderVal);
-    //       // console.log($("#slider-brightness").value);
-    // (function(){
-    // 	var brightVal = this.getValue();
-    // 	console.log("brightness slider changed: " + brightVal);
-    // 	// $apiUtils.postRequest(apiUrl,'brightness',this.input);
-    // })
+        $(document).on('input change', '#slider-brightness', function() {
+            var sValue = $(this).val();
+            console.log("sValue changed: " + sValue);
+            $('#brightness-value').html(sValue);
+
+        });
+        // var brightSlider = $"#slider-brightness";
+
+        // brightSlider.oninput = function() {
+        //     console.log("slider value = ", brightSlider.value);
+        // }
+        // var sliderVal = document.getElementById('slider-brightness').value;
+        // console.log("sliderVal = ", sliderVal);
+        //       // console.log($("#slider-brightness").value);
+        // (function(){
+        // 	var brightVal = this.getValue();
+        // 	console.log("brightness slider changed: " + brightVal);
+        // 	// $apiUtils.postRequest(apiUrl,'brightness',this.input);
+        // })
 
 
     }
@@ -150,10 +150,13 @@
     }
 
 
-function updateBrightSlider(device) {
-
-   $('#brightness-value').html( device[0]['brightness']);
-}
+    function updateBrightSlider(device) {
+        var brightVal = device[0]['brightness']
+        $('#brightness-value').html(brightVal);
+        $('#slider-brightness').val(brightVal);
+        // $('#slider-brightness').slider('refresh');
+        // $('#slider-brightness').html(brightVal);
+    }
 
     // TODO: ADD ERROR RENDERING FUNCTIONALITY TO UI
 
