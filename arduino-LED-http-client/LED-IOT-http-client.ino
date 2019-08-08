@@ -2,7 +2,7 @@
   LED-IOT-APP v0.0.2
   Simple sketch that uses ESP board to connect to local wifi network then gets LED state from python API (ledAPI.py)
 
-  Receives data as JSON formatted as {"ledState": true] or {"ledState": false} and toggles LEDs between off and rainbow.
+  Receives data as JSON formatted as {"onState": true] or {"onState": false} and toggles LEDs between off and rainbow.
 
 
 */
@@ -33,7 +33,7 @@ SSD1306Wire  display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board disp
 
 
 
-String apiURL = "http://10.0.0.59:5000/light";
+String apiURL = "http://10.0.0.59:5000/Devices/device1";
 String controllerURL = "10.0.0.59/site/index.html";
 
 
@@ -48,13 +48,14 @@ FASTLED_USING_NAMESPACE
 
 //#ifdef DEV_LIGHTCONTROL_TRIANGLE
 #define DATA_PIN   25
-char* hostname = "trianglez";
+char* hostname = "Ashley-Triangle";
 #define COLOR_ORDER GRB //pixels
 #define COLOR_CORRECT TypicalLEDStrip
 #define NUM_LEDS 200
 #define MILLI_AMPS         800
 #define BRIGHTNESS          100
 #define FRAMES_PER_SECOND  120
+#define DEVICE_ID "device1"
 
 //#endif
 
@@ -150,7 +151,7 @@ void setup() {
 }
 
 
-
+int brightVal = BRIGHTNESS;
 
 void monitorWiFi()
 {
@@ -178,7 +179,7 @@ void monitorWiFi()
   }
 }
 
-bool ledsState = false;
+bool onState = false;
 
 void loop() {
 
@@ -196,9 +197,9 @@ void loop() {
     ArduinoOTA.handle();
     // wait for WiFi connection
     if ((wifiMulti.run() == WL_CONNECTED)) {
-        
-//      Serial.println("wifi connected, connecting to api");
-      
+
+      //      Serial.println("wifi connected, connecting to api");
+
       HTTPClient http;
 
       // start connection and send HTTP header
@@ -210,29 +211,38 @@ void loop() {
 
       // Check returning httpCode -- will be negative on error
       if (httpCode > 0) {
-                    Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+        Serial.printf("[HTTP] GET... code: %d\n", httpCode);
 
         // file found at server
         if (httpCode == HTTP_CODE_OK) {
           Serial.print("Found file at server: ");
           String payload = http.getString();
-                  Serial.println(payload);
-  
+          Serial.println(payload);
+
           // parse payload
 
-          const size_t capacity = JSON_OBJECT_SIZE(1) + 20;
-          DynamicJsonBuffer jsonBuffer(capacity);
+          const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + 50;
+          DynamicJsonDocument doc(capacity);
 
-          //        const char* json = "{\"ledsState\":true}";
+          //        const char* json = "[{\"brightness\":17,\"name\":\"Ashley-Triangle\",\"onState\":true},200]";
 
-          JsonObject& root = jsonBuffer.parseObject(payload);
+          deserializeJson(doc, payload);
 
-           ledsState = root["ledsState"]; // true
+          JsonObject root_0 = doc[0];
+          int root_0_brightness = root_0["brightness"]; // 17
+          const char* root_0_name = root_0["name"]; // "Ashley-Triangle"
+          bool root_0_onState = root_0["onState"]; // true
 
-          if (ledsState != lastState) {
-            lastState = ledsState;
-            Serial.printf("ledState = %d\n", ledsState);
-            
+          int root_1 = doc[1]; // 200
+
+
+          onState = root_0["onState"];
+          brightVal = root_0["brightness"];
+          Serial.printf("brightVal = %d\n", brightVal);
+          if (onState != lastState) {
+            lastState = onState;
+            Serial.printf("onState = %d\n", onState);
+
           }
 
         }
@@ -241,16 +251,17 @@ void loop() {
       }
 
       http.end(); // close connection
-//      Serial.println("Closing connection");
+      //      Serial.println("Closing connection");
     }
   }
 
-//  Serial.println("FastLED.show & FastLED.delay");
+  //  Serial.println("FastLED.show & FastLED.delay");
   //  delay(500);
   updateLEDS();
+  FastLED.setBrightness(brightVal);
   FastLED.show();
 
-  
+
   // insert a delay to keep the framerate modest
   FastLED.delay(1000 / FRAMES_PER_SECOND);
 
@@ -259,13 +270,15 @@ void loop() {
 
 void updateLEDS() {
 
-  if (!ledsState) fill_solid(leds, NUM_LEDS, CRGB::Black);
-  
+  if (!onState) fill_solid(leds, NUM_LEDS, CRGB::Black);
+
   else {
     fill_rainbow( leds, NUM_LEDS, gHue, speed);
-    EVERY_N_MILLISECONDS( 10 ) { gHue++; } // slowly cycle the "base color" through the rainbow
+    EVERY_N_MILLISECONDS( 10 ) {
+      gHue++;  // slowly cycle the "base color" through the rainbow
+    }
   }
-    
+
 
 
 
