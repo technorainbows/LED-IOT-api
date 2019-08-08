@@ -15,34 +15,44 @@
     <header>
         <nav id="page-title" class="navbar navbar-light bg-light">
             <span class="navbar-brand mb-0 h1">LED IOT Web Interface v0.0.5</span>
-      <span class="navbar-brand col-md-2">Server Status: <span id="serverStatus" class="btn btn-danger align-middle col-lg-1"></span></span>
+            <span class="navbar-brand col-md-2">Server Status: <span id="serverStatus" class="btn btn-danger align-middle col-sm-1 col-md-1 col-lg-1"></span></span>
         </nav>
     </header>
-
+    <!-- MAIN CONTENT -->
     <div id="main-content" class="container-fluid">
-
-        <div id="btn-ledState" class="btn-group btn-group-toggle align-middle col-lg-3" data-toggle="buttons">
-            <label class="btn btn-secondary btn-lg">
-                <input type="radio" name="options" id="ledON" autocomplete="off" > On
-            </label>
-            <label class="btn btn-secondary btn-lg">
-                <input type="radio" name="options" id="ledOFF" autocomplete="off"> Off
-            </label>
-        </div>
+        <!--     	ON/OFF BUTTON -->
         <div class="row">
-            <div class="col-sm-5">
-                <button type="button" class="btn btn-lg btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off">
-                    <div class="handle"></div>
-                </button>
+            <div id="btn-ledState" class="btn-group btn-group-toggle align-middle col-lg-3" data-toggle="buttons">
+                <label class="btn btn-secondary btn-lg">
+                    <input type="radio" name="options" id="ledON" autocomplete="off"> On
+                </label>
+                <label class="btn btn-secondary btn-lg">
+                    <input type="radio" name="options" id="ledOFF" autocomplete="off"> Off
+                </label>
             </div>
-            <div class="col-sm-5">
-                <button type="button" class="btn btn-lg btn-toggle active" data-toggle="button" aria-pressed="true" autocomplete="off">
-                    <div class="handle"></div>
-                </button>
-            </div>
+        </div> <!-- on/off button div close -->
+        <!-- <div class="row" padding=10px> -->
+        <!--         BRIGHTNESS SLIDER -->
+          <div class="row col-sm-1 col-lg-12 col-md-6">
+        <form>
+            <div class="row col-lg-12 col-md-6 col-sm-12 ">
+                <label for="slider-brightness" id="brightness-label" class="ui-label align-middle">Brightness</label>
+                <input type="range" value=100 min=0 max=255 step=1 name="slider-brightness" class="form-control-range col-lg" id="slider-brightness">
+            <span id="brightness-value" class="align-middle ui-label">100</span></div>
+            <!-- <div class="row col-lg-12 col-md-10">
+                <label for="formControlRange" id="hue-label" class="ui-label align-middle">Hue</label>
+                <input type="range" min="0" max="255" class="form-control-range col-lg" id="formControlRange">
+            </div> -->
+        </form>
         </div>
-    </div> <!-- main content div close -->
 
+<!-- <input type="range" id="slider" value="0.5" min="0.0" max="1.0" step="0.01" />
+
+<br />
+
+<span id="slider_value">Nothing yet.</span> -->
+
+    </div> <!-- main content div close -->
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

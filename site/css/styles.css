@@ -21,3 +21,25 @@ body {
   float:right;
   margin-top:30px;
 }
+
+
+.ui-label {
+  border-style:solid;
+  border-width:2px;
+  border-color:white;
+  color:white;
+  margin:5px;
+  padding: 15px;
+  border-radius: 10px;
+
+}
+
+#main-content .row {
+  margin-top:10px;
+  width:100%;
+}
+
+.form-control-range {
+ margin-left:10px;
+
+}
