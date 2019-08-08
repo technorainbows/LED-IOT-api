@@ -4,10 +4,10 @@
     var apiUtils = {};
 
     /*
-    * Sends POST request to URL+paramRoute with provided paramValue
-    */
-    apiUtils.postRequest =
-        function(url, paramRoute, paramValue) {
+     * TODO: UPDATE - WILL NOT WORK ANYMORE
+     * Sends POST request to URL+paramRoute with provided paramValue
+     */
+    apiUtils.postRequest = function(url, paramRoute, paramValue) {
             // url = apiURL + "/" + state;
             url += ("/" + paramRoute + "/" + paramValue);
             // url += paramRoute;
@@ -16,13 +16,50 @@
                     "credentials": "omit",
                     "headers": {
                         "accept": "application/json",
-                        // "content-type": "application/json",
-                        // "Access-Control-Allow-Origin'":"*'"
+                        "content-type": "application/json",
+                        "Access-Control-Allow-Origin'": "*'"
                     },
                     "referrer": url,
                     "referrerPolicy": "no-referrer-when-downgrade",
-                    "body": JSON.stringify(paramValue),
+                    // "body": JSON.stringify(paramValue),
                     "method": "POST",
+                    "mode": "cors",
+                })
+
+                .then(function(response) {
+                    // console.log(response);
+                    return response.json();
+
+                })
+                .then(function(myJson) {
+                    // console.log(JSON.stringify(myJson));
+                });
+
+        };
+
+
+
+    /*
+     * Sends PUT request to URL/deviceID with provided paramID and paramValue
+     */
+    apiUtils.putRequest = function(url, deviceID, paramID, paramValue) {
+            // url = apiURL + "/" + state;
+            url += ("/" + deviceID);
+            console.log('PUT request: ' + url)
+            var responseBody = {}
+            responseBody[paramID]=paramValue;
+            console.log('PUT body:' + JSON.stringify(responseBody))
+            fetch(url, {
+                    "credentials": "omit",
+                    "headers": {
+                        "accept": "application/json",
+                        "content-type": "application/json",
+                        "Access-Control-Allow-Origin": "*'"
+                    },
+                    "referrer": url,
+                    "referrerPolicy": "no-referrer-when-downgrade",
+                    "body": JSON.stringify(responseBody),
+                    "method": "PUT",
                     "mode": "cors",
                 })
 
@@ -45,13 +82,13 @@
 
 
     /*
-    * Requests data from api and returns json object to responseHandler provided. If fetch fails, errorHandler funcion is called.
-    * Success/fail state of fetch is also passed to updateServerStatus function. 
-    */
+     * Requests data from api and returns json object to responseHandler provided. If fetch fails, errorHandler funcion is called.
+     * Success/fail state of fetch is also passed to updateServerStatus function. 
+     */
 
-    apiUtils.getData = async function(url, paramRoute, responseHandler, errorHandler) {
+    apiUtils.getData = async function(url, deviceID, responseHandler, errorHandler) {
         // url = apiURL;
-        // url += ("/" + paramRoute);
+        url += ("/" + deviceID);
         // url += paramRoute;
         console.log('GET request:' + url)
         // GET
@@ -59,7 +96,7 @@
             "credentials": "omit",
             "headers": {
                 "accept": "application/json",
-                // "Access-Control-Allow-Origin'":"*'" 
+                // "Access-Control-Allow-Origin'": "*'"
             },
             "referrer": url,
             "referrerPolicy": "no-referrer-when-downgrade",
@@ -109,7 +146,7 @@
         } else {
             $('#serverStatus').toggleClass('btn-danger', true);
             $('#serverStatus').toggleClass('btn-success', false);
-            
+
         }
     }
 

@@ -3,13 +3,22 @@
     var dc = {}; // namespace for document content
 
     // var apiUrl = 'http://lvh.me:5000'
-    var apiUrl = 'http://10.0.0.59:5000/light' // ip address at home
+    var apiUrl = 'http://10.0.0.59:5000/Devices' // ip address at home
     // var apiUrl = 'http://192.168.2.54:5000/light' // ip address when at CDA
 
     // var apiURL = 'https://jsonplaceholder.typicode.com/posts' // test external json server
     // console.log('ledAPI running');
+    var deviceID = 'device1'
 
 
+    /************
+    * DEVICE INFO
+    ************/
+    var brightness;
+    var ledState;
+    var name = "AshleyRoom"
+
+    var jsonString = ''
     /************* 
     * UI VARIABLES
     *************/
@@ -21,7 +30,7 @@
      * If connected, main content is updated/enabled, otherwise main-content is disabled.
      */
     function checkConnection() {
-        $apiUtils.getData(apiUrl, "on", updateMainContent, disableMainContent);
+        $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
         setTimeout(checkConnection, 5000);
     }
 
@@ -36,7 +45,7 @@
         // showLoading("#main-content");
 
         // connect to API (get request)
-        $apiUtils.getData(apiUrl, "on", updateMainContent, disableMainContent);
+        $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
 
 
         // when btn-ledState is clicked, calls postData to update ledState on API
@@ -46,10 +55,10 @@
             // console.log(this.id); // points to the clicked input button
             switch (this.id) {
                 case "ledON":
-                    $apiUtils.postRequest(apiUrl, 'on', 'true');
+                    $apiUtils.putRequest(apiUrl, deviceID, 'onState', true);
                     break;
                 case "ledOFF":
-                    $apiUtils.postRequest(apiUrl, 'on', 'false');
+                    $apiUtils.putRequest(apiUrl, deviceID, 'onState', false);
                     break;
             }
 
@@ -57,10 +66,10 @@
 
 
         $('input[name=slider-brightness]').change('mousestop', function() {
-        	var value = this.value;
-        	value=value.toString();
-            console.log("POSTING brightness value: ", value);
-            $apiUtils.postRequest(apiUrl,'brightness',value);
+        	var value = Number(this.value);
+        	// value=value.toInteg();
+            console.log("PUT request brightness value: ", value);
+            $apiUtils.putRequest(apiUrl, deviceID,'brightness',value);
         });
 
 		$(document).on('input change', '#slider-brightness', function() {
