@@ -14,13 +14,13 @@
 <body>
     <header>
         <nav id="page-title" class="navbar navbar-light bg-light">
-            <span class="navbar-brand mb-0 h1">LED IOT Web Interface v0.0.5</span>
+            <span class="navbar-brand mb-0 h1">LED IOT Web Interface</span>
             <span class="navbar-brand col-md-2">Server Status: <span id="serverStatus" class="btn btn-danger align-middle col-sm-1 col-md-1 col-lg-1"></span></span>
         </nav>
     </header>
     <!-- MAIN CONTENT -->
     <div id="main-content" class="container-fluid">
-        <!--     	ON/OFF BUTTON -->
+        <!--        ON/OFF BUTTON -->
         <div class="row">
             <div id="btn-ledState" class="btn-group btn-group-toggle align-middle col-lg-3" data-toggle="buttons">
                 <label class="btn btn-secondary btn-lg">
@@ -33,25 +33,23 @@
         </div> <!-- on/off button div close -->
         <!-- <div class="row" padding=10px> -->
         <!--         BRIGHTNESS SLIDER -->
-          <div class="row col-sm-1 col-lg-12 col-md-6">
-        <form>
-            <div class="row col-lg-12 col-md-6 col-sm-12 ">
-                <label for="slider-brightness" id="brightness-label" class="ui-label align-middle">Brightness</label>
-                <input type="range" value=100 min=0 max=255 step=1 name="slider-brightness" class="form-control-range col-lg" id="slider-brightness">
-            <span id="brightness-value" class="align-middle ui-label">100</span></div>
-            <!-- <div class="row col-lg-12 col-md-10">
+        <div class="row col-sm-10 col-lg-12 col-md-12">
+            <form>
+                <div class="row col-lg-12 col-md-6 col-sm-12 ">
+                    <label for="slider-brightness" id="brightness-label" class="ui-label align-middle">Brightness</label>
+                    <input type="range" value=100 min=0 max=255 step=1 name="slider-brightness" class="form-control-range col-lg col-md-6" id="slider-brightness">
+                    <span id="brightness-value" class="align-middle ui-label">100</span></div>
+                <!-- <div class="row col-lg-12 col-md-10">
                 <label for="formControlRange" id="hue-label" class="ui-label align-middle">Hue</label>
                 <input type="range" min="0" max="255" class="form-control-range col-lg" id="formControlRange">
             </div> -->
-        </form>
+            </form>
         </div>
-
-<!-- <input type="range" id="slider" value="0.5" min="0.0" max="1.0" step="0.01" />
+        <!-- <input type="range" id="slider" value="0.5" min="0.0" max="1.0" step="0.01" />
 
 <br />
 
 <span id="slider_value">Nothing yet.</span> -->
-
     </div> <!-- main content div close -->
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

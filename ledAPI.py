@@ -115,7 +115,7 @@ class Redis(object):
 
 
         '''if 'device1' on redis server, load it with default info'''
-        self.getDevice(keys=['device1'],args=[json.dumps(DEVICES['device1'])])
+        # self.getDevice(keys=['device1'],args=[json.dumps(DEVICES['device1'])])
 
 
     
@@ -124,12 +124,7 @@ class Redis(object):
        return self.get(key)
 
     def get(self,key):
-        # load lua script on redis server
-        # execute lua script (with 'key' as argument)
-        # Atomic:(check if device info in redis
-        # if not, load the default, and then return it)
-        # assert r.script_exists(initDevice)
-        # for key, device in 
+
         data = self.getDevice(keys=[key],args=[json.dumps(DEVICES[key])])
 
         return json.loads(data)
