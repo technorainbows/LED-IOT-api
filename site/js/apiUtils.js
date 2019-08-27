@@ -47,7 +47,7 @@
             url += ("/" + deviceID);
             console.log('PUT request: ' + url)
             var responseBody = {}
-            responseBody[paramID]=paramValue;
+            responseBody[paramID]=JSON.stringify(paramValue);
             console.log('PUT body:' + JSON.stringify(responseBody))
             fetch(url, {
                     "credentials": "omit",
@@ -128,7 +128,7 @@
         // if no error, then get response 
         let device = await res.json();
         // console.log("device returned: ", device);
-        let state = device[0]['onState'];
+        let state = device[1]['onState'];
         // console.log("state = ", state);
         updateServerStatus(true);
         responseHandler(device);

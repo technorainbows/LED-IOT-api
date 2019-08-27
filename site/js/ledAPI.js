@@ -31,7 +31,7 @@
      */
     function checkConnection() {
         $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
-        setTimeout(checkConnection, 3000);
+        // setTimeout(checkConnection, 8000);
     }
 
     /*
@@ -124,10 +124,10 @@
 
     function updateOnButton(device) {
         // console.log("light.ledState = " + lightProps.ledState);
-
-        switch (device[0]['onState']) {
-            case true:
-                // console.log("light on");
+        // console.log("updateOnButton state received: ", device[1]['onState']);
+        switch (device[1]['onState']) {
+            case "true":
+                console.log("light on");
                 // $(#ledOn).
                 // $("#ledON").setAttribute('active');
                 $('#ledON').closest('label').toggleClass('active', true);
@@ -138,7 +138,7 @@
                 // document.querySelector('#ledON').closest('label').classList.add('active')
                 // document.querySelector('#ledOFF').closest('label').classList.remove('active')
                 break;
-            case false:
+            case "false":
                 // console.log("light off");
                 $('#ledON').closest('label').toggleClass('active', false);
                 $('#ledOFF').closest('label').toggleClass('active', true);
@@ -151,7 +151,8 @@
 
 
     function updateBrightSlider(device) {
-        var brightVal = device[0]['brightness']
+        var brightVal = device[1]['brightness']
+        // console.log("brightVal for slider: ", brightVal);
         $('#brightness-value').html(brightVal);
         $('#slider-brightness').val(brightVal);
         // $('#slider-brightness').slider('refresh');

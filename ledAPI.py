@@ -19,14 +19,14 @@ CORS(app)
 DEVICES = {
     'device1': 
         {
-            'onState': 'False', 
-            'brightness': 200,
+            'onState': 'false', 
+            'brightness': '200',
             'name':'Ashley-Triangle'
         },
     'device2': 
         {
-            'onState': 'True', 
-            'brightness': 100,
+            'onState': 'true', 
+            'brightness': '100',
             'name':'Other'
         }
 }
@@ -36,8 +36,8 @@ DEVICES = {
 
 '''Single Device Data Model'''
 device = api.model('Device', {
-    'onState': fields.Boolean(description='The on/off state', attribute='onState', required=False, default=True),
-    'brightness': fields.Integer(description='The LED brightness', attribute='brightness', min=0, max=255, required=False, default=255),
+    'onState': fields.String(description='The on/off state', attribute='onState', required=False, default=True),
+    'brightness': fields.String(description='The LED brightness', attribute='brightness', min=0, max=255, required=False, default=255),
     'name': fields.String(description="name of the device", attribute='name', required=False, default='N/A')
 })
 
@@ -93,15 +93,122 @@ lua script gets device settings from Redis if there, otherwise
 initializes device settings to default
 '''
 
-LUA_GET =  """
-    if redis.call('EXISTS', KEYS[1]) == 1 then
-        return redis.call('GET', KEYS[1])
-    else
-        redis.call('SET', KEYS[1], ARGV[1])
-        return ARGV[1]
-    end
-    """
+# LUA_GET =  """
+#     local default = '{onState='True', brightness='255',name='Default'}'
+#     if redis.call('EXISTS', KEYS[1]) == 1 then
+#         return redis.call('GET', KEYS[1])
+#     else
+#         redis.call('SET', KEYS[1], default)
+#         return ARGV[1]
+#     end
+#     """
 
+
+# LUA_UPDATE = """
+#     local default = {onState='True', brightness='255',name='Default'}
+
+#     if redis.call('EXISTS', KEYS[1]) == 1 then
+#         # local payload = redis.call('GET', KEYS[1])
+#         redis.call('HMSET', KEYS[1], )
+    
+# """ 
+
+# receives device hash key and at least one parameter+parameter value to update in device hash list
+# LUA_HMSET_old = """  
+#     if redis.call('EXISTS', KEYS[1]) == 1 then
+#         redis.call('HMSET', KEYS[1], unpack(ARGV))
+#         return redis.call('HGETALL', KEYS[1])
+#     else
+#         redis.call('HMSET', KEYS[1], 'onState', 'True', 'brightness', '255', 'name', 'Default')
+#         redis.call('HMSET', KEYS[1], unpack(ARGV))
+#         return redis.call('HGETALL', KEYS[1])
+#     end
+
+# """
+
+
+"""
+ # LUA_GET2 = """
+ #    ...:     if redis.call('EXISTS', KEYS[1]) == 1 then
+ #    ...:         return redis.call('HGETALL', KEYS[1])
+ #    ...:     else
+ #    ...:         redis.call('HMSET', KEYS[1], onState, True, brightness, 255,name, 'Default')
+ #    ...:         return redis.call('HGETALL', KEYS[1])
+ #    ...:     end
+ #    ...:     """
+
+# LUA_HGET_old = """
+#     if redis.call('EXISTS', KEYS[1]) == 1 then
+#         return redis.call('HGETALL', KEYS[1])
+#     else
+#         redis.call('HMSET', KEYS[1], 'onState', 'True', 'brightness', '255', 'name', 'Default')
+#         return redis.call('HGETALL', KEYS[1])
+#     end
+# """
+
+
+
+LUA_HMSET = """  
+-- turns hash result into dictionary
+    local hgetall = function (key)
+        local dump = redis.call('HGETALL', key)
+            local hashDict = {}
+            local nextkey
+            for index,value in ipairs(dump) do
+                if index % 2 == 1 then
+                    nextkey = value
+                else
+                    hashDict[nextkey] = value
+                end
+            end
+        return cjson.encode(hashDict)
+    end
+
+
+--    local hashDict = {}
+--    local nextkey
+--    for index,value in ipairs(ARGV) do
+--        hashDict[value] = VALUES[index]
+--    end
+    -- redis.call('HMSET', KEYS[1], unpack(ARGV))
+    -- return redis.call('HGETALL', KEYS[1])
+
+--    return hashDict    
+    if redis.call('EXISTS', KEYS[1]) == 1 then
+        redis.call('HMSET', KEYS[1], ARGV[1], ARGV[2])
+        return hgetall(KEYS[1])
+    else
+        redis.call('HMSET', KEYS[1], "onState", "true", "brightness", "255", "name", "Default")
+        redis.call('HMSET', KEYS[1], ARGV[1], ARGV[2])
+        return hgetall(KEYS[1])
+    end
+
+"""
+
+LUA_HGET = """
+-- turns hash result into dictionary
+    local hgetall = function (key)
+        local dump = redis.call('HGETALL', key)
+            local hashDict = {}
+            local nextkey
+            for index,value in ipairs(dump) do
+                if index % 2 == 1 then
+                    nextkey = value
+                else
+                    hashDict[nextkey] = value
+                end
+            end
+        return cjson.encode(hashDict)
+    end
+
+-- if key exists, return its contents, otherwise create new hash item and populate with default parameters, then return result
+    if redis.call('EXISTS', KEYS[1]) == 1 then
+        return hgetall(KEYS[1])
+    else
+        redis.call('HMSET', KEYS[1], "onState", "true", "brightness", "255", "name", "Default")
+        return hgetall(KEYS[1])
+    end
+"""
 
 
 class Redis(object):
@@ -111,23 +218,38 @@ class Redis(object):
         Initialize script object - The Script object ensures that the LUA script is loaded into Redis's script cache. 
         In the event of a NOSCRIPT error, it will load the script and retry executing it.
         '''
-        self.getDevice = self.redis.register_script(LUA_GET)
+        # self.getDevice = self.redis.register_script(LUA_GET)
+        self.getDevice = self.redis.register_script(LUA_HGET)
 
+        self.updateDevice = self.redis.register_script(LUA_HMSET)
 
         '''if 'device1' on redis server, load it with default info'''
         # self.getDevice(keys=['device1'],args=[json.dumps(DEVICES['device1'])])
 
 
     
-    def set(self,key,data):
-       self.redis.set(key,json.dumps(data))
-       return self.get(key)
+    def update_stuff(self, key: str, data: dict):
+        self.redis.hmset(key, data);
+
+
+    def set(self,key,field,value):
+       # self.redis.set(key,json.dumps(data
+       # print("data: ", data)
+       # print("trying to set: ", key, ": ", data)   
+       data = self.updateDevice(keys=[key], args=[field,value])
+       # print('returned set data type: ', type(data))
+       # return data
+       jsonData = json.loads(data.decode("utf-8"))
+       # print(jsonData)
+       return 
 
     def get(self,key):
-
-        data = self.getDevice(keys=[key],args=[json.dumps(DEVICES[key])])
-
-        return json.loads(data)
+        data = self.getDevice(keys=[key])
+        # data = self.getDevice(keys=[key],args=[json.dumps(DEVICES[key])])
+        # print("returned data from get: ", data, " type: ", type(data.decode("utf-8")))
+        jsonData = json.loads(data.decode("utf-8"))
+        print("jsonGet received = ", jsonData)
+        return jsonData
 
 
     # def delete(self,key):
@@ -139,6 +261,7 @@ REDIS = Redis()
 ''''''''''''''''''''''''''''''''''''
 '''Single Device Response Methods'''
 ''''''''''''''''''''''''''''''''''''
+''' ?TODO: add list of device_ids from redis to check if decive there'''
 @api.route('/Devices/<string:device_id>', methods=['GET','POST','PUT'])
 @api.doc(responses={404: 'Device not found', 200: 'Device found'}, params={'device_id': 'The Device ID'},)
 @api.doc(description='device_id should be {0}'.format(', '.join(DEVICES.keys())))
@@ -147,10 +270,10 @@ class Device(Resource):
     @api.response(200, 'Success', device)
     def get(self, device_id):
         '''Fetch a given resource'''
-        abort_if_device_not_found(device_id)
+        # abort_if_device_not_found(device_id)
         redisGet = REDIS.get(device_id)
         print('redisGet: ', redisGet)
-        return jsonify(redisGet)
+        return jsonify(device_id,redisGet)
         # return jsonify(DEVICES[device_id],200)
         
     @api.doc(responses={204: 'Device deleted'})
@@ -164,26 +287,21 @@ class Device(Resource):
     # @api.doc(parser=parser)
     @api.response(200, 'Success', device)
     def put(self, device_id):
-        '''Update a given resource's onState or brightness properties'''
-        if 'onState' in request.json:
-            # print("onState found")
-            DEVICES[device_id]['onState'] =request.json.get('onState',DEVICES[device_id]['onState'])
-            print('new onState value stored: ', DEVICES[device_id]['onState'])
-        if 'brightness' in request.json:
-            newbrightness=request.json.get('brightness',DEVICES[device_id]['brightness'])
-            # print('newbrightness =', newbrightness)
-            DEVICES[device_id]['brightness']=newbrightness
-            print('new brightness value stored: ', DEVICES[device_id]['brightness'])
-        if 'name' in request.json:
-            newbrightness=request.json.get('name',DEVICES[device_id]['name'])
-            # print('newbrightness =', newbrightness)
-            DEVICES[device_id]['name']=newbrightness
-            print('new name stored: ', DEVICES[device_id]['name'])
+        # redisSet = REDIS.set(device_id, {'onState': 'test'})
+        # print('test redisSet = ', redisSet)
+        # print("json request: ", request.json)
+        
+        '''Update a given resource's field with new property value received'''
+        for field in device:
+            # print("field: ", field)
+            if field in request.json:
+                # print("field found: ", field, "value = ",request.json.get(field) )
+                # let value = request.json.get(field)
+                REDIS.set(device_id, field, request.json.get(field))
+        
 
-        # print(DEVICES[device_id])
-        redisSet = REDIS.set(device_id, DEVICES[device_id])
-        print('redisSet = ', redisSet)
-        return jsonify(redisSet)
+        # print('returned redisSet = ', redisSet)
+        return jsonify(device_id,REDIS.get(device_id))
         # return jsonify(DEVICES[device_id])
 
 
@@ -206,6 +324,7 @@ class DeviceList(Resource):
         '''Create a new device with next id'''       
         device_id = 'device%d' % (len(DEVICES) + 1)
         DEVICES[device_id] = device
+        # print("json request received: ", request.json)
 
         '''populate device properties with request contents if there'''
         if 'onState' in request.json:
