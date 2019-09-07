@@ -8,7 +8,7 @@
 
     // var apiURL = 'https://jsonplaceholder.typicode.com/posts' // test external json server
     // console.log('ledAPI running');
-    var deviceID = 'device1'
+    var deviceID = 'device_1'
 
 
     /************
