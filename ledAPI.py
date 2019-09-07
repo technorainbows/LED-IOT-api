@@ -49,8 +49,9 @@ device = api.model('Device', {
 
 """Device List Data Model"""
 list_of_devices = api.model('ListedDevices', {
+    'heartbeat': fields.String(required=False, description='Device heartbeat'),
     'id': fields.String(required=True, description='The device ID'),
-    'device': fields.Nested(device, description='The device')
+    'device': fields.Nested(device, description='The device'),
 })
 
 
@@ -84,6 +85,7 @@ class Redis(object):
     #         index += 1
     #     print("new string dict: ", strDict)
     #     return strDict
+
 
     def get(self, key):
         """Get device from redit if it exists, otherwise load with default."""
@@ -172,10 +174,51 @@ class Redis(object):
         print("keys returned: ", keys)
         return keys
 
+    def setHB(self, heartbeat, time):
+        """Set heartbeat key in redis that expires in provided time."""
+        response = self.redis.setex(heartbeat, time, 1)
+        return response
+
 
 """Initialize REDIS object"""
 REDIS = Redis()
 
+
+""""""""""""""""""""""""""""""""""""
+"""Heartbeat Methods"""
+""""""""""""""""""""""""""""""""""""
+@api.route('/Heartbeat/<string:device_id>', methods=['GET', 'POST'])
+class Heartbeat(Resource):
+    """Update and check on a given device's heartbeat/online status."""
+    
+    @api.response(200, 'Success')
+    def get(self, device_id):
+        """Check if a given heartbeat exists."""
+        heartbeat = "hb_" + device_id
+        response = REDIS.keys(heartbeat)
+        print("response = ", response)
+        if response == []:
+            return False
+        else:
+            return True
+
+    @api.response(200, 'Success')
+    # @api.expect()
+    def post(self, device_id):
+        """Set a heartbeat."""
+        heartbeat = "hb_" + device_id
+        response = REDIS.setHB(heartbeat, 60)
+        return
+
+@api.route('/Heartbeats/', methods=['GET'])
+class Heartbeats(Resource):
+    """Monitor which devices are online or not via heartbeat."""
+    
+    @api.response(200, 'Success')
+    def get(self):
+        """Return a list of all heartbeats."""
+        keys = REDIS.keys("hb") 
+        return jsonify(keys)
 
 """"""""""""""""""""""""""""""""""""
 """Single Device Response Methods"""
