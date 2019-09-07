@@ -4,44 +4,50 @@ from flask import Flask, jsonify, request, json
 from flask_restplus import Api, Resource, fields, cors
 # from werkzeug.contrib.fixers import ProxyFix
 import redis
+from redis.exceptions import WatchError
 import json
+import time
 
 app = Flask(__name__)
 # app.wsgi_app = ProxyFix(app.wsgi_app)
 api = Api(app, version='0.2', title='LED API',
-    description='A simple LED IOT API', doc='/docs'
-)
+          description='A simple LED IOT API', doc='/docs'
+          )
 
 CORS(app)
 # ns = api.namespace('Devices', description='DEVICES operations')
 
-'''Initial dictionary of devices '''
-DEVICES = {
-    'device1': 
-        {
-            'onState': 'false', 
-            'brightness': '200',
-            'name':'Ashley-Triangle'
-        },
-    'device2': 
-        {
-            'onState': 'true', 
-            'brightness': '100',
-            'name':'Other'
+"""Initial dictionary of devices """
+# DEVICES = {
+#     'device1':
+#         {
+#             'onState': 'false',
+#             'brightness': '200',
+#             'name': 'Ashley-Triangle'
+#         },
+#     'device2':
+#         {
+#             'onState': 'true',
+#             'brightness': '100',
+#             'name': 'Other'
+#         }
+# }
+
+default = {
+            'onState': 'true',
+            'brightness': '255',
+            'name': 'Default'
         }
-}
 
 
-
-
-'''Single Device Data Model'''
+"""Single Device Data Model"""
 device = api.model('Device', {
     'onState': fields.String(description='The on/off state', attribute='onState', required=False, default=True),
     'brightness': fields.String(description='The LED brightness', attribute='brightness', min=0, max=255, required=False, default=255),
     'name': fields.String(description="name of the device", attribute='name', required=False, default='N/A')
 })
 
-'''Device List Data Model'''
+"""Device List Data Model"""
 list_of_devices = api.model('ListedDevices', {
     'id': fields.String(required=True, description='The device ID'),
     'device': fields.Nested(device, description='The device')
@@ -53,296 +59,205 @@ def abort_if_device_not_found(device_id):
         api.abort(404, "Device {} doesn't exist".format(device_id))
 
 
-
-# ''''''''''''
-# '''REDIS''''
-# ''''''''''''
-
-
-# r.hmset('device1',DEVICES['device1'])
-# r.hmset('device2',DEVICES['device2'])r =
-
-# rDevices1 = r.hgetall('device1')
-# print('rDevice1s: ', rDevices1)
-# rDevices2 = r.hgetall('device2')
-# print('rDevice2s: ', rDevices2)
-
-
-
-# print(r.hgetall('device1'))
-# print(r.hgetall('device2'))
-
-# '''Initial Write of DEVICES data to REDIS'''
-# with r.pipeline() as pipe:
-#     for device_id, device in DEVICES.items():
-#         pipe.hmset(device_id,device)
-#     pipe.execute()
-# r.bgsave()
-
-# LUA_HMGET =  """
-#     if redis.call('EXISTS', KEYS[1]) == 1 then
-#         return redis.call('HGETALL', KEYS[1])
-#     else
-#         redis.call('HMSET', KEYS[1], ARGV[1] ARGV[2])
-#         return ARGV[2]
-#     end
-#     """
-
-'''
-lua script gets device settings from Redis if there, otherwise 
-initializes device settings to default
-'''
-
-# LUA_GET =  """
-#     local default = '{onState='True', brightness='255',name='Default'}'
-#     if redis.call('EXISTS', KEYS[1]) == 1 then
-#         return redis.call('GET', KEYS[1])
-#     else
-#         redis.call('SET', KEYS[1], default)
-#         return ARGV[1]
-#     end
-#     """
-
-
-# LUA_UPDATE = """
-#     local default = {onState='True', brightness='255',name='Default'}
-
-#     if redis.call('EXISTS', KEYS[1]) == 1 then
-#         # local payload = redis.call('GET', KEYS[1])
-#         redis.call('HMSET', KEYS[1], )
-    
-# """ 
-
-# receives device hash key and at least one parameter+parameter value to update in device hash list
-# LUA_HMSET_old = """  
-#     if redis.call('EXISTS', KEYS[1]) == 1 then
-#         redis.call('HMSET', KEYS[1], unpack(ARGV))
-#         return redis.call('HGETALL', KEYS[1])
-#     else
-#         redis.call('HMSET', KEYS[1], 'onState', 'True', 'brightness', '255', 'name', 'Default')
-#         redis.call('HMSET', KEYS[1], unpack(ARGV))
-#         return redis.call('HGETALL', KEYS[1])
-#     end
-
-# """
-
-
-"""
- # LUA_GET2 = """
- #    ...:     if redis.call('EXISTS', KEYS[1]) == 1 then
- #    ...:         return redis.call('HGETALL', KEYS[1])
- #    ...:     else
- #    ...:         redis.call('HMSET', KEYS[1], onState, True, brightness, 255,name, 'Default')
- #    ...:         return redis.call('HGETALL', KEYS[1])
- #    ...:     end
- #    ...:     """
-
-# LUA_HGET_old = """
-#     if redis.call('EXISTS', KEYS[1]) == 1 then
-#         return redis.call('HGETALL', KEYS[1])
-#     else
-#         redis.call('HMSET', KEYS[1], 'onState', 'True', 'brightness', '255', 'name', 'Default')
-#         return redis.call('HGETALL', KEYS[1])
-#     end
-# """
-
-
-
-LUA_HMSET = """  
--- turns hash result into dictionary
-    local hgetall = function (key)
-        local dump = redis.call('HGETALL', key)
-            local hashDict = {}
-            local nextkey
-            for index,value in ipairs(dump) do
-                if index % 2 == 1 then
-                    nextkey = value
-                else
-                    hashDict[nextkey] = value
-                end
-            end
-        return cjson.encode(hashDict)
-    end
-
-
---    local hashDict = {}
---    local nextkey
---    for index,value in ipairs(ARGV) do
---        hashDict[value] = VALUES[index]
---    end
-    -- redis.call('HMSET', KEYS[1], unpack(ARGV))
-    -- return redis.call('HGETALL', KEYS[1])
-
---    return hashDict    
-    if redis.call('EXISTS', KEYS[1]) == 1 then
-        redis.call('HMSET', KEYS[1], ARGV[1], ARGV[2])
-        return hgetall(KEYS[1])
-    else
-        redis.call('HMSET', KEYS[1], "onState", "true", "brightness", "255", "name", "Default")
-        redis.call('HMSET', KEYS[1], ARGV[1], ARGV[2])
-        return hgetall(KEYS[1])
-    end
-
-"""
-
-LUA_HGET = """
--- turns hash result into dictionary
-    local hgetall = function (key)
-        local dump = redis.call('HGETALL', key)
-            local hashDict = {}
-            local nextkey
-            for index,value in ipairs(dump) do
-                if index % 2 == 1 then
-                    nextkey = value
-                else
-                    hashDict[nextkey] = value
-                end
-            end
-        return cjson.encode(hashDict)
-    end
-
--- if key exists, return its contents, otherwise create new hash item and populate with default parameters, then return result
-    if redis.call('EXISTS', KEYS[1]) == 1 then
-        return hgetall(KEYS[1])
-    else
-        redis.call('HMSET', KEYS[1], "onState", "true", "brightness", "255", "name", "Default")
-        return hgetall(KEYS[1])
-    end
-"""
-
-
 class Redis(object):
     def __init__(self):
+        """Initialize Redis Object."""
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
-        '''
-        Initialize script object - The Script object ensures that the LUA script is loaded into Redis's script cache. 
-        In the event of a NOSCRIPT error, it will load the script and retry executing it.
-        '''
-        # self.getDevice = self.redis.register_script(LUA_GET)
-        self.getDevice = self.redis.register_script(LUA_HGET)
 
-        self.updateDevice = self.redis.register_script(LUA_HMSET)
+    # def bytesToString(self, byteDict):
+    #     """Receives a dictionary of bytes and returns a dictionary of strings."""
+    #     # Initialising empty dictionary
+    #     strDict = {}
+    #     print ("byteDict type: ", type(byteDict))
+    #     # Convert dictionary items from bytes to strings
+    #     index = 0
+        
+    #     for key, value in byteDict.items(): 
+    #       y[key.decode("utf-8")] = value.decode("utf-8") 
+  
 
-        '''if 'device1' on redis server, load it with default info'''
-        # self.getDevice(keys=['device1'],args=[json.dumps(DEVICES['device1'])])
+    #     for item in byteDict:
+    #         # if(index%2)
+    #         newItem = item.decode("utf-8")
+    #         if(type(newItem) == str):
+    #             strDict[index] = item.decode("utf-8")
+    #         index += 1
+    #     print("new string dict: ", strDict)
+    #     return strDict
+
+    def get(self, key):
+        """Get device from redit if it exists, otherwise load with default."""
+        with self.redis.pipeline() as pipe:
+            while True:
+                try:
+                    pipe.watch(key)
+                    if(pipe.exists(key) == 0):
+                        print("get: no device")
+                        pipe.multi()
+                        pipe.hmset(key, default)
+                        # time.sleep(5)
+                        pipe.execute()
+                        device = default
+                        break
+                    else:
+                        # print("get: device found")
+                        device = pipe.hgetall(key)
+                        # Initialising empty dictionary
+                        newDict = {}
+
+                        # Convert dictionary items from bytes to strings
+                        for dkey, value in device.items():
+                            newDict[dkey.decode("utf-8")] = value.decode("utf-8")
+                        device = newDict
+                        print("get: device found: ", device)
+                        break
+                except WatchError:
+                    print("get: watcherror, trying again")
+                    continue
+
+        return device
+
+    def set(self, key, field, value):
+        """Set a value in given device if exists, else initialize device to default first."""
+        with self.redis.pipeline() as pipe:
+            while True:
+                try:
+                    pipe.watch(key)
+                    if(pipe.exists(key) == 0):
+                        print("set: no device")
+                        pipe.multi()
+                        pipe.hmset(key, default)
+                        pipe.hmset(key, {field: value})
+                        # time.sleep(5)
+                        device = pipe.hgetall(key)
+                        pipe.execute()
+                        break
+
+                    else:
+                        pipe.hmset(key, {field: value})
+
+                        # keyTest = keyTest.decode("utf-8")
+                        # print("key found: ", device)
+
+                        device = pipe.hgetall(key)
+                        print("set: device found: ", device)
+                        break
+
+                except WatchError:
+                    print("set: watcherror, trying again")
+                    continue
+
+            # Initialising empty dictionary
+            newDict = {}
+
+            # Convert dictionary items from bytes to strings
+            for dkey, value in device.items():
+                newDict[dkey.decode("utf-8")] = value.decode("utf-8")
+            device = newDict
+            print("set: new device = ", device)
+            return (device)
+
+    def delete(self, key):
+        """Delete a key from Redis client."""
+        response = self.redis.delete(key)
+        print("response: ", response)
+        return response
+
+    def keys(self, param):
+        """Return list of all keys matching parameter."""
+        keys = []
+        for key in self.redis.scan_iter(match=param+"*"):
+            # print("key: ", key)
+            keys.append(key.decode())
+        print("keys returned: ", keys)
+        return keys
 
 
-    
-    def update_stuff(self, key: str, data: dict):
-        self.redis.hmset(key, data);
-
-
-    def set(self,key,field,value):
-       # self.redis.set(key,json.dumps(data
-       # print("data: ", data)
-       # print("trying to set: ", key, ": ", data)   
-       data = self.updateDevice(keys=[key], args=[field,value])
-       # print('returned set data type: ', type(data))
-       # return data
-       jsonData = json.loads(data.decode("utf-8"))
-       # print(jsonData)
-       return 
-
-    def get(self,key):
-        data = self.getDevice(keys=[key])
-        # data = self.getDevice(keys=[key],args=[json.dumps(DEVICES[key])])
-        # print("returned data from get: ", data, " type: ", type(data.decode("utf-8")))
-        jsonData = json.loads(data.decode("utf-8"))
-        print("jsonGet received = ", jsonData)
-        return jsonData
-
-
-    # def delete(self,key):
-
-'''Initialize REDIS object'''
+"""Initialize REDIS object"""
 REDIS = Redis()
 
 
-''''''''''''''''''''''''''''''''''''
-'''Single Device Response Methods'''
-''''''''''''''''''''''''''''''''''''
-''' ?TODO: add list of device_ids from redis to check if decive there'''
-@api.route('/Devices/<string:device_id>', methods=['GET','POST','PUT'])
+""""""""""""""""""""""""""""""""""""
+"""Single Device Response Methods"""
+""""""""""""""""""""""""""""""""""""
+"""TODO: add list of device_ids from redis to check if decive there"""
+@api.route('/Devices/<string:device_id>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 @api.doc(responses={404: 'Device not found', 200: 'Device found'}, params={'device_id': 'The Device ID'},)
-@api.doc(description='device_id should be {0}'.format(', '.join(DEVICES.keys())))
+@api.doc(description='device_id should be {0}'.format(', '.join(REDIS.keys("device_id"))))
 class Device(Resource):
-    '''Show a single device's properties and lets you delete them or change them'''
+    """Show a single device's properties and lets you delete them or change them."""
+
     @api.response(200, 'Success', device)
     def get(self, device_id):
-        '''Fetch a given resource'''
+        """Fetch a given resourc."""
         # abort_if_device_not_found(device_id)
         redisGet = REDIS.get(device_id)
+        print("device_id: ", device_id)
         print('redisGet: ', redisGet)
-        return jsonify(device_id,redisGet)
+        return jsonify(device_id, redisGet)
         # return jsonify(DEVICES[device_id],200)
-        
+
     @api.doc(responses={204: 'Device deleted'})
     def delete(self, device_id):
-        '''Delete a given resource'''
-        abort_if_device_not_found(device_id)
-        del DEVICES[device_id]
-        return '', 204
+        """Delete a given resource."""
+        #abort_if_device_not_found(device_id)
+        response = REDIS.delete(device_id)
+        if response:
+            return 'Device deleted', 204
+        else:
+            return 'Error: device not found', 404
 
     @api.expect(device, validate=True)
     # @api.doc(parser=parser)
     @api.response(200, 'Success', device)
     def put(self, device_id):
-        # redisSet = REDIS.set(device_id, {'onState': 'test'})
-        # print('test redisSet = ', redisSet)
-        # print("json request: ", request.json)
-        
-        '''Update a given resource's field with new property value received'''
+        """Update a given resource's field with new property value received."""
         for field in device:
             # print("field: ", field)
             if field in request.json:
                 # print("field found: ", field, "value = ",request.json.get(field) )
                 # let value = request.json.get(field)
                 REDIS.set(device_id, field, request.json.get(field))
-        
 
         # print('returned redisSet = ', redisSet)
-        return jsonify(device_id,REDIS.get(device_id))
+        return jsonify(device_id, REDIS.get(device_id))
         # return jsonify(DEVICES[device_id])
 
 
-''''''''''''''''''''''''''''''''''''''
-'''List of Devices Response Methods'''
-''''''''''''''''''''''''''''''''''''''
+""""""""""""""""""""""""""""""""""""''
+"""List of Devices Response Methods"""
+""""""""""""""""""""""""""""""""""""''
 @api.route('/Devices/')
 class DeviceList(Resource):
-    '''Shows a list of all devices, and lets you POST to add new tasks'''
+    """Shows a list of all devices, and lets you POST to add new tasks."""
+
     @api.response(200, 'Success', list_of_devices)
     def get(self):
-        '''Return a list of all devices and their properties'''
+        """Return a list of all devices and their properties."""
+        DEVICES = REDIS.keys("device_id")
         print("returning Device List: ", DEVICES)
-        return jsonify(DEVICES)    
-        # return ([{'id': id, 'device': ListedDevices} for id, ListedDevices in DEVICES.items()],
-                 # 200)
+        return jsonify(DEVICES)
+        # return ([{'id': id, 'device': ListedDevices} for id, ListedDevices in DEVICES.items()], 200)
 
     @api.expect(device, validate=True)
     def post(self):
-        '''Create a new device with next id'''       
+        """Create a new device with next id."""
         device_id = 'device%d' % (len(DEVICES) + 1)
-        DEVICES[device_id] = device
+        # DEVICES[device_id] = device
         # print("json request received: ", request.json)
 
-        '''populate device properties with request contents if there'''
-        if 'onState' in request.json:
-            print("onState found")
-            DEVICES[device_id]['onState'] =request.json.get('onState',DEVICES[device_id]['onState'])
-            print(DEVICES[device_id]['onState'])
-        if 'brightness' in request.json:
-            DEVICES[device_id]['brightness']=request.json.get('brightness',DEVICES[device_id]['brightness'])
-            print('brightness found')
-        if 'name' in request.json:
-            DEVICES[device_id]['name']=request.json.get('name',DEVICES[device_id]['name'])
-            print('name found')
-            
-        # print(DEVICES[device_id])
-        redisSet = REDIS.set(device_id, DEVICES[device_id])
-        print('redisSet = ', redisSet)
-        return jsonify(redisSet)
+        """Update a given resource's field with new property value received."""
+        for field in device:
+            # print("field: ", field)
+            if field in request.json:
+                # print("field found: ", field, "value = ",request.json.get(field) )
+                # let value = request.json.get(field)
+                REDIS.set(device_id, field, request.json.get(field))
+
+        return jsonify(device_id, REDIS.get(device_id))
+        # return jsonify(redisSet)
         # return jsonify(DEVICES[device_id], 201)
+
 
 @app.errorhandler(404)
 def not_found(error):
@@ -351,4 +266,3 @@ def not_found(error):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-    
