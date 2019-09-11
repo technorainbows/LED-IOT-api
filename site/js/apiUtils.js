@@ -128,7 +128,7 @@
         // if no error, then get response 
         let device = await res.json();
         // console.log("device returned: ", device);
-        let state = device[1]['onState'];
+        // let state = device[1]['onState'];
         // console.log("state = ", state);
         updateServerStatus(true);
         responseHandler(device);

@@ -17,22 +17,6 @@ api = Api(app, version='0.2', title='LED API',
 CORS(app)
 # ns = api.namespace('Devices', description='DEVICES operations')
 
-"""Initial dictionary of devices """
-# DEVICES = {
-#     'device1':
-#         {
-#             'onState': 'false',
-#             'brightness': '200',
-#             'name': 'Ashley-Triangle'
-#         },
-#     'device2':
-#         {
-#             'onState': 'true',
-#             'brightness': '100',
-#             'name': 'Other'
-#         }
-# }
-
 default = {
             'onState': 'true',
             'brightness': '255',
@@ -75,7 +59,6 @@ class Redis(object):
         
     #     for key, value in byteDict.items(): 
     #       y[key.decode("utf-8")] = value.decode("utf-8") 
-  
 
     #     for item in byteDict:
     #         # if(index%2)
@@ -176,7 +159,7 @@ class Redis(object):
 
     def setHB(self, heartbeat, time):
         """Set heartbeat key in redis that expires in provided time."""
-        response = self.redis.setex(heartbeat, time, 1)
+        response = self.redis.setex(heartbeat, time, 10)
         return response
 
 
@@ -187,10 +170,10 @@ REDIS = Redis()
 """"""""""""""""""""""""""""""""""""
 """Heartbeat Methods"""
 """"""""""""""""""""""""""""""""""""
-@api.route('/Heartbeat/<string:device_id>', methods=['GET', 'POST'])
+@api.route('/Devices/HB/<string:device_id>', methods=['GET', 'POST'])
 class Heartbeat(Resource):
     """Update and check on a given device's heartbeat/online status."""
-    
+
     @api.response(200, 'Success')
     def get(self, device_id):
         """Check if a given heartbeat exists."""
@@ -207,13 +190,13 @@ class Heartbeat(Resource):
     def post(self, device_id):
         """Set a heartbeat."""
         heartbeat = "hb_" + device_id
-        response = REDIS.setHB(heartbeat, 60)
+        response = REDIS.setHB(heartbeat, 10)
         return
 
-@api.route('/Heartbeats/', methods=['GET'])
+@api.route('/Devices/HB/', methods=['GET'])
 class Heartbeats(Resource):
     """Monitor which devices are online or not via heartbeat."""
-    
+
     @api.response(200, 'Success')
     def get(self):
         """Return a list of all heartbeats."""
@@ -235,15 +218,15 @@ class Device(Resource):
         """Fetch a given resourc."""
         # abort_if_device_not_found(device_id)
         redisGet = REDIS.get(device_id)
-        print("device_id: ", device_id)
-        print('redisGet: ', redisGet)
+        # print("device_id: ", device_id)
+        # print('redisGet: ', redisGet)
         return jsonify(device_id, redisGet)
         # return jsonify(DEVICES[device_id],200)
 
     @api.doc(responses={204: 'Device deleted'})
     def delete(self, device_id):
         """Delete a given resource."""
-        #abort_if_device_not_found(device_id)
+        # abort_if_device_not_found(device_id)
         response = REDIS.delete(device_id)
         if response:
             return 'Device deleted', 204
@@ -278,7 +261,7 @@ class DeviceList(Resource):
     def get(self):
         """Return a list of all devices and their properties."""
         DEVICES = REDIS.keys("device_id")
-        print("returning Device List: ", DEVICES)
+        # print("returning Device List: ", DEVICES)
         return jsonify(DEVICES)
         # return ([{'id': id, 'device': ListedDevices} for id, ListedDevices in DEVICES.items()], 200)
 

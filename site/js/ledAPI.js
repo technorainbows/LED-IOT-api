@@ -8,15 +8,15 @@
 
     // var apiURL = 'https://jsonplaceholder.typicode.com/posts' // test external json server
     // console.log('ledAPI running');
-    var deviceID = 'device_1'
-
+    var deviceID = ''
+    var devices = []
 
     /************
      * DEVICE INFO
      ************/
     var brightness;
     var ledState;
-    var name = "AshleyRoom"
+    // var name = "AshleyRoom"
 
     var jsonString = ''
     /************* 
@@ -30,8 +30,10 @@
      * If connected, main content is updated/enabled, otherwise main-content is disabled.
      */
     function checkConnection() {
+        $apiUtils.getData(apiUrl + "/HB", "", updateDeviceList, disableMainContent);
+
         $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
-        // setTimeout(checkConnection, 8000);
+        setTimeout(checkConnection, 8000);
     }
 
     /*
@@ -40,15 +42,17 @@
     function startLoadingPage() {
 
         console.log("Initializing client.");
-
+        checkConnection();
         // show loading UI / message
         // showLoading("#main-content");
 
-        // connect to API (get request)
-        $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
+        // $apiUtils.getData(apiUrl+"/HB","",updateDeviceList, disableMainContent);
 
+        // // connect to API (get request) and update or disable main content depending on response
+        // $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
+        // checkConnection();
 
-        // when btn-ledState is clicked, calls postData to update ledState on API
+        /* when btn-ledState is clicked, calls postData to update ledState on API */
         $("#btn-ledState :input").change(function() {
 
             // console.log("User input received, now starting API request.");
@@ -64,7 +68,7 @@
 
         });
 
-
+        /*  monitors brightness slider changes */
         $('input[name=slider-brightness]').change('mousestop', function() {
             var value = Number(this.value);
             // value=value.toInteg();
@@ -78,19 +82,25 @@
             $('#brightness-value').html(sValue);
 
         });
-        // var brightSlider = $"#slider-brightness";
 
-        // brightSlider.oninput = function() {
-        //     console.log("slider value = ", brightSlider.value);
-        // }
-        // var sliderVal = document.getElementById('slider-brightness').value;
-        // console.log("sliderVal = ", sliderVal);
-        //       // console.log($("#slider-brightness").value);
-        // (function(){
-        // 	var brightVal = this.getValue();
-        // 	console.log("brightness slider changed: " + brightVal);
-        // 	// $apiUtils.postRequest(apiUrl,'brightness',this.input);
-        // })
+
+
+        /* when a btn-device button is clicked, change deviceID to ID of clicked button and enable/update corresponding content */
+        $(document).on('click', '.btn-device', function(event) {
+            //Process button click event
+            console.log("device selected: ", this.id);
+            lastDevice=deviceID;
+            deviceID = (this.id).slice(3, this.id.length);
+            $('#currentDeviceLabel').html(deviceID);
+            console.log("deviceID set to: ", deviceID);
+            $('#currentDeviceLabel').show();
+            if (lastDevice == deviceID) {
+	             $("#parameter-UI").show();
+            } else {
+            	$apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
+            	$("#parameter-UI").show();
+            }
+        });
 
 
     }
@@ -127,24 +137,14 @@
         // console.log("updateOnButton state received: ", device[1]['onState']);
         switch (device[1]['onState']) {
             case "true":
-                console.log("light on");
-                // $(#ledOn).
-                // $("#ledON").setAttribute('active');
+                // console.log("light on");
                 $('#ledON').closest('label').toggleClass('active', true);
-
                 $('#ledOFF').closest('label').toggleClass('active', false);
-
-                // $('#ledON').closest('label').classList.add('active');                
-                // document.querySelector('#ledON').closest('label').classList.add('active')
-                // document.querySelector('#ledOFF').closest('label').classList.remove('active')
                 break;
             case "false":
                 // console.log("light off");
                 $('#ledON').closest('label').toggleClass('active', false);
                 $('#ledOFF').closest('label').toggleClass('active', true);
-
-                // document.querySelector('#ledOFF').closest('label').classList.add('active')
-                // document.querySelector('#ledON').closest('label').classList.remove('active')
                 break;
         }
     }
@@ -157,6 +157,61 @@
         $('#slider-brightness').val(brightVal);
         // $('#slider-brightness').slider('refresh');
         // $('#slider-brightness').html(brightVal);
+    }
+
+    function updateDeviceList(newDevices) {
+        // compare new devices with old devices and insert new devices or delete devices
+
+        console.log("devices = ", devices);
+        console.log("newDevices = ", newDevices);
+        newDevices.sort();
+
+        var remove = [];
+        var add = [];
+
+
+        // Identify old devices no longer online and remove
+        for (var i in devices) {
+            if (newDevices.indexOf(devices[i]) === -1) remove.push(devices[i]);
+        }
+        // console.log("remove = ", remove)
+        remove.forEach(removeDevice);
+
+        // Hide parameter UI and current device label if not online (e.g., no heartbeat)
+        if (newDevices.includes(("hb_" + deviceID)) == false) {
+            $("#currentDeviceLabel").hide();
+            $("#parameter-UI").hide();
+            console.log("hiding currentDeviceLabel");
+        }
+        else {
+        	console.log("showing currentDeviceLabel");
+        	$("#currentDeviceLabel").show();
+        	$("#parameter-UI").show();
+		}
+
+        // Identify new devices received in order to add
+        for (var i in newDevices) {
+            if (devices.indexOf(newDevices[i]) === -1) add.push(newDevices[i]);
+        }
+        add.forEach(insertDevice);
+
+        // Set devices with newDevices
+        devices = newDevices;
+    }
+
+    function insertDevice(device, index) {
+        $("<input/>").attr({ type: "button", class: "btn-success btn-device", id: device, value: device }).appendTo("#deviceList");
+
+    }
+
+    function removeDevice(device, index) {
+        console.log("Removing ", device)
+        $("#" + device).remove();
+
+    }
+
+    function updateCurrentDevice(newID) {
+
     }
 
     // TODO: ADD ERROR RENDERING FUNCTIONALITY TO UI

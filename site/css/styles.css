@@ -23,6 +23,17 @@ body {
 }
 
 
+.btn-device {
+  border-style:solid;
+  border-width:2px;
+  /*border-color:magenta;*/
+  color:white;
+  margin:5px;
+  /*padding: 5px;*/
+  border-radius: 10px;
+
+}
+
 .ui-label {
   border-style:solid;
   border-width:2px;
@@ -42,4 +53,28 @@ body {
 .form-control-range {
  margin-left:10px;
 
+}
+
+.label-device {
+  border-style:solid;
+  border-width:2px;
+  border-color:white;
+  background-color: magenta;
+  color:white;
+  margin-left:5px;
+  margin-right:5px;
+  padding: 5px;
+  border-radius: 10px;
+}
+
+.label-heartbeat {
+  border-style:solid;
+  border-width:2px;
+  border-color:white;
+  background-color: black;
+  color:white;
+  margin-left:5px;
+  margin-right:5px;
+  padding: 15px;
+  border-radius: 10px;
 }
