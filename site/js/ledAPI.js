@@ -10,6 +10,7 @@
     // console.log('ledAPI running');
     var deviceID = ''
     var devices = []
+    var lastDevice = ''
 
     /************
      * DEVICE INFO
@@ -30,10 +31,13 @@
      * If connected, main content is updated/enabled, otherwise main-content is disabled.
      */
     function checkConnection() {
+        // Get list of devices online/available
         $apiUtils.getData(apiUrl + "/HB", "", updateDeviceList, disableMainContent);
 
-        $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
-        setTimeout(checkConnection, 8000);
+        // // if current device is in heartbeat list, get device info
+
+        // $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
+        setTimeout(checkConnection, 5000);
     }
 
     /*
@@ -89,8 +93,9 @@
         $(document).on('click', '.btn-device', function(event) {
             //Process button click event
             console.log("device selected: ", this.id);
-            lastDevice=deviceID;
-            deviceID = (this.id).slice(3, this.id.length);
+            lastDevice = deviceID;
+            deviceID = this.id
+            // deviceID = (this.id).slice(3, this.id.length);
             $('#currentDeviceLabel').html(deviceID);
             console.log("deviceID set to: ", deviceID);
             $('#currentDeviceLabel').show();
@@ -126,7 +131,7 @@
      * Call this function when the server is no longer connected. This will hide all content in "#main-content".
      */
     function disableMainContent() {
-        console.log("disabling main content");
+        // console.log("disabling main content");
         $("#main-content").hide("slow");
 
     }
@@ -162,8 +167,8 @@
     function updateDeviceList(newDevices) {
         // compare new devices with old devices and insert new devices or delete devices
 
-        console.log("devices = ", devices);
-        console.log("newDevices = ", newDevices);
+        // console.log("devices = ", devices);
+        // console.log("newDevices = ", newDevices);
         newDevices.sort();
 
         var remove = [];
@@ -181,10 +186,14 @@
         if (newDevices.includes(("hb_" + deviceID)) == false) {
             $("#currentDeviceLabel").hide();
             $("#parameter-UI").hide();
-            console.log("hiding currentDeviceLabel");
+            // console.log("hiding currentDeviceLabel");
         }
         else {
-        	console.log("showing currentDeviceLabel");
+        	// console.log("getting/showing currentDeviceLabel and parameters");
+        	
+        	// if current device is in heartbeat list, get device info
+			$apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
+
         	$("#currentDeviceLabel").show();
         	$("#parameter-UI").show();
 		}
@@ -200,12 +209,14 @@
     }
 
     function insertDevice(device, index) {
+    	device = device.slice(3, device.length)
         $("<input/>").attr({ type: "button", class: "btn-success btn-device", id: device, value: device }).appendTo("#deviceList");
 
     }
 
     function removeDevice(device, index) {
-        console.log("Removing ", device)
+    	device = device.slice(3, device.length)
+        // console.log("Removing ", device)
         $("#" + device).remove();
 
     }
