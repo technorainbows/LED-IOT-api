@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""API for LED IOT webapp."""
 from flask_cors import CORS
 from flask import Flask, jsonify, request, json
 from flask_restplus import Api, Resource, fields, cors
@@ -10,7 +11,7 @@ import time
 
 app = Flask(__name__)
 # app.wsgi_app = ProxyFix(app.wsgi_app)
-api = Api(app, version='0.2', title='LED API',
+api = Api(app, version='0.3', title='LED API',
           description='A simple LED IOT API', doc='/docs'
           )
 
@@ -26,9 +27,12 @@ default = {
 
 """Single Device Data Model"""
 device = api.model('Device', {
-    'onState': fields.String(description='The on/off state', attribute='onState', required=False, default=True),
-    'brightness': fields.String(description='The LED brightness', attribute='brightness', min=0, max=255, required=False, default=255),
-    'name': fields.String(description="name of the device", attribute='name', required=False, default='N/A')
+    'onState': fields.String(description='The on/off state',
+                   attribute='onState', required=False, default=True),
+    'brightness': fields.String(description='The LED brightness',
+                   attribute='brightness', min=0, max=255, required=False, default=255),
+    'name': fields.String(description="name of the device",
+                   attribute='name', required=False, default='N/A')
 })
 
 """Device List Data Model"""
@@ -42,9 +46,9 @@ heartbeat = api.model('Heartbeat', {
     })
 
 
-def abort_if_device_not_found(device_id):
-    if device_id not in DEVICES:
-        api.abort(404, "Device {} doesn't exist".format(device_id))
+# def abort_if_device_not_found(device_id):
+#     if device_id not in DEVICES:
+#         api.abort(404, "Device {} doesn't exist".format(device_id))
 
 
 class Redis(object):
@@ -59,10 +63,8 @@ class Redis(object):
     #     print ("byteDict type: ", type(byteDict))
     #     # Convert dictionary items from bytes to strings
     #     index = 0
-        
-    #     for key, value in byteDict.items(): 
-    #       y[key.decode("utf-8")] = value.decode("utf-8") 
-
+    #     for key, value in byteDict.items():
+    #       y[key.decode("utf-8")] = value.decode("utf-8")
     #     for item in byteDict:
     #         # if(index%2)
     #         newItem = item.decode("utf-8")
@@ -71,7 +73,6 @@ class Redis(object):
     #         index += 1
     #     print("new string dict: ", strDict)
     #     return strDict
-
 
     def get(self, key):
         """Get device from redit if it exists, otherwise load with default."""
@@ -106,7 +107,7 @@ class Redis(object):
         return device
 
     def set(self, key, field, value):
-        """Set a value in given device if exists, else initialize device to default first."""
+        """Set value in given device if exists, else initialize device to default first."""
         with self.redis.pipeline() as pipe:
             while True:
                 try:
@@ -211,17 +212,18 @@ class Heartbeats(Resource):
     @api.response(202, 'Success')
     def get(self):
         """Return a list of all heartbeats."""
-
-        keys = REDIS.keys("hb") 
+        keys = REDIS.keys("hb")
         # print("HB getting all keys: ", keys)
         return jsonify(keys)
+
 
 """"""""""""""""""""""""""""""""""""
 """Single Device Response Methods"""
 """"""""""""""""""""""""""""""""""""
 """TODO: add list of device_ids from redis to check if decive there"""
 @api.route('/Devices/<string:device_id>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-@api.doc(responses={404: 'Device not found', 200: 'Device found'}, params={'device_id': 'The Device ID'},)
+@api.doc(responses={404: 'Device not found', 200: 'Device found'},
+         params={'device_id': 'The Device ID'})
 @api.doc(description='device_id should be {0}'.format(', '.join(REDIS.keys("device_id"))))
 class Device(Resource):
     """Show a single device's properties and lets you delete them or change them."""
@@ -290,10 +292,9 @@ class DeviceList(Resource):
             # print("field: ", field)
             if field in request.json:
                 # print("field found: ", field, "value = ",request.json.get(field) )
-                # let value = request.json.get(field)
                 REDIS.set(device_id, field, request.json.get(field))
 
-        return jsonify(device_id, REDIS.get(device_id),201)
+        return jsonify(device_id, REDIS.get(device_id), 201)
         # return jsonify(redisSet)
         # return jsonify(DEVICES[device_id], 201)
 
