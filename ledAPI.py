@@ -235,7 +235,7 @@ class Device(Resource):
         redisGet = REDIS.get(device_id)
         # print("device_id: ", device_id)
         # print('redisGet: ', redisGet)
-        return jsonify(device_id, redisGet,203)
+        return jsonify(device_id, redisGet, 203)
         # return jsonify(DEVICES[device_id],200)
 
     @api.doc(responses={204: 'Device deleted'})
