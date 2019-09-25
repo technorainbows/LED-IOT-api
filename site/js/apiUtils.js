@@ -141,11 +141,13 @@
         // console.log("updating server status: " + status);
 
         if (status) {
-            $('#serverStatus').toggleClass('btn-danger', false);
-            $('#serverStatus').toggleClass('btn-success', true);
+            $('#icon-disconnected').hide();
+            $('#icon-connected').show();
         } else {
-            $('#serverStatus').toggleClass('btn-danger', true);
-            $('#serverStatus').toggleClass('btn-success', false);
+        	$('#icon-disconnected').show();
+            $('#icon-connected').hide();
+            // $('#serverStatus').toggleClass('icon-disconnected', true);
+            // $('#serverStatus').toggleClass('icon-connected', false);
 
         }
     }
