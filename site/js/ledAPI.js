@@ -100,10 +100,12 @@
             console.log("deviceID set to: ", deviceID);
             $('#currentDeviceLabel').show();
             if (lastDevice == deviceID) {
-	             $("#parameter-UI").show();
+	            $("#slider-brightness").prop('disabled',false);
             } else {
             	$apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
-            	$("#parameter-UI").show();
+                $("#slider-brightness").prop('disabled',false);
+   
+            	// $("#parameter-UI").show();
             }
         });
 
@@ -121,9 +123,10 @@
         updateOnButton(device);
         updateBrightSlider(device);
         // TODO: update other properties as added
-        $("#main-content").show("slow");
-
-        // console.log("Page updated from server, ready for user input.");
+        // $("#main-content").show("slow");
+    	// $('#main-content').removeClass('look-disabled');
+    	$('#main-content').toggleClass('look-disabled', false);
+        console.log("Page updated from server, ready for user input.");
 
     }
 
@@ -132,8 +135,9 @@
      */
     function disableMainContent() {
         // console.log("disabling main content");
-        $("#main-content").hide("slow");
-
+        // $("#main-content").hide("slow");
+    	$('#main-content').toggleClass('look-disabled', true);
+    	// $('#main-content').removeClass('look-enabled');
     }
 
 
@@ -185,7 +189,10 @@
         // Hide parameter UI and current device label if not online (e.g., no heartbeat)
         if (newDevices.includes(("hb_" + deviceID)) == false) {
             $("#currentDeviceLabel").hide();
-            $("#parameter-UI").hide();
+            // $("#parameter-UI").hide();
+            // $(".slider-brightness").prop('disabled',true);
+        	$('#brightness').toggleClass('look-disabled', true);
+        	// $('#brightness').removeClass('look-enabled');   
             // console.log("hiding currentDeviceLabel");
         }
         else {
@@ -195,7 +202,11 @@
 			$apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
 
         	$("#currentDeviceLabel").show();
-        	$("#parameter-UI").show();
+        	$('#brightness').toggleClass('look-disabled', false);
+        	// $('#brightness').removeClass('look-disabled');   
+        	// $(".slider-brightness").prop('disabled',false);
+   
+        	// $("#parameter-UI").show();
 		}
 
         // Identify new devices received in order to add
@@ -206,11 +217,14 @@
 
         // Set devices with newDevices
         devices = newDevices;
+
+        // $('#main-content').removeClass('look-disabled');
+    	$('#main-content').toggleClass('look-disabled', false);
     }
 
     function insertDevice(device, index) {
     	device = device.slice(3, device.length)
-        $("<input/>").attr({ type: "button", class: "btn-success btn-device", id: device, value: device }).appendTo("#deviceList");
+        $("<input/>").attr({ type: "button", class: "btn-device", id: device, value: device }).appendTo("#deviceList");
 
     }
 
