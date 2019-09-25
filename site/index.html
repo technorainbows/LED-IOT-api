@@ -15,17 +15,18 @@
     <header>
         <nav id="page-title" class="navbar navbar-light bg-light">
             <span class="navbar-brand col-mb-10 col-lg-8 col-sm-7 h1">LED IOT Web Interface</span>
-            <span class="navbar-brand col-md-1 col-lg-3 col-sm-4">Server Status: <span id="serverStatus" class="btn btn-danger align-middle col-sm-1 col-md-2 col-lg-2"></span></span>
+            <span class="navbar-brand col-md-1 col-lg-3 col-sm-4">Server Status:<span id="serverStatus" class="align-middle col-sm-1 col-md-2 col-lg-2"><img src="https://img.icons8.com/color/48/000000/broken-link.png" id="icon-disconnected"><img src="https://img.icons8.com/color/48/000000/link.png" id="icon-connected"> </span></span>
         </nav>
     </header>
     <!-- MAIN CONTENT -->
+    <!-- <div class="overlay"> -->
     <div id="main-content" class="container-fluid">
         <div class="row" id="nested-content">
             <div class="col-lg-3 col-md-3 container" id="device-info">
                 <!-- <div class="row col-lg-12" -->
-                <div id="currentDevice" class="col-lg-12 ui-label align-middle">Current Device <label for="currentDevice" id="currentDeviceLabel" class="label-device"></label>
+                <div id="currentDevice" class="col-lg-12 label-current-device align-middle">Current Device <label for="currentDevice" id="currentDeviceLabel" class="label-device"></label>
                 </div>
-                <div id="onlineDevices" class="col-lg-12 ui-label align-middle label-heartbeat">Devices Online <label for="device-info" id="deviceList"></div>
+                <div id="onlineDevices" class="col-lg-12 align-middle label-heartbeat">Devices Online <label for="device-info" id="deviceList"></div>
                 <!-- <div class="btn-toolbar col-lg-2 align-middle" role="toolbar" aria-label="..." id="devices"></div> -->
             </div>
             <div class="col-md-8 col-lg-8 align-right" id="parameter-UI">
@@ -63,6 +64,7 @@
             <!-- </div> -->
         </div> <!-- nested content -->
     </div> <!-- main content div close -->
+<!-- </div> -->
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
