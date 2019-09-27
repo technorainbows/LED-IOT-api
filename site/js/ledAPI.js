@@ -100,10 +100,12 @@
             console.log("deviceID set to: ", deviceID);
             $('#currentDeviceLabel').show();
             if (lastDevice == deviceID) {
-	            $("#slider-brightness").prop('disabled',false);
+            	$('#brightness').toggleClass('look-disabled', false);
+	            // $("#slider-brightness").prop('disabled',false);
             } else {
             	$apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
-                $("#slider-brightness").prop('disabled',false);
+                // $("#slider-brightness").prop('disabled',false);
+                $('#brightness').toggleClass('look-disabled', false);
    
             	// $("#parameter-UI").show();
             }
@@ -224,11 +226,13 @@
 
     function insertDevice(device, index) {
     	device = device.slice(3, device.length)
+    	// device = device.slice(3, 15);
         $("<input/>").attr({ type: "button", class: "btn-device", id: device, value: device }).appendTo("#deviceList");
 
     }
 
     function removeDevice(device, index) {
+    	// device = device.slice(3, 15);
     	device = device.slice(3, device.length)
         // console.log("Removing ", device)
         $("#" + device).remove();
