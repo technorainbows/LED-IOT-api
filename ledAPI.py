@@ -196,7 +196,7 @@ class Heartbeat(Resource):
     def post(self, device_id):
         """Set a heartbeat."""
         heartbeat = "hb_" + device_id
-        response = REDIS.setHB(heartbeat, 5)
+        response = REDIS.setHB(heartbeat, 6)
         print("HB post response = ", response)
         payload = api.payload
         # print("payload = ", api.payload)
