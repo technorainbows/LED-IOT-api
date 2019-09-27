@@ -1,15 +1,12 @@
 /*
-  LED-IOT-APP v0.2
+  LED-IOT-APP v0.3
   Simple sketch that uses ESP board to connect to local wifi network then gets LED state from python API (ledAPI.py)
-
-  Receives data as JSON formatted as {"onState": true] or {"onState": false} and toggles LEDs between off and rainbow.
-
 
 */
 
 #include <FastLED.h>
 #include "credentials.h" // wifi network credentials stored in separate file
-
+#include "sha1.h"
 // if using ESP32
 #include <WiFiMulti.h>
 #include <WiFi.h>
@@ -22,6 +19,7 @@ WiFiMulti wifiMulti;
 #include "SSD1306Wire.h" // legacy include: `#include "SSD1306.h"` //OLED screen
 SSD1306Wire  display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board dispplay
 
+#include <SimpleHOTP.h>
 
 // if using ESP8266....
 //#include <ESP8266WiFi.h>
@@ -35,7 +33,7 @@ SSD1306Wire  display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board disp
 
 String apiURL = "http://10.0.0.59:5000/Devices/";
 String controllerURL = "10.0.0.59/site/index.html";
-
+String DEVICE_ID;
 
 //RMT is an ESP hardware feature that offloads stuff like PWM and led strip protocol, it's rad
 //#define FASTLED_RMT_CORE_DRIVER true
@@ -55,7 +53,7 @@ char* hostname = "Trianglez";
 #define MILLI_AMPS         1000
 #define BRIGHTNESS          100
 #define FRAMES_PER_SECOND  120
-#define DEVICE_ID "device1"
+//#define DEVICE_ID "device1"
 
 //#endif
 
@@ -69,6 +67,8 @@ uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 boolean connectioWasAlive = true;
 String lastState = "false";
 String onState = "false";
+int brightVal = BRIGHTNESS;
+
 
 // Set up wireless updating if using ESP32
 void setupAOTA() {
@@ -104,6 +104,58 @@ void setupAOTA() {
   ArduinoOTA.begin();
 }
 
+
+/* setDeviceID: Generates a unique device ID based on performing SHA1 hashing of device's MAC address.
+                Returns this ID as a string variable.
+*/
+String setDeviceID() {
+  byte mac[6] = {};
+
+  //      String test = "test";
+  //      int ml = test.length();
+  WiFi.macAddress(mac);
+  Serial.print("MAC ADDRESS: ");
+  for (int i = 0; i < 5; i++) {
+    Serial.print(mac[i], HEX);
+    Serial.print(":");
+  }
+  Serial.println();
+  int ml = sizeof(mac);
+  char macArray[ml + 1];
+  //  test.getBytes(macArray, ml + 1);
+  //  mac.toCharArray(macArray, 6);
+
+
+  uint32_t hash[5] = {}; // This will contain the 160-bit Hash
+  SimpleSHA1::generateSHA(mac, (ml * 8), hash);
+  //    Serial.println(hash);
+  char hashChar[sizeof(hash) * 8 + 1];
+  String device_hash = "device_";
+
+  for (int i = 0; i < 5; i++) {
+    //        Serial.print(hash[i], HEX);
+
+    sprintf(hashChar, "%X", hash[i]);
+    device_hash += String(hashChar);
+  }
+
+  Serial.print("device_hash = ");
+  Serial.println(device_hash);
+
+
+  //      utoa((unsigned int)hash, hashChar, HEX);
+  //      Serial.println();
+  //      Serial.println(hashChar2);
+  //      Serial.print("hashChar = ");
+  //      Serial.println(hashChar);
+  //      String testDev = String(hashChar);
+  //      Serial.print("testDev = ");
+  //      Serial.println(testDev);
+  //      DEVICE_ID = "device_" + hashString;
+  //      Serial.print("DEVICE_ID = ");
+  //      Serial.println(DEVICE_ID);
+  return device_hash;
+}
 
 void setup() {
   Serial.begin(115200);
@@ -141,6 +193,12 @@ void setup() {
     delay(100);
     fill_solid(leds, NUM_LEDS, CRGB::Black);
     FastLED.show();
+
+
+
+    // inititalize deviceID
+    DEVICE_ID = setDeviceID();
+
   }
 
   setupAOTA(); // set up arduino over-the-air updating
@@ -151,8 +209,9 @@ void setup() {
 }
 
 
-int brightVal = BRIGHTNESS;
-
+/*
+   monitorWiFi
+*/
 void monitorWiFi()
 {
   if (wifiMulti.run() != WL_CONNECTED)
@@ -180,6 +239,9 @@ void monitorWiFi()
 }
 
 
+/*
+    heartbeat: sends a POST request with device's unique ID to API
+*/
 
 void heartbeat() {
   monitorWiFi();
@@ -193,7 +255,7 @@ void heartbeat() {
 
     Serial.println("setting heartbeat");
     HTTPClient http;
-    String HB_URL = "http://10.0.0.59:5000/Devices/HB/device1";
+    String HB_URL = "http://10.0.0.59:5000/Devices/HB/" + DEVICE_ID;
     http.begin(HB_URL);
     //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
     http.addHeader("Content-Type", "application/json");             //Specify content-type header
@@ -226,36 +288,35 @@ void heartbeat() {
 
   }
 
-  //      delay(10000);  //Send a request every 10 seconds
-
-  //    }
-
 
 }
+
 
 void loop() {
 
   //   check wifi status
-//  for (int i = 0; i < 5 && WiFi.status() != WL_CONNECTED; i++) {
-//    Serial.print(".");
-//    delay(1000);
-//  }
-    if (wifiMulti.run() != WL_CONNECTED) {
-      Serial.println("WiFi not connected!");
-      // turn first 5 leds to red if not connected
-      fill_solid(leds, 20, CRGB::Red);
-      FastLED.show();
-      delay(500);
-    }
+  //  for (int i = 0; i < 5 && WiFi.status() != WL_CONNECTED; i++) {
+  //    Serial.print(".");
+  //    delay(1000);
+  //  }
+  if (wifiMulti.run() != WL_CONNECTED) {
+    Serial.println("WiFi not connected!");
+    // turn first 5 leds to red if not connected
+    fill_solid(leds, 20, CRGB::Red);
+    FastLED.show();
+    delay(200);
+  }
 
 
 
   EVERY_N_MILLISECONDS(500) {
 
+
     monitorWiFi();
     ArduinoOTA.handle();
     if (wifiMulti.run() == WL_CONNECTED) { //Check WiFi connection status
 
+      //      }
       //    for(int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
       //      Serial.print(".");
       //      delay(1000);
@@ -263,7 +324,7 @@ void loop() {
 
       Serial.println("setting heartbeat");
       HTTPClient http;
-      String HB_URL = "http://10.0.0.59:5000/Devices/HB/device1";
+      String HB_URL = "http://10.0.0.59:5000/Devices/HB/" + DEVICE_ID;
       http.begin(HB_URL);
       //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
       http.addHeader("Content-Type", "application/json");             //Specify content-type header
@@ -278,8 +339,8 @@ void loop() {
         String response = http.getString();                       //Get the response to the request
         Serial.print("POST RESPONSE CODE:");
         Serial.println(httpResponseCode);   //Print return code
-//        Serial.print("POST RESPONSE: ");
-//        Serial.println(response);           //Print request answer
+        //        Serial.print("POST RESPONSE: ");
+        //        Serial.println(response);           //Print request answer
 
       } else {
 
@@ -310,24 +371,24 @@ void loop() {
 
 
 
-//      Serial.print("[HTTP] GET...\n");
+      //      Serial.print("[HTTP] GET...\n");
       int httpCode = http.GET();
 
       // Check returning httpCode -- will be negative on error
       if (httpCode > 0) {
-//        Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+        //        Serial.printf("[HTTP] GET... code: %d\n", httpCode);
 
         // file found at server
         if (httpCode == HTTP_CODE_OK) {
           //          Serial.print("Found file at server: ");
           String payload = http.getString();
-//          Serial.println(payload);
+          //          Serial.println(payload);
 
           // parse payload
 
           const size_t capacity = JSON_ARRAY_SIZE(3) + JSON_OBJECT_SIZE(3) + 60;
           DynamicJsonDocument doc(capacity);
-//          const char* json = "[\"deviceID\",{\"brightness\":\"255\",\"name\":\"Default\",\"onState\":\"true\"},200]";
+          //          const char* json = "[\"deviceID\",{\"brightness\":\"255\",\"name\":\"Default\",\"onState\":\"true\"},200]";
 
           //        const char* json = "[{\"brightness\":17,\"name\":\"Ashley-Triangle\",\"onState\":true},200]";
 
@@ -335,36 +396,24 @@ void loop() {
           const char* root_0 = doc[0]; // "deviceID"
 
           JsonObject root_1 = doc[1];
-          //          const char = root_1["brightness"]; // "255"
-          //          String devName = root_1["name"]; // "Default"
-          //          onState = root_1["onState"]; // "true"
           const char* root_1_brightness = root_1["brightness"]; // "255"
           const char* root_1_name = root_1["name"]; // "Default"
           const char* root_1_onState = root_1["onState"]; // "true"
           int root_2 = doc[2]; // 200
 
           int newBright = atoi(root_1_brightness);
-          //          JsonObject root_0 = doc[0];
-          //          int root_0_brightness = root_0["brightness"]; // 17
-          //          const char* root_0_name = root_0["name"]; // "Ashley-Triangle"
-          //          bool root_0_onState = root_0["onState"]; // true
-          //
-          //          int root_1 = doc[1]; // 200
-          //
-          //
+
           onState = root_1_onState;
-          //                    Serial.print("onState = ", onState);
-          //          brightVal = root_0["brightness"];
           Serial.printf("brightVal = %d\n", brightVal);
           if (onState != lastState) {
             lastState = onState;
-//            Serial.println("onState = " + onState);
+            //            Serial.println("onState = " + onState);
 
           }
 
           if (brightVal != newBright) {
             brightVal = newBright;
-//            Serial.printf("brightVal = %d\n", brightVal);
+            //            Serial.printf("brightVal = %d\n", brightVal);
 
             FastLED.setBrightness(brightVal);
             FastLED.show();
@@ -393,6 +442,9 @@ void loop() {
 
 }
 
+/*
+   updateLEDS: toggles LEDs on/off depending on onState; if LEDs are on then fills with rainbow fade
+*/
 
 void updateLEDS() {
 
@@ -410,9 +462,11 @@ void updateLEDS() {
 
 }
 
+/*
+    updateDisplay: updates the little OLED status screen of device
+*/
 
-
-void updateDisplay() {//updates the little OLED status screen
+void updateDisplay() {
 
   display.clear();
   display.setFont(ArialMT_Plain_24); //11,16,24
