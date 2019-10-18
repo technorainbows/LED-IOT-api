@@ -8,34 +8,34 @@
      * Sends POST request to URL+paramRoute with provided paramValue
      */
     apiUtils.postRequest = function(url, paramRoute, paramValue) {
-            // url = apiURL + "/" + state;
-            url += ("/" + paramRoute + "/" + paramValue);
-            // url += paramRoute;
-            console.log('POST request: ' + url)
-            fetch(url, {
-                    "credentials": "omit",
-                    "headers": {
-                        "accept": "application/json",
-                        "content-type": "application/json",
-                        "Access-Control-Allow-Origin'": "*'"
-                    },
-                    "referrer": url,
-                    "referrerPolicy": "no-referrer-when-downgrade",
-                    // "body": JSON.stringify(paramValue),
-                    "method": "POST",
-                    "mode": "cors",
-                })
+        // url = apiURL + "/" + state;
+        url += ("/" + paramRoute + "/" + paramValue);
+        // url += paramRoute;
+        console.log('POST request: ' + url)
+        fetch(url, {
+                "credentials": "omit",
+                "headers": {
+                    "accept": "application/json",
+                    "content-type": "application/json",
+                    "Access-Control-Allow-Origin'": "*'"
+                },
+                "referrer": url,
+                "referrerPolicy": "no-referrer-when-downgrade",
+                // "body": JSON.stringify(paramValue),
+                "method": "POST",
+                "mode": "cors",
+            })
 
-                .then(function(response) {
-                    // console.log(response);
-                    return response.json();
+            .then(function(response) {
+                // console.log(response);
+                return response.json();
 
-                })
-                .then(function(myJson) {
-                    // console.log(JSON.stringify(myJson));
-                });
+            })
+            .then(function(myJson) {
+                // console.log(JSON.stringify(myJson));
+            });
 
-        };
+    };
 
 
 
@@ -43,43 +43,92 @@
      * Sends PUT request to URL/deviceID with provided paramID and paramValue
      */
     apiUtils.putRequest = function(url, deviceID, paramID, paramValue) {
-            // url = apiURL + "/" + state;
-            url += ("/" + deviceID);
-            console.log('PUT request: ' + url)
-            var responseBody = {}
-            responseBody[paramID]=JSON.stringify(paramValue);
-            console.log('PUT body:' + JSON.stringify(responseBody))
-            fetch(url, {
-                    "credentials": "omit",
-                    "headers": {
-                        "accept": "application/json",
-                        "content-type": "application/json",
-                        "Access-Control-Allow-Origin": "*'"
-                    },
-                    "referrer": url,
-                    "referrerPolicy": "no-referrer-when-downgrade",
-                    "body": JSON.stringify(responseBody),
-                    "method": "PUT",
-                    "mode": "cors",
-                })
+        // url = apiURL + "/" + state;
+        url += ("/" + deviceID);
+        console.log('PUT request: ' + url)
+        var responseBody = {}
+        responseBody[paramID] = JSON.stringify(paramValue);
+        console.log('PUT body:' + JSON.stringify(responseBody))
+        fetch(url, {
+                "credentials": "omit",
+                "headers": {
+                    "accept": "application/json",
+                    "content-type": "application/json",
+                    "Access-Control-Allow-Origin": "*'"
+                },
+                "referrer": url,
+                "referrerPolicy": "no-referrer-when-downgrade",
+                "body": JSON.stringify(responseBody),
+                "method": "PUT",
+                "mode": "cors",
+            })
 
-                .then(function(response) {
-                    // console.log(response);
-                    return response.json();
+            .then(function(response) {
+                // console.log(response);
+                return response.json();
 
-                })
-                .then(function(myJson) {
-                    // console.log(JSON.stringify(myJson));
-                });
+            })
+            .then(function(myJson) {
+                // console.log(JSON.stringify(myJson));
+            });
 
-        };
-
-
+    };
 
 
 
 
 
+
+    apiUtils.getParam = async function(url, deviceID, parameter) {
+        // url = apiURL;
+        url += ("/" + deviceID);
+        // url += paramRoute;
+        console.log('GET request:' + url)
+        // GET
+        const rec = fetch(url, {
+            "credentials": "omit",
+            "headers": {
+                "accept": "application/json",
+                // "Access-Control-Allow-Origin'": "*'"
+            },
+            "referrer": url,
+            "referrerPolicy": "no-referrer-when-downgrade",
+            "body": null,
+            "method": "GET",
+            "mode": "cors"
+        });
+
+        // console.log('request started.');
+        // console.dir(rec);
+
+        let res;
+        try {
+            res = await rec; // if there is an error there will be a problem
+        } catch (error) {
+            console.error("Error caught!")
+            console.error(error);
+
+            // TODO: write "displayErrrorOnPage" function and call that here
+            // updateServerStatus(false);
+            errorHandler();
+            return
+        }
+
+
+        // console.log('response recieved');
+        // console.dir(res);
+
+        // if no error, then get response 
+        let device = await res.json();
+        console.log("device returned: ", device);
+        let paramReq = device[1][parameter];
+        console.log("parameter = ", paramReq);
+        updateServerStatus(true);
+        // responseHandler(device);
+        console.log("")
+        return paramReq;
+
+    };
 
     /*
      * Requests data from api and returns json object to responseHandler provided. If fetch fails, errorHandler funcion is called.
@@ -144,7 +193,7 @@
             $('#icon-disconnected').hide();
             $('#icon-connected').show();
         } else {
-        	$('#icon-disconnected').show();
+            $('#icon-disconnected').show();
             $('#icon-connected').hide();
             // $('#serverStatus').toggleClass('icon-disconnected', true);
             // $('#serverStatus').toggleClass('icon-connected', false);

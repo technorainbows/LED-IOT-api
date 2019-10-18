@@ -8,6 +8,13 @@ import redis
 from redis.exceptions import WatchError
 import json
 import time
+import logging
+
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.WARNING,
+    datefmt='%Y-%m-%d %H:%M:%S')
+
 
 app = Flask(__name__)
 # app.wsgi_app = ProxyFix(app.wsgi_app)
@@ -81,7 +88,7 @@ class Redis(object):
                 try:
                     pipe.watch(key)
                     if(pipe.exists(key) == 0):
-                        # print("get: no device")
+                        logging.info("get: no device")
                         pipe.multi()
                         pipe.hmset(key, default)
                         # time.sleep(5)
@@ -89,8 +96,8 @@ class Redis(object):
                         device = default
                         break
                     else:
-                        # print("get: device found")
                         device = pipe.hgetall(key)
+                        logging.info("get: device found {}".format(device))
                         # Initialising empty dictionary
                         newDict = {}
 
@@ -98,10 +105,10 @@ class Redis(object):
                         for dkey, value in device.items():
                             newDict[dkey.decode("utf-8")] = value.decode("utf-8")
                         device = newDict
-                        # print("get: device found: ", device)
+                        logging.info("get: device found: {}".format(device))
                         break
                 except WatchError:
-                    print("get: watcherror, trying again")
+                    logging.warning("get: watcherror, trying again")
                     continue
 
         return device
@@ -113,7 +120,7 @@ class Redis(object):
                 try:
                     pipe.watch(key)
                     if(pipe.exists(key) == 0):
-                        print("set: no device")
+                        logging.info("set: no device")
                         pipe.multi()
                         pipe.hmset(key, default)
                         pipe.hmset(key, {field: value})
@@ -129,11 +136,11 @@ class Redis(object):
                         # print("key found: ", device)
 
                         device = pipe.hgetall(key)
-                        print("set: device found: ", device)
+                        logging.info("set: device found: {}".format(device))
                         break
 
                 except WatchError:
-                    print("set: watcherror, trying again")
+                    logging.warning("set: watcherror, trying again")
                     continue
 
             # Initialising empty dictionary
@@ -143,13 +150,13 @@ class Redis(object):
             for dkey, value in device.items():
                 newDict[dkey.decode("utf-8")] = value.decode("utf-8")
             device = newDict
-            print("set: new device = ", device)
+            logging.info("set: new device = {}".format(device))
             return (device)
 
     def delete(self, key):
         """Delete a key from Redis client."""
         response = self.redis.delete(key)
-        print("response: ", response)
+        logging.info("response: {}".format(response))
         return response
 
     def keys(self, param):
@@ -181,11 +188,12 @@ class Heartbeat(Resource):
     @api.response(200, 'Success')
     def get(self, device_id):
         """Check if a given heartbeat exists."""
-        print("checking device HB")
+        logging.info("checking device HB")
         heartbeat = "hb_" + device_id
         response = REDIS.keys(heartbeat)
-        print("HB get response = ", response)
+        logging.info("HB get response = {}".format(response))
         if response == []:
+            logging.error('Error, device not found')
             return ('Error, device not found', 404)
         else:
             return jsonify(heartbeat, response, 200)
@@ -195,9 +203,10 @@ class Heartbeat(Resource):
     @api.expect(heartbeat, validate=False)
     def post(self, device_id):
         """Set a heartbeat."""
+        hbTime = 5
         heartbeat = "hb_" + device_id
-        response = REDIS.setHB(heartbeat, 6)
-        print("HB post response = ", response)
+        response = REDIS.setHB(heartbeat, hbTime*2)
+        logging.info("HB post response = ".format(response))
         payload = api.payload
         # print("payload = ", api.payload)
         if response:
@@ -213,7 +222,7 @@ class Heartbeats(Resource):
     def get(self):
         """Return a list of all heartbeats."""
         keys = REDIS.keys("hb")
-        # print("HB getting all keys: ", keys)
+        logging.info("HB getting all keys: {}".format(keys))
         return jsonify(keys)
 
 
@@ -244,8 +253,10 @@ class Device(Resource):
         # abort_if_device_not_found(device_id)
         response = REDIS.delete(device_id)
         if response:
+            logging.info("Device deleted: {}".format(device_id))
             return 'Device deleted', 204
         else:
+            logging.error('Error, device not found: {}'.format(device_id))
             return 'Error: device not found', 404
 
     @api.expect(device, validate=True)
@@ -256,7 +267,7 @@ class Device(Resource):
         for field in device:
             # print("field: ", field)
             if field in request.json:
-                # print("field found: ", field, "value = ",request.json.get(field) )
+                print("field found: ", field, "value = ",request.json.get(field) )
                 # let value = request.json.get(field)
                 REDIS.set(device_id, field, request.json.get(field))
 
@@ -301,6 +312,7 @@ class DeviceList(Resource):
 
 @app.errorhandler(404)
 def not_found(error):
+    logging.error('Error, device not found')
     return (jsonify({'error': 'Not found'}), 404)
 
 

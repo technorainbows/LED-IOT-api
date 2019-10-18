@@ -18,7 +18,7 @@
     var brightness;
     var ledState;
     // var name = "AshleyRoom"
-
+    var deviceNames = []
     var jsonString = ''
     /************* 
      * UI VARIABLES
@@ -63,9 +63,11 @@
             // console.log(this.id); // points to the clicked input button
             switch (this.id) {
                 case "ledON":
+                	console.log("PUT request: onState ON");
                     $apiUtils.putRequest(apiUrl, deviceID, 'onState', true);
                     break;
                 case "ledOFF":
+                	console.log("PUT request: onState OFF");
                     $apiUtils.putRequest(apiUrl, deviceID, 'onState', false);
                     break;
             }
@@ -94,9 +96,11 @@
             //Process button click event
             console.log("device selected: ", this.id);
             lastDevice = deviceID;
-            deviceID = this.id
+            deviceID = this.id;
             // deviceID = (this.id).slice(3, this.id.length);
-            $('#currentDeviceLabel').html(deviceID);
+            $('#currentDeviceLabel').html(this.value);
+            // $('#currentDeviceValue').html(this.value);
+
             console.log("deviceID set to: ", deviceID);
             $('#currentDeviceLabel').show();
             if (lastDevice == deviceID) {
@@ -110,6 +114,46 @@
             	// $("#parameter-UI").show();
             }
         });
+
+        // $("#device-name").submit(function(event){
+        // 	console.log("device name submitted: ", $("input-name"));
+        // 	// $apiUtils.putRequest(apiUrl,deviceID,'name',this.value);
+        // });
+
+
+ 		$('form').on('submit', function(event) {
+            
+            // Prevent the page from reloading
+            event.preventDefault();
+            
+            // Set the text-output span to the value of the first input
+            var $input = $(this).find('input');
+            var input = $input.val();
+            console.log("device name submitted: ", input, " length: ", input.length);
+            input=input.trim();
+            console.log("device trimmed: ", input, "length = ", input.length);
+            // $('#text-output').text("You typed: " + input);
+        	// update device name with api
+        	$apiUtils.putRequest(apiUrl,deviceID,'name',input);
+        	// update displayed name for device button
+        	$('#currentDeviceLabel').html(input);
+        	// $(deviceID).value=input;
+        	$('#deviceList').find(deviceID).value=input;
+
+
+        });
+
+
+        // $(document).on('click', '.save-name', function(event){
+        // 	$("device-name").submit();
+        // 	console.log("device name saved");
+        // 	// update device name with api
+        // 		$apiUtils.putRequest(apiUrl,deviceID,'name',this.value);
+        // 	// update displayed name for device button
+        // 	$('#currentDeviceLabel').html(this.value);
+        // 	console.log("updated device name with: ", this.value);
+
+        // });
 
 
     }
@@ -170,6 +214,10 @@
         // $('#slider-brightness').html(brightVal);
     }
 
+    function updateDeviceNames(){
+
+    }
+
     function updateDeviceList(newDevices) {
         // compare new devices with old devices and insert new devices or delete devices
 
@@ -191,9 +239,9 @@
         // Hide parameter UI and current device label if not online (e.g., no heartbeat)
         if (newDevices.includes(("hb_" + deviceID)) == false) {
             $("#currentDeviceLabel").hide();
-            // $("#parameter-UI").hide();
+            $("#parameter-UI").toggleClass('look-disabled',true);
             // $(".slider-brightness").prop('disabled',true);
-        	$('#brightness').toggleClass('look-disabled', true);
+        	// $('#brightness').toggleClass('look-disabled', true);
         	// $('#brightness').removeClass('look-enabled');   
             // console.log("hiding currentDeviceLabel");
         }
@@ -204,7 +252,8 @@
 			$apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
 
         	$("#currentDeviceLabel").show();
-        	$('#brightness').toggleClass('look-disabled', false);
+            $("#parameter-UI").toggleClass('look-disabled',false);
+        	// $('#brightness').toggleClass('look-disabled', false);
         	// $('#brightness').removeClass('look-disabled');   
         	// $(".slider-brightness").prop('disabled',false);
    
@@ -220,14 +269,25 @@
         // Set devices with newDevices
         devices = newDevices;
 
+
+
         // $('#main-content').removeClass('look-disabled');
     	$('#main-content').toggleClass('look-disabled', false);
     }
 
-    function insertDevice(device, index) {
+    async function insertDevice(device, index) {
     	device = device.slice(3, device.length)
-    	// device = device.slice(3, 15);
-        $("<input/>").attr({ type: "button", class: "btn-device", id: device, value: device }).appendTo("#deviceList");
+    	console.log("device to insert: ", device);
+    	var deviceShort = device.slice(7, 15);
+    	try {
+	    	var deviceName = await $apiUtils.getParam(apiUrl, device, "name");
+	    } catch (error){
+	    	console.error("Error caught!")
+            console.error(error);
+            var deviceName = deviceShort;
+	    }
+    	console.log("deviceName = ", deviceName);
+        $("<input/>").attr({ type: "button", class: "btn-device", id: device, value: deviceName }).appendTo("#deviceList");
 
     }
 

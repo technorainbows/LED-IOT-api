@@ -45,7 +45,7 @@ FASTLED_USING_NAMESPACE
 
 
 //#ifdef DEV_LIGHTCONTROL_TRIANGLE
-#define DATA_PIN   25
+#define DATA_PIN   33
 char* hostname = "Trianglez";
 #define COLOR_ORDER GRB //pixels
 #define COLOR_CORRECT TypicalLEDStrip
