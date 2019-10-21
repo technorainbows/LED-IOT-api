@@ -8,20 +8,27 @@ body {
 /** MAIN CONTENT **/
 
 #main-content .container {
-  margin:10px;
-  padding:10px;
+  /*margin:10px;*/
+  /*padding:10px;*/
 }
 
 #btn-ledState {
-  margin-top: 30px;
+  margin-top: 25px;
 }
 
 #device-info{
   color:black;
   float:right;
-  margin-top:30px;
+  margin-top:20px;
 }
 
+/*#ledOFF {
+  background-color:;
+}*/
+
+.btn-toggle:active {
+  background-color: #3A83F5;
+}
 
 .btn-device {
   border-style:none;
@@ -45,6 +52,10 @@ body {
 }
 */
 
+.device-params {
+  margin-bottom:10px;
+  vertical-align: middle;
+}
 
 .look-disabled {
   opacity:0.4;
@@ -103,20 +114,47 @@ body {
   border-width:2px;
   border-color:black;
   color:white;
-  margin:5px;
   padding: 15px;
   background-color: #3A83F5;
   border-radius: 10px;
+  margin-top:5px;
+  /*maring-left:-5px;*/
 
+}
+
+#inputName {
+  width:100%;
+  border-radius: 5px;
+}
+
+/*#device-name {
+  display:inline-block;
+  white-space: nowrap;
+}
+*/
+
+#save-name {
+  margin-left:10px;
+  margin-right:10px;
+  /*padding-left:10px;*/
+  /*padding-right:10px;*/
+  border-radius: 5px;
+}
+
+#name-form {
+  /*margin-right: 10px;*/
+  padding-right:15px;
 }
 
 #main-content .row {
   margin-top:10px;
+  margin-bottom:10px;
   width:100%;
 }
 
 .form-control-range {
  margin-left:10px;
+ margin-right:10px;
 
 }
 
