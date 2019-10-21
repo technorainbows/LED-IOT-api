@@ -14,67 +14,61 @@
 <body>
     <header>
         <nav id="page-title" class="navbar navbar-light bg-light">
-            <span class="navbar-brand col-mb-10 col-lg-8 col-sm-7 h1">LED IOT Web Interface</span>
-            <span class="navbar-brand col-md-1 col-lg-3 col-sm-4">Server Status:<span id="serverStatus" class="align-middle col-sm-1 col-md-2 col-lg-2"><img src="https://img.icons8.com/ios/50/000000/cloud-cross.png" id="icon-disconnected"><img src="https://img.icons8.com/ios/50/000000/cloud-sync.png" id="icon-connected"> </span></span>
+            <span class="navbar-brand col-mb-6 col-lg-8 col-sm-5 col-xs-auto h1">LED IOT Web Interface</span>
+            <span class="navbar-brand col-md-3 col-xs-auto float-right align-right">Server Status:<span id="serverStatus" class="align-right col-xs-auto col-sm-1 col-md-2 col-lg-2"><img src="https://img.icons8.com/ios/50/000000/cloud-cross.png" id="icon-disconnected"><img src="https://img.icons8.com/ios/50/000000/cloud-sync.png" id="icon-connected"> </span></span>
         </nav>
     </header>
     <!-- MAIN CONTENT -->
     <!-- <div class="overlay"> -->
     <div id="main-content" class="container-fluid">
         <div class="row" id="nested-content">
-            <div class="col-lg-3 col-md-3 container" id="device-info">
+            <div class="col-lg-3 col-md-3 col-sm-8 container-fluid device-params" id="device-info">
                 <!-- <div class="row col-lg-12" -->
-                <div id="currentDevice" class="col-lg-12 label-current-device align-middle">Current Device <label for="currentDevice" id="currentDeviceLabel" value="currentDeviceValue" class="label-device"></label>
+                <div id="currentDevice" class="col-lg-12  label-current-device align-middle">Current Device <label for="currentDevice" id="currentDeviceLabel" value="currentDeviceValue" class="label-device"></label>
                 </div>
-                <div id="onlineDevices" class="col-lg-12 align-middle label-heartbeat">Devices Online <label for="device-info" id="deviceList"></div>
+                <div id="onlineDevices" class="col-lg-12 align-middle label-heartbeat">Devices Online <label for="device-info" id="deviceList">
+                </div>
                 <!-- <div class="btn-toolbar col-lg-2 align-middle" role="toolbar" aria-label="..." id="devices"></div> -->
+            </div> <!-- close div for device-info -->
+            <div class="col-md-1 cl-sm-12 col-xs-hidden">
             </div>
-            <div class="col-md-8 col-lg-8 align-right" id="parameter-UI">
-                <div>
-                    <!--        ON/OFF BUTTON -->
-                    <div id="btn-ledState" class="btn-group btn-group-toggle align-middle col-lg-3" data-toggle="buttons">
-                        <label class="btn btn-secondary btn-lg">
-                            <input type="radio" name="options" id="ledON" autocomplete="off"> On
-                        </label>
-                        <label class="btn btn-secondary btn-lg">
-                            <input type="radio" name="options" id="ledOFF" autocomplete="off"> Off
-                        </label>
-                    </div>
-<!-- 
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="customSwitch1">
-                        <label class="custom-control-label" for="customSwitch1">On/off</label>
-                    </div> -->
-<!--                     <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" disabled id="customSwitch2">
-                        <label class="custom-control-label" for="customSwitch2">Disabled switch element</label>
-                    </div>
- -->
+            <div class="col-lg-8 col-md-7 col-sm-7 container-fluid device-params" id="parameter-UI">
+                <!-- <div> -->
+                <!--        ON/OFF BUTTON -->
+                <div id="btn-ledState" class="btn-group btn-group-toggle align-middle col-lg-6" data-toggle="buttons">
+                    <label class="btn btn-secondary btn-lg btn-toggle">
+                        <input type="radio" name="options" id="ledON" autocomplete="off"> On
+                    </label>
+                    <label class="btn btn-secondary btn-lg btn-toggle">
+                        <input type="radio" name="options" id="ledOFF" autocomplete="off"> Off
+                    </label>
+                  
                 </div> <!-- on/off button div close -->
+                <!-- </div>  -->
                 <!-- <div class="row" padding=10px> -->
                 <!--         BRIGHTNESS SLIDER -->
-                <div class="col-sm-10 col-lg-6 col-md-6" id="brightness">
-                    <form>
-                        <div class="row col-lg-12 col-md-6 col-sm-12 ">
-                            <label for="slider-brightness" id="brightness-label" class="ui-label align-middle">Brightness</label>
-                            <input type="range" value=100 min=0 max=255 step=1 name="slider-brightness" class="form-control-range col-lg col-md-6 col-sm-6" id="slider-brightness">
-                            <span id="brightness-value" class="align-middle ui-label">100</span>
+                <div class="col-sm-12 col-lg-10 col-md-12 col-xs-12 device-params" id="brightness">
+                    <form class="">
+                        <div class="row col-11 ">
+                            <label for="slider-brightness" id="brightness-label" class="ui-label col-md-auto col-sm-12">Brightness</label>
+                            <input type="range" value=100 min=0 max=255 step=1 name="slider-brightness" class="form-control-range col-lg-6 col-md-5 col-sm-8 col-xs-auto" id="slider-brightness">
+                            <label id="brightness-value" class="align-middle ui-label">100</span>
                         </div>
-                        <!--  <div class="row col-lg-12 col-md-10">
+                    </form>
+                    <!--  <div class="row col-lg-12 col-md-10">
                     <label for="formControlRange" id="hue-label" class="ui-label align-middle">Hue</label>
                     <input type="range" min="0" max="255" class="form-control-range col-lg" id="formControlRange">
                 </div> -->
-                    </form>
                 </div> <!-- /BRIGHTNESS SLIDER -->
                 <!--     DEVICE NAME FORM -->
-                <div class="col-md-9 col-lg-9 align-right" id="device-name">
+                <div class="align-right device-params col-sm-12 col-md-12 col-lg-8" id="device-name">
                     <form class="form-inline" form action="" form id="name-form">
                         <label class="sr-only" for="inlineFormInputName2">Name</label>
-                        <input type="text" class="form-control mb-2 mr-sm-2" id="input-name" placeholder="Device Name">
-                        <button type="submit" class="btn btn-primary mb-3" id="save-name">Save</button>
+                        <input type="text" class="form-control col-sm-8 col-md-8" id="inputName" placeholder="New device name.">
+                        <button type="submit" class="btn btn-primary  col-3" id="save-name">Save</button>
                     </form>
-                </div>
-            </div>
+                </div> <!-- close div for device name form -->
+            </div> <!-- close for parameter UI -->
             <!-- <div class="row col-lg-2"> -->
             <!-- <div class="row" id="device-info"> -->
             <!-- </div> -->
