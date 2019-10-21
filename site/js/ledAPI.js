@@ -3,8 +3,8 @@
     var dc = {}; // namespace for document content
 
     // var apiUrl = 'http://lvh.me:5000'
-    var apiUrl = 'http://10.0.0.59:5000/Devices' // ip address at home
-    // var apiUrl = 'http://192.168.2.54:5000/light' // ip address when at CDA
+    // var apiUrl = 'http://10.0.0.59:5000/Devices' // ip address at home
+    var apiUrl = 'http://192.168.2.54:5000/Devices' // ip address when at CDA
 
     // var apiURL = 'https://jsonplaceholder.typicode.com/posts' // test external json server
     // console.log('ledAPI running');
@@ -129,18 +129,20 @@
             // Set the text-output span to the value of the first input
             var $input = $(this).find('input');
             var input = $input.val();
-            console.log("device name submitted: ", input, " length: ", input.length);
-            input=input.trim();
-            console.log("device trimmed: ", input, "length = ", input.length);
+            // console.log("device name submitted: ", input, " length: ", input.length);
+            // input=input.trim();
+            // console.log("device trimmed: ", input, "length = ", input.length);
             // $('#text-output').text("You typed: " + input);
         	// update device name with api
         	$apiUtils.putRequest(apiUrl,deviceID,'name',input);
         	// update displayed name for device button
         	$('#currentDeviceLabel').html(input);
         	// $(deviceID).value=input;
-        	$('#deviceList').find(deviceID).value=input;
-
-
+        	// $('#deviceList').find(deviceID).value=input;
+        	// $(deviceID).html(input);
+        	document.getElementById(deviceID).value = input;
+        	// $(#inputName).attr("placeholder", "New device name.");
+        	$('form').trigger("reset");
         });
 
 
@@ -280,6 +282,7 @@
     	console.log("device to insert: ", device);
     	var deviceShort = device.slice(7, 15);
     	try {
+    		console.log("getting device name to insert");
 	    	var deviceName = await $apiUtils.getParam(apiUrl, device, "name");
 	    } catch (error){
 	    	console.error("Error caught!")

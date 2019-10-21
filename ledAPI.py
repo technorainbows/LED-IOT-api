@@ -12,7 +12,7 @@ import logging
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.WARNING,
+    level=logging.INFO,
     datefmt='%Y-%m-%d %H:%M:%S')
 
 
@@ -203,7 +203,7 @@ class Heartbeat(Resource):
     @api.expect(heartbeat, validate=False)
     def post(self, device_id):
         """Set a heartbeat."""
-        hbTime = 5
+        hbTime = 6
         heartbeat = "hb_" + device_id
         response = REDIS.setHB(heartbeat, hbTime*2)
         logging.info("HB post response = ".format(response))

@@ -47,7 +47,13 @@
         url += ("/" + deviceID);
         console.log('PUT request: ' + url)
         var responseBody = {}
-        responseBody[paramID] = JSON.stringify(paramValue);
+        if (paramID == 'name') {
+        	console.log("param is name");
+        	responseBody[paramID] = paramValue;
+        } else {
+        	responseBody[paramID] = JSON.stringify(paramValue);
+        }
+
         console.log('PUT body:' + JSON.stringify(responseBody))
         fetch(url, {
                 "credentials": "omit",

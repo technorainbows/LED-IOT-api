@@ -3,7 +3,8 @@
   Simple sketch that uses ESP board to connect to local wifi network then gets LED state from python API (ledAPI.py)
 
 */
-
+#include "Arduino_DebugUtils.h"
+//#include "SerialDebug.h" //https://github.com/JoaoLopesF/SerialDebug
 #include <FastLED.h>
 #include "credentials.h" // wifi network credentials stored in separate file
 #include "sha1.h"
@@ -14,6 +15,7 @@
 #include <HTTPClient.h>
 #include <ArduinoOTA.h>
 WiFiMulti wifiMulti;
+
 
 // if using OLED display
 #include "SSD1306Wire.h" // legacy include: `#include "SSD1306.h"` //OLED screen
@@ -29,10 +31,50 @@ SSD1306Wire  display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board disp
 //#include <ArduinoHttpClient.h>
 
 
+//*********** SerialDebug Library Stuff *********************//
+
+// Disable all debug ? Good to release builds (production)
+// as nothing of SerialDebug is compiled, zero overhead :-)
+// For it just uncomment the DEBUG_DISABLED
+//#define DEBUG_DISABLED true
+
+// Define the initial debug level here (uncomment to do it)
+// #define DEBUG_INITIAL_LEVEL DEBUG_LEVEL_INFO
+
+// Disable SerialDebug debugger ? No more commands and features as functions and globals
+// Uncomment this to disable it
+//#define DEBUG_DISABLE_DEBUGGER true
+
+// Disable auto function name (good if your debug yet contains it)
+//#define DEBUG_AUTO_FUNC_DISABLED true
+
+// Force debug messages to can use flash ) ?
+// Disable native Serial.printf (if have)
+// Good for low memory, due use flash, but more slow and not use macros
+//#define DEBUG_USE_FLASH_F true
+
+//uint32_t mTimeSeconds = 0;
+//boolean mLedON = false; // Buildin Led ON ?
+
+// Debug levels
+
+//    printlnV(F("This is a message of debug level VERBOSE"));
+//    printlnD(F("This is a message of debug level DEBUG"));
+//    printlnI(F("This is a message of debug level INFO"));
+//    printlnW(F("This is a message of debug level WARNING"));
+//    printlnE(F("This is a message of debug level ERROR"));
+
+//***********************************************************//
 
 
-String apiURL = "http://10.0.0.59:5000/Devices/";
-String controllerURL = "10.0.0.59/site/index.html";
+// on CXE network
+String IPaddress = "192.168.2.54";
+String apiURL = "http://" + IPaddress + ":5000/Devices/";
+String controllerURL = IPaddress + "site/index.html";
+
+// on vannet
+//String apiURL = "http://10.0.0.59:5000/Devices/";
+//String controllerURL = "10.0.0.59/site/index.html";
 String DEVICE_ID;
 
 //RMT is an ESP hardware feature that offloads stuff like PWM and led strip protocol, it's rad
@@ -69,6 +111,7 @@ String lastState = "false";
 String onState = "false";
 int brightVal = BRIGHTNESS;
 
+#define NUM_SECONDS_TO_WAIT 5
 
 // Set up wireless updating if using ESP32
 void setupAOTA() {
@@ -159,6 +202,38 @@ String setDeviceID() {
 
 void setup() {
   Serial.begin(115200);
+  Debug.timestampOn();
+  Debug.setDebugLevel(DBG_DEBUG);
+
+#ifdef __AVR_ATmega32U4__ // Arduino AVR Leonardo
+
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for Leonardo only
+  }
+
+#else
+
+  delay(500); // Wait a time
+
+#endif
+
+  // Debug
+
+  // Attention:
+  // SerialDebug starts disabled and it only is enabled if have data avaliable in Serial
+  // Good to reduce overheads.
+  // if You want debug, just press any key and enter in monitor serial
+
+  // Note: all debug in setup must be debugA (always), due it is disabled now.
+
+  //    printlnA(F("**** Setup: initializing ..."));
+
+  // Buildin led
+  //
+  //    pinMode(LED_BUILTIN, OUTPUT);
+  //    digitalWrite(LED_BUILTIN, LOW);
+
+
 
   //all this is for OLED status screen
   display.init();
@@ -177,14 +252,17 @@ void setup() {
   // setup WIFI
   WiFi.mode(WIFI_STA);
   wifiMulti.addAP(ssid1, password1);
+  wifiMulti.addAP(ssid2, password2);
   //  wifiMulti.addAP("ssid_from_AP_2", "your_password_for_AP_2");
   //  wifiMulti.addAP("ssid_from_AP_3", "your_password_for_AP_3");
 
   Serial.println("Connecting Wifi...")  ;
   if (wifiMulti.run() == WL_CONNECTED) {
     Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.println("IP address: ");
+    //    Serial.println("WiFi connected");
+    Serial.printf("WiFi connected to %s\n", WiFi.SSID().c_str());
+    //    Serial.println(WiFi.localIP());
+    Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
 
     // turn leds to green if connected
@@ -205,6 +283,7 @@ void setup() {
 
   updateDisplay(); // update OLED screen on device
 
+  //    printlnA(F("*** Setup end"));
 
 }
 
@@ -248,34 +327,34 @@ void heartbeat() {
   //  EVERY_N_MILLISECONDS(500) {
   if (wifiMulti.run() == WL_CONNECTED) { //Check WiFi connection status
 
-    //    for(int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
-    //      Serial.print(".");
-    //      delay(1000);
-    //  }
+    for (int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
+      Serial.print(".");
+      delay(1000);
+    }
 
-    Serial.println("setting heartbeat");
+    Debug.print(DBG_VERBOSE, "setting heartbeat");
     HTTPClient http;
-    String HB_URL = "http://10.0.0.59:5000/Devices/HB/" + DEVICE_ID;
+    String HB_URL = apiURL + "HB/" + DEVICE_ID;
     http.begin(HB_URL);
     //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
     http.addHeader("Content-Type", "application/json");             //Specify content-type header
     //    delay(200);
-    Serial.println("about to POST");
+    Debug.print(DBG_VERBOSE, "about to POST");
     //    char* httpResponse = http.POST(DEVICE_ID);
-    int httpResponseCode = http.POST(DEVICE_ID);   //Send the actual POST request
-    Serial.println("POSTing complete");
+    int httpResponseCode = http.POST("{}");   //Send the actual POST request
+    Debug.print(DBG_VERBOSE, "POSTing complete");
 
     if (httpResponseCode > 0) {
 
       String response = http.getString();                       //Get the response to the request
-      Serial.println("POST RESPONSE CODE:");
-      Serial.println(httpResponseCode);   //Print return code
-      Serial.print("POST RESPONSE: ");
-      Serial.println(response);           //Print request answer
+      //      Serial.println("POST RESPONSE CODE:");
+      Debug.print(DBG_VERBOSE, "%i", httpResponseCode);   //Print return code
+      //      Serial.print("POST RESPONSE: ");
+       Debug.print(DBG_VERBOSE, "%s", response);           //Print request answer
 
     } else {
 
-      Serial.print("Error on sending POST: ");
+      Debug.print(DBG_ERROR, "Error on sending POST: ");
       Serial.println(httpResponseCode);
 
     }
@@ -284,7 +363,7 @@ void heartbeat() {
 
   } else {
 
-    Serial.println("Error in WiFi connection");
+    Debug.print(DBG_ERROR, "Error in WiFi connection");
 
   }
 
@@ -293,18 +372,22 @@ void heartbeat() {
 
 
 void loop() {
+  //  debugHandle();
 
   //   check wifi status
-  //  for (int i = 0; i < 5 && WiFi.status() != WL_CONNECTED; i++) {
-  //    Serial.print(".");
-  //    delay(1000);
-  //  }
-  if (wifiMulti.run() != WL_CONNECTED) {
-    Serial.println("WiFi not connected!");
-    // turn first 5 leds to red if not connected
-    fill_solid(leds, 20, CRGB::Red);
-    FastLED.show();
-    delay(200);
+  for (int i = 0; i < 5 && WiFi.status() != WL_CONNECTED; i++) {
+    Serial.print(".");
+    delay(1000);
+  }
+
+  EVERY_N_MILLISECONDS(200) {
+    if (wifiMulti.run() != WL_CONNECTED) {
+      Debug.print(DBG_ERROR, "WiFi not connected!");
+      // turn first 5 leds to red if not connected
+      fill_solid(leds, 20, CRGB::Red);
+      FastLED.show();
+      //    delay(200);
+    }
   }
 
 
@@ -314,57 +397,60 @@ void loop() {
 
     monitorWiFi();
     ArduinoOTA.handle();
-    if (wifiMulti.run() == WL_CONNECTED) { //Check WiFi connection status
+    //    if (wifiMulti.run() == WL_CONNECTED) { //Check WiFi connection status
+    //
+    //      //      }
+    //      //    for(int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
+    //      //      Serial.print(".");
+    //      //      delay(1000);
+    //      //  }
+    //
+    ////      Serial.println("setting heartbeat");
+    //      HTTPClient http;
+    //      String HB_URL = IPaddress + ":5000/Devices/HB/" + DEVICE_ID;
+    //      Serial.println(HB_URL);
+    //      http.begin(HB_URL);
+    //      //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
+    //      http.addHeader("Content-Type", "application/json");             //Specify content-type header
+    //      //    delay(200);
+    //      Serial.println("about to POST");
+    //      //    char* httpResponse = http.POST(DEVICE_ID);
+    //      int httpResponseCode = http.POST("{}");   //Send the actual POST request
+    //      Serial.println("POSTing complete");
+    //
+    //      if (httpResponseCode > 0) {
+    //
+    //        String response = http.getString();                       //Get the response to the request
+    //        Serial.print("POST RESPONSE CODE:");
+    //        Serial.println(httpResponseCode);   //Print return code
+    //        //        Serial.print("POST RESPONSE: ");
+    //        //        Serial.println(response);           //Print request answer
+    //
+    //      } else {
+    //
+    //        Serial.print("Error on sending POST: ");
+    //        Serial.println(httpResponseCode);
+    //
+    //      }
+    //
+    //      http.end();  //Free resources
+    //
+    //    } else {
+    //
+    //      Serial.println("Error in WiFi connection");
+    //
+    //    }
 
-      //      }
-      //    for(int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
-      //      Serial.print(".");
-      //      delay(1000);
-      //  }
-
-      Serial.println("setting heartbeat");
-      HTTPClient http;
-      String HB_URL = "http://10.0.0.59:5000/Devices/HB/" + DEVICE_ID;
-      http.begin(HB_URL);
-      //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
-      http.addHeader("Content-Type", "application/json");             //Specify content-type header
-      //    delay(200);
-      Serial.println("about to POST");
-      //    char* httpResponse = http.POST(DEVICE_ID);
-      int httpResponseCode = http.POST("{}");   //Send the actual POST request
-      Serial.println("POSTing complete");
-
-      if (httpResponseCode > 0) {
-
-        String response = http.getString();                       //Get the response to the request
-        Serial.print("POST RESPONSE CODE:");
-        Serial.println(httpResponseCode);   //Print return code
-        //        Serial.print("POST RESPONSE: ");
-        //        Serial.println(response);           //Print request answer
-
-      } else {
-
-        Serial.print("Error on sending POST: ");
-        Serial.println(httpResponseCode);
-
-      }
-
-      http.end();  //Free resources
-
-    } else {
-
-      Serial.println("Error in WiFi connection");
-
-    }
     // wait for WiFi connection
     if ((wifiMulti.run() == WL_CONNECTED)) {
-      //      heartbeat();
+      heartbeat();
       //      Serial.println("wifi connected, connecting to api");
 
       HTTPClient http;
 
       // start connection and send HTTP header
-
+      //      Serial.print("beginning HTTP connection to: ");
+      //      Serial.println(apiURL + DEVICE_ID);
       http.begin(apiURL + DEVICE_ID);
 
 
@@ -376,7 +462,7 @@ void loop() {
 
       // Check returning httpCode -- will be negative on error
       if (httpCode > 0) {
-        //        Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+        //          Serial.printf("[HTTP] GET... code: %d\n", httpCode);
 
         // file found at server
         if (httpCode == HTTP_CODE_OK) {
@@ -404,7 +490,7 @@ void loop() {
           int newBright = atoi(root_1_brightness);
 
           onState = root_1_onState;
-          Serial.printf("brightVal = %d\n", brightVal);
+          //          Serial.printf("brightVal = %d\n", brightVal);
           if (onState != lastState) {
             lastState = onState;
             //            Serial.println("onState = " + onState);
@@ -421,7 +507,7 @@ void loop() {
 
         }
       } else {
-        Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+        Debug.print(DBG_ERROR, "[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
       }
 
       http.end(); // close connection
