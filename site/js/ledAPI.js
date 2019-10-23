@@ -2,22 +2,23 @@
 
     var dc = {}; // namespace for document content
 
-    // var apiUrl = 'http://lvh.me:5000'
+    var apiUrl = 'http://lvh.me:5000/Devices'
     // var apiUrl = 'http://10.0.0.59:5000/Devices' // ip address at home
-    var apiUrl = 'http://192.168.2.54:5000/Devices' // ip address when at CDA
+    // var apiUrl = 'http://192.168.2.54:5000/Devices' // ip address when at CDA
 
     // var apiURL = 'https://jsonplaceholder.typicode.com/posts' // test external json server
     // console.log('ledAPI running');
-    var deviceID = ''
-    var devices = []
+    var deviceID = '' // current device
+    var devices = [] // devices online
     var lastDevice = ''
+
+    var nameMaxLength = 15;
 
     /************
      * DEVICE INFO
      ************/
     var brightness;
     var ledState;
-    // var name = "AshleyRoom"
     var deviceNames = []
     var jsonString = ''
     /************* 
@@ -40,10 +41,41 @@
         setTimeout(checkConnection, 5000);
     }
 
+     /*
+     *   Call this function with a successful response from the server (at end of API request)
+     *   When this is called, you know that the server is happy. When this function is done, the page should reflect that it's ready for more user interaction
+     * 	To rephrase that, at the end of this function the state of UI is "ready"
+     */
+    function updateMainContent(device) {
+        updateOnButton(device);
+        updateBrightSlider(device);
+        // TODO: update other properties as added
+        // $("#main-content").show("slow");
+    	// $('#main-content').removeClass('look-disabled');
+    	$('#main-content').toggleClass('look-disabled', false);
+        console.log("Page updated from server, ready for user input.");
+
+    }
+
+    /*
+     * Call this function when the server is no longer connected. This will hide all content in "#main-content".
+     */
+    function disableMainContent() {
+        // console.log("disabling main content");
+       
+    	$('#main-content').toggleClass('look-disabled', true);
+    	
+    }
+
+
     /*
      * Initiates connection with API and also listens for events 	
      */
     function startLoadingPage() {
+
+    	// ****  force main content to always be enabled for debugging purposes
+    	// updateMainContent(device);
+
 
         console.log("Initializing client.");
         checkConnection();
@@ -121,7 +153,8 @@
         // });
 
 
- 		$('form').on('submit', function(event) {
+        /* Change name of device */
+ 		$('form').on('submit', function changeDeviceName(event) {
             
             // Prevent the page from reloading
             event.preventDefault();
@@ -136,11 +169,11 @@
         	// update device name with api
         	$apiUtils.putRequest(apiUrl,deviceID,'name',input);
         	// update displayed name for device button
-        	$('#currentDeviceLabel').html(input);
+        	$('#currentDeviceLabel').html(input.slice(0,nameMaxLength));
         	// $(deviceID).value=input;
         	// $('#deviceList').find(deviceID).value=input;
         	// $(deviceID).html(input);
-        	document.getElementById(deviceID).value = input;
+        	document.getElementById(deviceID).value = input.slice(0,nameMaxLength);
         	// $(#inputName).attr("placeholder", "New device name.");
         	$('form').trigger("reset");
         });
@@ -162,44 +195,19 @@
 
 
 
-    /*
-     *   Call this function with a successful response from the server (at end of API request)
-     *   When this is called, you know that the server is happy. When this function is done, the page should reflect that it's ready for more user interaction
-     * 	To rephrase that, at the end of this function the state of UI is "ready"
-     */
-    function updateMainContent(device) {
-        updateOnButton(device);
-        updateBrightSlider(device);
-        // TODO: update other properties as added
-        // $("#main-content").show("slow");
-    	// $('#main-content').removeClass('look-disabled');
-    	$('#main-content').toggleClass('look-disabled', false);
-        console.log("Page updated from server, ready for user input.");
-
-    }
-
-    /*
-     * Call this function when the server is no longer connected. This will hide all content in "#main-content".
-     */
-    function disableMainContent() {
-        // console.log("disabling main content");
-        // $("#main-content").hide("slow");
-    	$('#main-content').toggleClass('look-disabled', true);
-    	// $('#main-content').removeClass('look-enabled');
-    }
-
+   
 
     function updateOnButton(device) {
         // console.log("light.ledState = " + lightProps.ledState);
-        // console.log("updateOnButton state received: ", device[1]['onState']);
+        console.log("updateOnButton state received: ", device[1]['onState']);
         switch (device[1]['onState']) {
             case "true":
-                // console.log("light on");
+                console.log("light on");
                 $('#ledON').closest('label').toggleClass('active', true);
                 $('#ledOFF').closest('label').toggleClass('active', false);
                 break;
             case "false":
-                // console.log("light off");
+                console.log("light off");
                 $('#ledON').closest('label').toggleClass('active', false);
                 $('#ledOFF').closest('label').toggleClass('active', true);
                 break;
@@ -290,7 +298,7 @@
             var deviceName = deviceShort;
 	    }
     	console.log("deviceName = ", deviceName);
-        $("<input/>").attr({ type: "button", class: "btn-device", id: device, value: deviceName }).appendTo("#deviceList");
+        $("<input/>").attr({ type: "button", class: "btn-device", id: device, value: deviceName.slice(0,nameMaxLength) }).appendTo("#deviceList");
 
     }
 
