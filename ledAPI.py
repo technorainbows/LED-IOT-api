@@ -5,20 +5,64 @@ from flask import Flask, jsonify, request, json
 from flask_restplus import Api, Resource, fields, cors
 # from werkzeug.contrib.fixers import ProxyFix
 import redis
-from redis.exceptions import WatchError
+from redis.exceptions import WatchError, ConnectionError
 import json
 import time
 import logging
+import os
+import sys
 
+
+# """fancy logging that maybe isn't working yet :p """
+# logging = logging.getlogging("ledAPI")
+
+# logging.setLevel(logging.ERROR)
+
+# # create console handler and set level to debug
+# ch = logging.StreamHandler()
+# ch.setLevel(logging.ERROR)
+
+# formatter=logging.Formatter('%(asctime)s :: %(levelname)-8s :: %(funcName)s :: %(lineno)d :: %(message)s')
+#     # datefmt='%Y-%m-%d %H:%M:%S')
+
+# # add formatter to ch
+# ch.setFormatter(formatter)
+# logging.addHandler(ch)
+
+# file_handler = logging.FileHandler("ledAPI_log.log")
+# file_handler.setFormatter(formatter)
+# """"""""""""
+
+
+# someVariable = int(os.environ['DEBUSSY'])
+
+
+
+if 'LOGGING_LEVEL' not in os.environ:
+    LOGGING_LEVEL = logging.WARNING
+else:
+    LOGGING_LEVEL = os.environ['LOGGING_LEVEL']
+
+
+"""Simple Logging"""
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S')
+    level=LOGGING_LEVEL,
+    datefmt='%Y-%m-%d %H:%M:%S',
+    )
 
+if 'HB_EXP' in os.environ:
+    HB_EXP = int(os.environ['HB_EXP'])
+else:
+    logging.warning("No HB_EXP set in env variables, setting to default (10). ")
+    HB_EXP = 10
+            
+
+# print(os.environ)
 
 app = Flask(__name__)
 # app.wsgi_app = ProxyFix(app.wsgi_app)
-api = Api(app, version='0.3', title='LED API',
+api = Api(app, version='0.4', title='LED API',
           description='A simple LED IOT API', doc='/docs'
           )
 
@@ -61,7 +105,19 @@ heartbeat = api.model('Heartbeat', {
 class Redis(object):
     def __init__(self):
         """Initialize Redis Object."""
+        if 'REDIS_HOST' in os.environ:
+            REDIS_HOST = os.environ['REDIS_HOST']
+        else:
+            try:
+                raise Exception
+            except Exception:
+                logging.error('REDIS_HOST not set.')
+                sys.exit("!!!!!!!Exiting application. Please set REDIS_HOST in env variables and restart.")
+
+
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
+
+
 
     # def bytesToString(self, byteDict):
     #     """Receives a dictionary of bytes and returns a dictionary of strings."""
@@ -110,7 +166,11 @@ class Redis(object):
                 except WatchError:
                     logging.warning("get: watcherror, trying again")
                     continue
-
+                except ConnectionError as error:
+                    logging.error("Connection error: {}".format(error))
+                except Exception as error:
+                    logging.error("Unexpected error occured: {}".format(error))
+                    
         return device
 
     def set(self, key, field, value):
@@ -142,6 +202,10 @@ class Redis(object):
                 except WatchError:
                     logging.warning("set: watcherror, trying again")
                     continue
+                except ConnectionError as error:
+                    logging.error("Connection error: {}".format(error))
+                except Exception as error:
+                    logging.error("Unexpected error occured: {}".format(error))
 
             # Initialising empty dictionary
             newDict = {}
@@ -155,24 +219,44 @@ class Redis(object):
 
     def delete(self, key):
         """Delete a key from Redis client."""
-        response = self.redis.delete(key)
-        logging.info("response: {}".format(response))
+        try:
+            response = self.redis.delete(key)
+            logging.info("response: {}".format(response))
+            
+        except ConnectionError as error:
+            logging.error("Connection error: {}".format(error))
+        except Exception as error:
+            logging.error("Unexpected error occured: {}".format(error))
         return response
 
     def keys(self, param):
         """Return list of all keys matching parameter."""
         keys = []
-        for key in self.redis.scan_iter(match=param+"*"):
-            # print("key: ", key)
-            keys.append(key.decode())
-        # print("keys returned: ", keys)
+        try:
+            for key in self.redis.scan_iter(match=param+"*"):
+                # print("key: ", key)
+                keys.append(key.decode())
+            # print("keys returned: ", keys)
+        
+        except ConnectionError as error:
+            logging.error("Connection error: {}".format(error))
+        except Exception as error:
+            logging.error("Unexpected error occured: {}".format(error))
         return keys
+        
 
-    def setHB(self, heartbeat, time):
+    def setHB(self, heartbeat):
+       
+
         """Set heartbeat key in redis that expires in provided time."""
-        response = self.redis.setex(heartbeat, time, 5)
+        try:
+            response = self.redis.setex(heartbeat, HB_EXP, "none") #name, time, value
+            
+        except ConnectionError as error:
+            logging.error("Connection error ")
+        except Exception as error:
+            logging.error("Unexpected error occured: ", error) 
         return response
-
 
 """Initialize REDIS object"""
 REDIS = Redis()
@@ -203,16 +287,17 @@ class Heartbeat(Resource):
     @api.expect(heartbeat, validate=False)
     def post(self, device_id):
         """Set a heartbeat."""
-        hbTime = 6
+        # hbTime = 15
         heartbeat = "hb_" + device_id
-        response = REDIS.setHB(heartbeat, hbTime*2)
+        response = REDIS.setHB(heartbeat)
         logging.info("HB post response = ".format(response))
         payload = api.payload
         # print("payload = ", api.payload)
         if response:
             return jsonify(heartbeat, response, 200)
         else:
-            return "Error, failled to set heartbeat.", 404
+            logging.error("Error, failed to set heartbeat")
+            return "Error, failed to set heartbeat.", 404
 
 @api.route('/Devices/HB/', methods=['GET'])
 class Heartbeats(Resource):
@@ -265,15 +350,13 @@ class Device(Resource):
     def put(self, device_id):
         """Update a given resource's field with new property value received."""
         for field in device:
-            # print("field: ", field)
             if field in request.json:
-                print("field found: ", field, "value = ",request.json.get(field) )
+                logging.debug("field found: ", field, "value = ",request.json.get(field) )
                 # let value = request.json.get(field)
                 REDIS.set(device_id, field, request.json.get(field))
 
         # print('returned redisSet = ', redisSet)
         return jsonify(device_id, REDIS.get(device_id), 200)
-        # return jsonify(DEVICES[device_id])
 
 
 """"""""""""""""""""""""""""""""""""''
@@ -289,7 +372,6 @@ class DeviceList(Resource):
         DEVICES = REDIS.keys("device_id")
         # print("returning Device List: ", DEVICES)
         return jsonify(DEVICES,200)
-        # return ([{'id': id, 'device': ListedDevices} for id, ListedDevices in DEVICES.items()], 200)
 
     @api.expect(device, validate=True)
     def post(self):
@@ -306,8 +388,6 @@ class DeviceList(Resource):
                 REDIS.set(device_id, field, request.json.get(field))
 
         return jsonify(device_id, REDIS.get(device_id), 201)
-        # return jsonify(redisSet)
-        # return jsonify(DEVICES[device_id], 201)
 
 
 @app.errorhandler(404)
