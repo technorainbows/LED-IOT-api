@@ -23,33 +23,33 @@ def getLevelNames(temp_level):
             yield v, k
 
 
-"""Get LOG_LEVEL from environment if set, otherwise set to default"""
+# Get LOG_LEVEL from environment if set, otherwise set to default
 if 'LOG_LEVEL' not in os.environ:
     print("LOG_LEVEL not set, using default")
-    LOG_LEVEL = logging.INFO
+    LOG_LEVEL = logging.WARNING
 else:
-    """Check if env variable correponds to logging level word or number."""
+    # Check if env variable correponds to logging level word or number.
     if getattr(logging, os.environ['LOG_LEVEL'].upper()):
         LOG_LEVEL = getattr(logging, os.environ['LOG_LEVEL'].upper())
         # logging.setLevel(LOG_LEVEL)
-        print("INT LOG_LEVEL set to: ", LOG_LEVEL)
+        print("1. LOG_LEVEL set to: ", LOG_LEVEL)
     else:
         temp_level = os.environ['LOG_LEVEL']
         try:
             LOG_LEVEL = getLevelNames(temp_level)
-            print("INT LOG_LEVEL set to: ", LOG_LEVEL)
+            print("2. INT LOG_LEVEL set to: ", LOG_LEVEL)
         except Exception as e:
             print("Incorrect LOG_LEVEL set. Using default. Error msg: ", e)
             LOG_LEVEL = logging.WARNING
 
-"""Set up simple logging."""
+# Set up simple logging.
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=LOG_LEVEL,
     datefmt='%Y-%m-%d %H:%M:%S',
     )
 
-"""Set heartbeat TTL via environment variable if avail, else set to default."""
+# Set heartbeat TTL via environment variable if avail, else set to default.
 if 'HB_EXP' in os.environ:
     HB_EXP = int(os.environ['HB_EXP'])
     logging.info("HB_EXP has been set via env")
@@ -67,7 +67,7 @@ api = Api(app, version='0.4', title='LED API',
 CORS(app)
 # ns = api.namespace('Devices', description='DEVICES operations')
 
-"""Default device settings."""
+# Default device settings.
 default = {
             'onState': 'true',
             'brightness': '255',
@@ -75,7 +75,7 @@ default = {
         }
 
 
-"""Single Device Data Model"""
+# Single Device Data Model
 device = api.model('Device', {
     'onState': fields.String(description='The on/off state',
                    attribute='onState', required=False, default=True),
@@ -85,7 +85,7 @@ device = api.model('Device', {
                    attribute='name', required=False, default='N/A')
 })
 
-"""Device List Data Model"""
+# Device List Data Model
 list_of_devices = api.model('ListedDevices', {
     'id': fields.String(required=True, description='The device ID'),
     'device': fields.Nested(device, description='The device'),
@@ -115,24 +115,6 @@ class Redis(object):
             except Exception:
                 logging.error('REDIS_HOST not set.')
                 sys.exit("!!!Exiting. Please set REDIS_HOST in env & restart.")
-
-    # def bytesToString(self, byteDict):
-    #     """Receives a dictionary of bytes & returns a dict of strings."""
-    #     # Initialising empty dictionary
-    #     strDict = {}
-    #     print ("byteDict type: ", type(byteDict))
-    #     # Convert dictionary items from bytes to strings
-    #     index = 0
-    #     for key, value in byteDict.items():
-    #       y[key.decode("utf-8")] = value.decode("utf-8")
-    #     for item in byteDict:
-    #         # if(index%2)
-    #         newItem = item.decode("utf-8")
-    #         if(type(newItem) == str):
-    #             strDict[index] = item.decode("utf-8")
-    #         index += 1
-    #     print("new string dict: ", strDict)
-    #     return strDict
 
     def get(self, key):
         """Get device from redit if it exists, otherwise load with default."""
@@ -188,10 +170,6 @@ class Redis(object):
 
                     else:
                         pipe.hmset(key, {field: value})
-
-                        # keyTest = keyTest.decode("utf-8")
-                        # print("key found: ", device)
-
                         device = pipe.hgetall(key)
                         logging.info("set: device found: {}".format(device))
                         break
@@ -212,6 +190,7 @@ class Redis(object):
                 newDict[dkey.decode("utf-8")] = value.decode("utf-8")
             device = newDict
             logging.info("set: new device = {}".format(device))
+
             return (device)
 
     def delete(self, key):
@@ -253,13 +232,13 @@ class Redis(object):
         return response
 
 
-"""Initialize REDIS object"""
+# Initialize REDIS object
 REDIS = Redis()
 
 
-""""""""""""""""""""""""""""""""""""
-"""Heartbeat Methods"""
-""""""""""""""""""""""""""""""""""""
+#########################
+#   Heartbeat Methods   #
+#########################
 @api.route('/Devices/HB/<string:device_id>', methods=['GET', 'POST'])
 class Heartbeat(Resource):
     """Update and check on a given device's heartbeat/online status."""
@@ -307,10 +286,10 @@ class Heartbeats(Resource):
         return jsonify(keys)
 
 
-""""""""""""""""""""""""""""""""""""
-"""Single Device Response Methods"""
-""""""""""""""""""""""""""""""""""""
-"""TODO: add list of device_ids from redis to check if decive there"""
+##################################
+# Single Device Response Methods #
+##################################
+# TODO: add list of device_ids from redis to check if decive there
 @api.route('/Devices/<string:device_id>',
            methods=['GET', 'POST', 'PUT', 'DELETE'])
 @api.doc(responses={404: 'Device not found', 200: 'Device found'},
@@ -357,9 +336,9 @@ class Device(Resource):
         return jsonify(device_id, REDIS.get(device_id), 200)
 
 
-""""""""""""""""""""""""""""""""""""''
-"""List of Devices Response Methods"""
-""""""""""""""""""""""""""""""""""""''
+####################################
+# List of Devices Response Methods #
+####################################
 @api.route('/Devices/')
 class DeviceList(Resource):
     """Shows a list of all devices, and lets you POST to add new tasks."""
