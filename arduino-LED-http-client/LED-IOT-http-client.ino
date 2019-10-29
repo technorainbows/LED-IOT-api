@@ -66,15 +66,24 @@ SSD1306Wire  display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board disp
 
 //***********************************************************//
 
+#define NETWORK_VANNEST
 
+#ifdef NETWORK_CXE
 // on CXE network
 String IPaddress = "192.168.2.54";
+
+#endif
+
+#ifdef NETWORK_VANNEST
+// on vannet
+String IPaddress = "10.0.0.59";
+//String apiURL = "http://10.0.0.59:5000/Devices/";
+//String controllerURL = "10.0.0.59/site/index.html";
+#endif
+
 String apiURL = "http://" + IPaddress + ":5000/Devices/";
 String controllerURL = IPaddress + "site/index.html";
 
-// on vannet
-//String apiURL = "http://10.0.0.59:5000/Devices/";
-//String controllerURL = "10.0.0.59/site/index.html";
 String DEVICE_ID;
 
 //RMT is an ESP hardware feature that offloads stuff like PWM and led strip protocol, it's rad

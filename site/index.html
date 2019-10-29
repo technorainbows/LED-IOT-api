@@ -21,6 +21,7 @@
     <!-- MAIN CONTENT -->
     <!-- <div class="overlay"> -->
     <div id="main-content" class="container-fluid">
+
         <div class="row" id="nested-content">
             <div class="col-lg-3 col-md-3 col-sm-8 container-fluid device-params" id="device-info">
                 <!-- <div class="row col-lg-12" -->
@@ -35,14 +36,29 @@
             <div class="col-lg-8 col-md-7 col-sm-7 container-fluid device-params" id="parameter-UI">
                 <!-- <div> -->
                 <!--        ON/OFF BUTTON -->
-                <div id="btn-ledState" class="btn-group btn-group-toggle align-middle col-lg-6" data-toggle="buttons">
-                    <label class="btn btn-secondary btn-lg btn-toggle">
+                <div class="custom-control custom-switch">
+
+
+                <div id="btn-ledState" class="btn-group btn-group-toggle align-middle col-lg-6 custom-switch" data-toggle="buttons">
+                    <label class="btn btn-lg btn-primary btn-toggle">
                         <input type="radio" name="options" id="ledON" autocomplete="off"> On
                     </label>
-                    <label class="btn btn-secondary btn-lg btn-toggle">
+                    <label class="btn btn-lg btn-primary btn-toggle">
                         <input type="radio" name="options" id="ledOFF" autocomplete="off"> Off
                     </label>
-                  
+                </div>
+                <div class="custom-control custom-switch">
+  <input type="checkbox" class="custom-control-input" id="customSwitches">
+  <label class="custom-control-label" for="customSwitches">On</label>
+</div>
+                    
+                    <!-- Default switch -->
+
+
+<!--                     <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" disabled id="customSwitch2">
+                        <label class="custom-control-label" for="customSwitch2">Disabled switch element</label>
+                    </div> --> 
                 </div> <!-- on/off button div close -->
                 <!-- </div>  -->
                 <!-- <div class="row" padding=10px> -->
@@ -60,7 +76,7 @@
                     <input type="range" min="0" max="255" class="form-control-range col-lg" id="formControlRange">
                 </div> -->
                 </div> <!-- /BRIGHTNESS SLIDER -->
-                <!--     DEVICE NAME FORM -->
+                <!--     Devices NAME FORM -->
                 <div class="align-right device-params col-sm-12 col-md-12 col-lg-8" id="device-name">
                     <form class="form-inline" form action="" form id="name-form">
                         <label class="sr-only" for="inlineFormInputName2">Name</label>
