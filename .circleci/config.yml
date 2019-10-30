@@ -6,8 +6,8 @@ jobs:
     steps:
       - checkout
       - run: sudo python -m pip install pydocstyle
-      - run: pwd
-      - run: pydocstyle /app/main.py
+      # - run: pwd
+      - run: pydocstyle /home/circleci/project/app/main.py
 #    one:
 #      docker:
 #        - image: circleci/ruby:2.4.1
