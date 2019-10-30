@@ -5,7 +5,7 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - run: sudo -r pip install pydocstyle
+      - run: sudo python -m pip install pydocstyle
       - run: pydocstyle /app/main.py
 #    one:
 #      docker:
