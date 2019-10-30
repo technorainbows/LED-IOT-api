@@ -1,4 +1,5 @@
 # LED-IOT-API
-Simple API for controlling networked LED devices.
+Simple REST API for controlling networked LED devices.
 
-WIP.
+
+[![CircleCI](https://circleci.com/gh/technorainbows/LED-IOT-api.svg?style=svg)](https://circleci.com/gh/technorainbows/LED-IOT-api)
