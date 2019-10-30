@@ -6,6 +6,7 @@ jobs:
     steps:
       - checkout
       - run: sudo python -m pip install pydocstyle
+      - run: pwd
       - run: pydocstyle /app/main.py
 #    one:
 #      docker:
