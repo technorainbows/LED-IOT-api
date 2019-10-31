@@ -5,9 +5,9 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - run: sudo python -m pip install pydocstyle pylint
+      - run: sudo python -m pip install pydocstyle pylint flask_cors flask redis
       - run: pydocstyle /home/circleci/project/app/main.py
-      - run: pylint /home/circleci/project/app/main.py
+      - run: --disable=C,W,R /home/circleci/project/app/main.py
 #    one:
 #      docker:
 #        - image: circleci/ruby:2.4.1
