@@ -69,9 +69,10 @@ else:
 
 
 class Server(object):
-    """Initialize and run Flask app and api as method for import."""
+    """Flask app and api methods."""
 
     def __init__(self):
+        """Initialize Flask app and api."""
         self.app = Flask(__name__)
         self.api = Api(self.app,
                        version='0.4',
@@ -83,7 +84,6 @@ class Server(object):
 
     def run(self):
         """Run flask app."""
-
         self.app.run(debug=environment_config["debug"],
                      port=environment_config["port"])
 
