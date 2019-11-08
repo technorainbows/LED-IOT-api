@@ -84,8 +84,8 @@ class Server(object):
 
     def run(self):
         """Run flask app."""
-        self.app.run(debug=environment_config["debug"],
-                     port=environment_config["port"])
+        self.app.run(debug=True,
+                     port=80)
 
 
 server = Server()
