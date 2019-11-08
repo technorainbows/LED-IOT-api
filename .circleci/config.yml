@@ -6,7 +6,7 @@ jobs:
         environment:
           FLASK_CONFIG: testing
           REDIS_HOST: localhost
-      # - image: circleci/redis:latest
+      - image: circleci/redis:latest
     steps:
       - checkout
       - run:
@@ -22,30 +22,3 @@ jobs:
           name: Test API routes
           command: |
             python -m pytest
-      # - run:
-      #     name: setup redis
-
-# version: 2.0
-# jobs:
-#   build:
-#     working_directory: /your/workdir
-#     docker:
-#       - image: your/image_for_primary_container
-#           environment:
-#             LOG_LEVEL: warning
-#             HB_EXP: 30
-#             REDIS_HOST: redis
-#             PYTHONUNBUFFERED: 1
-#       - image: redis:latest
-        
-         
-#     steps:
-#       - checkout
-#       - run:
-#           name: install dockerize
-#           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-#           environment:
-#             DOCKERIZE_VERSION: v0.3.0
-#       - run:
-#           name: Wait for db
-#           command: dockerize -wait tcp://localhost:5432 -timeout 1m
