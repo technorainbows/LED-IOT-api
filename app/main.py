@@ -10,7 +10,7 @@ from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
 # from werkzeug.contrib.fixers import ProxyFix
 import redis
-from redis.exceptions import WatchError, ConnectionError
+from redis.exceptions import WatchError
 # import json
 
 # import yaml
@@ -21,7 +21,7 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=logging.INFO,
     datefmt='%Y-%m-%d %H:%M:%S',
-    )
+)
 
 # LOG_LEVEL_NAMES = [logging.getLevelName(v) for v in
 #                    sorted(getattr(logging, '_levelToName', None)
@@ -51,7 +51,8 @@ else:
             logging.info("2. INT LOG_LEVEL set to: %s", LOG_LEVEL)
         else:
             LOG_LEVEL = logging.WARNING
-            logging.warning("Incorrect LOG_LEVEL provided (%s). Setting to WARNING.", TEMP_LEVEL)
+            logging.warning(
+                "Incorrect LOG_LEVEL provided (%s). Setting to WARNING.", TEMP_LEVEL)
     except Exception:
         logging.error("Error with LOG_LEVEL provided. Using default.")
         LOG_LEVEL = logging.WARNING
@@ -67,31 +68,63 @@ else:
     HB_EXP = 10
 
 
-APP = Flask(__name__)
-# APP.wsgi_app = ProxyFix(APP.wsgi_app)
-API = Api(APP, version='0.4', title='LED API',
-          description='A simple LED IOT API', doc='/docs'
-          )
+class Server(object):
+    """Initialize and run Flask app and api as method for import."""
 
+    def __init__(self):
+        self.app = Flask(__name__)
+        self.api = Api(self.app,
+                       version='0.4',
+                       title='LED API',
+                       description='A simple LED IOT API',
+                       doc='/docs'
+                       )
+        CORS(self.app)
+
+    def run(self):
+        """Run flask app."""
+
+        self.app.run(debug=environment_config["debug"],
+                     port=environment_config["port"])
+
+
+server = Server()
+APP = server.app
+API = server.api
 CORS(APP)
+# APP = Flask(__name__)
+# APP.wsgi_app = ProxyFix(APP.wsgi_app)
+# API = Api(APP, version='0.4', title='LED API',
+#   description='A simple LED IOT API', doc='/docs'
+#   )
+
+
 # ns = API.namespace('Devices', description='DEVICES operations')
 
 # Default device settings.
 DEFAULT = {
-        'onState': 'true',
-        'brightness': '255',
-        'name': 'Default'
-        }
+    'onState': 'true',
+    'brightness': '255',
+    'name': 'Default'
+}
 
 
 # Single Device Data Model
 DEVICE = API.model('Device', {
     'onState': fields.String(description='The on/off state',
-                             attribute='onState', required=False, default=True),
+                             attribute='onState',
+                             required=False,
+                             default=True),
     'brightness': fields.String(description='The LED brightness',
-                                attribute='brightness', min=0, max=255, required=False, default=255),
+                                attribute='brightness',
+                                min=0,
+                                max=255,
+                                required=False,
+                                default=255),
     'name': fields.String(description="name of the device",
-                          attribute='name', required=False, default='N/A')
+                          attribute='name',
+                          required=False,
+                          default='N/A')
 })
 
 # Device List Data Model
@@ -102,7 +135,7 @@ LIST_OF_DEVICES = API.model('ListedDevices', {
 
 HEARTBEAT = API.model('Heartbeat', {
     'heartbeat': fields.String(required=False, description='Device heartbeat')
-    })
+})
 
 
 # def abort_if_device_not_found(device_id):
@@ -137,7 +170,7 @@ class Redis(object):
                         pipe.hmset(key, DEFAULT)
                         # time.sleep(5)
                         pipe.execute()
-                        # device = DEFAULT
+                        device = DEFAULT
                         break
                     else:
                         device = pipe.hgetall(key)
@@ -147,14 +180,15 @@ class Redis(object):
 
                         # Convert dictionary items from bytes to strings
                         for dkey, value in device.items():
-                            new_dict[dkey.decode("utf-8")] = value.decode("utf-8")
+                            new_dict[dkey.decode(
+                                "utf-8")] = value.decode("utf-8")
                         device = new_dict
                         logging.info("get: device found: %s", str(device))
                         break
                 except WatchError:
                     logging.warning("get: watcherror, trying again")
                     continue
-                except ConnectionError:
+                except redis.ConnectionError:
                     logging.exception("Connection error")
                 except Exception:
                     logging.exception("Unexpected error")
@@ -169,12 +203,13 @@ class Redis(object):
                     pipe.watch(key)
                     if pipe.exists(key) == 0:
                         logging.info("set: no device")
-                        pipe.multi()
                         pipe.hmset(key, DEFAULT)
+                        print("field: ", field, " value: ", value)
                         pipe.hmset(key, {field: value})
                         # time.sleep(5)
-                        # device = pipe.hgetall(key)
+                        device = pipe.hgetall(key)
                         pipe.execute()
+                        logging.info("set: device now: %s", str(device))
                         break
 
                     else:
@@ -196,7 +231,7 @@ class Redis(object):
 
             # Convert dictionary items from bytes to strings
             for dkey, value in device.items():
-                LOG_LEVEL[dkey.decode("utf-8")] = value.decode("utf-8")
+                new_dict[dkey.decode("utf-8")] = value.decode("utf-8")
             device = new_dict
             logging.info("Set: new device = %s", str(device))
 
@@ -232,7 +267,8 @@ class Redis(object):
     def set_hb(self, heartbeat):
         """Set heartbeat key in redis that expires in provided time."""
         try:
-            response = self.redis.setex(heartbeat, HB_EXP, "none")  # name, time, value
+            response = self.redis.setex(
+                heartbeat, HB_EXP, "none")  # name, time, value
 
         except ConnectionError:
             logging.exception("Connection error")
@@ -263,7 +299,7 @@ class Heartbeat(Resource):
             logging.error('Error, device not found')
             return ('Error, device not found', 404)
         else:
-            return jsonify(heartbeat, response, 200)
+            return jsonify(response)
 
     @API.response(200, 'Success')
     # @API.param('heartbeat')
@@ -277,7 +313,7 @@ class Heartbeat(Resource):
         payload = API.payload
         logging.info("payload = %s", payload)
         if response:
-            return jsonify(heartbeat, response, 200)
+            return jsonify(response)
         else:
             logging.error("Error, failed to set heartbeat")
             return "Error, failed to set heartbeat.", 404
@@ -304,31 +340,32 @@ class Heartbeats(Resource):
 @API.doc(responses={404: 'Device not found', 200: 'Device found'},
          params={'device_id': 'The Device ID'})
 @API.doc(description='device_id should be {0}'.format(
-        ', '.join(REDIS.keys("device_id"))))
+    ', '.join(REDIS.keys("device_id"))))
 class Device(Resource):
     """Show a device's properties and let user delete or change properties."""
 
-    @API.response(203, 'Success', DEVICE)
+    @API.response(200, 'Success', DEVICE)
     def get(self, device_id):
-        """Fetch a given resourc."""
+        """Fetch a given resource."""
         # abort_if_device_not_found(device_id)
         redis_get = REDIS.get(device_id)
         # print("device_id: ", device_id)
         # print('redis_get: ', redis_get)
-        return jsonify(device_id, redis_get, 203)
+        return jsonify(device_id, redis_get)
         # return jsonify(DEVICES[device_id],200)
 
-    @API.doc(responses={204: 'Device deleted'})
+    @API.doc(responses={200: 'Device deleted'})
     def delete(self, device_id):
         """Delete a given resource."""
         # abort_if_device_not_found(device_id)
         response = REDIS.delete(device_id)
+        logging.info("REDIS delete response: %s", str(response))
         if response:
             logging.info("Device deleted: %s", device_id)
-            return 'Device deleted', 204
+            return jsonify('Device deleted', 200)
         else:
             logging.error('Error, device not found: %s', device_id)
-            return 'Error: device not found', 404
+            return jsonify('Error: device not found', 404)
 
     @API.expect(DEVICE, validate=True)
     # @API.doc(parser=parser)
@@ -355,7 +392,7 @@ class DeviceList(Resource):
     @API.response(200, 'Success', LIST_OF_DEVICES)
     def get(self):
         """Return a list of all devices and their properties."""
-        devices = REDIS.keys("device_id")
+        devices = REDIS.keys("device_")
         logging.info("returning Device List: %s", str(devices))
         return jsonify(devices, 200)
 
