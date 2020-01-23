@@ -33,5 +33,5 @@ jobs:
       - run:
           name: Push Docker Repo
           command: |
-            docker build -t technorainbows/led_iot_api:test2
+            docker build -t technorainbows/led_iot_api:test2 .
             docker push technorainbows/led_iot_api:test2
