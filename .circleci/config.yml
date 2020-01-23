@@ -22,3 +22,17 @@ jobs:
           name: Test API routes
           command: |
             python -m pytest
+      
+      # Install via apk on alpine based images
+      - run:
+          name: Install Docker client
+          command: apk add docker-cli
+
+      - setup_remote_docker
+      
+      - run:
+          name: Push Docker Repo
+          command: |
+          TAG=0.1.$CIRCLE_BUILD_NUM
+          docker build -t technorainbows/led_iot_api:$TAG .
+          docker push technorainbows/led_iot_api:$TAG    
