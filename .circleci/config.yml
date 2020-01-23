@@ -33,6 +33,6 @@ jobs:
       - run:
           name: Push Docker Repo
           command: |
-            docker build -t $DOCKER_USER/led_iot_api:test2 .
+            docker build -t $DOCKER_USER/led_iot_api:$CIRCLE_SHA1 .
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push $DOCKER_USER/led_iot_api:test2
+            docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
