@@ -24,9 +24,9 @@ jobs:
             python -m pytest
       
       # Install via apk on alpine based images
-      - run:
-          name: Install Docker client
-          command: apk add docker-cli
+      # - run:
+      #     name: Install Docker client
+      #     command: apk add docker-cli
 
       - setup_remote_docker
       
