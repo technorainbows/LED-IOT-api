@@ -28,8 +28,7 @@ jobs:
           name: Install Docker client
           command: apk add docker-cli
 
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
       
       - run:
           name: Push Docker Repo
