@@ -6,13 +6,13 @@ jobs:
         environment:
           FLASK_CONFIG: testing
           REDIS_HOST: localhost
-      - image: circleci/redis:latest
+      - image: circleci/redis:5.0.7
     steps:
       - checkout
       - run:
           name: Set Up Environment
           command: | 
-            sudo python -m pip install pydocstyle pylint flask_cors flask redis flask_restplus pytest pytest-flask
+            sudo python -m pip install -r requirements.txt
       - run: 
           name: Test pylint and pycodestyle
           command: |
