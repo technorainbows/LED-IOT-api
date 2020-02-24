@@ -9,6 +9,11 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <!--     <link rel="stylesheet" href="css/bootstrap.min.css"> -->
     <link rel="stylesheet" href="css/styles.css">
+    <!-- Latest Okta CDN production Javascript and CSS -->
+    <script src="https://global.oktacdn.com/okta-signin-widget/3.2.2/js/okta-sign-in.min.js" type="text/javascript"></script>
+    <link href="https://global.oktacdn.com/okta-signin-widget/3.2.2/css/okta-sign-in.min.css" type="text/css" rel="stylesheet" />
+    <script src="js/okta.js"></script>
+
 </head>
 
 <body>
@@ -20,6 +25,10 @@
     </header>
     <!-- MAIN CONTENT -->
     <!-- <div class="overlay"> -->
+
+    <div id="okta-login-container"></div>
+
+
     <div id="main-content" class="container-fluid">
 
         <div class="row" id="nested-content">
@@ -36,61 +45,76 @@
             <div class="col-lg-8 col-md-7 col-sm-7 container-fluid device-params" id="parameter-UI">
                 <!-- <div> -->
                 <!--        ON/OFF BUTTON -->
-                <div class="custom-control custom-switch">
-
-
-                <div id="btn-ledState" class="btn-group btn-group-toggle align-middle col-lg-6 custom-switch" data-toggle="buttons">
-                    <label class="btn btn-lg btn-primary btn-toggle">
+                <div class="custom-switch col-lg-3 align-middle align-center">
+                <!-- <div id="btn-ledState" class="btn-group btn-group-toggle align-middle col-lg-3 custom-switch" data-toggle="buttons">
+                    <label class="btn btn-primary btn-toggle">
                         <input type="radio" name="options" id="ledON" autocomplete="off"> On
                     </label>
-                    <label class="btn btn-lg btn-primary btn-toggle">
+                    <label class="btn btn-primary btn-toggle">
                         <input type="radio" name="options" id="ledOFF" autocomplete="off"> Off
                     </label>
+                </div> -->
+                <!-- <div class="custom-control custom-switch btn-lg">
+                    <input type="checkbox" data-size="large" class="custom-control-input switch-lg" id="onSwitch">
+                    <label class="custom-control-label" for="onSwitch">On</label>
+                </div> -->
+
+                <!-- Rectangular switch -->
+                <div id="label-onSwitch" class="btn-secondary justify-content-center align-middle align-center">
+                    <!-- <label class="label-primary"> -->
+                    <label class="align-middle">Off</label>
+                    <label class="switch">
+                    <input type="checkbox" id="onSwitch">
+                    <span class="slider"></span>
+                    </label>
+                    <label>On</label>
+                    </label>
                 </div>
-                <div class="custom-control custom-switch">
-  <input type="checkbox" class="custom-control-input" id="customSwitches">
-  <label class="custom-control-label" for="customSwitches">On</label>
-</div>
-                    
-                    <!-- Default switch -->
+                <!-- Default switch -->
 
 
-<!--                     <div class="custom-control custom-switch">
+                <!--                     <div class="custom-control custom-switch">
                         <input type="checkbox" class="custom-control-input" disabled id="customSwitch2">
                         <label class="custom-control-label" for="customSwitch2">Disabled switch element</label>
-                    </div> --> 
-                </div> <!-- on/off button div close -->
-                <!-- </div>  -->
-                <!-- <div class="row" padding=10px> -->
-                <!--         BRIGHTNESS SLIDER -->
-                <div class="col-sm-12 col-lg-10 col-md-12 col-xs-12 device-params" id="brightness">
-                    <form class="">
-                        <div class="row col-11 ">
-                            <label for="slider-brightness" id="brightness-label" class="ui-label col-md-auto col-sm-12">Brightness</label>
-                            <input type="range" value=100 min=0 max=255 step=1 name="slider-brightness" class="form-control-range col-lg-6 col-md-5 col-sm-8 col-xs-auto" id="slider-brightness">
-                            <label id="brightness-value" class="align-middle ui-label">100</span>
+                    </div> -->
+            </div>
+            <!-- on/off button div close -->
+            <!-- </div>  -->
+            <!-- <div class="row" padding=10px> -->
+            <!--         BRIGHTNESS SLIDER -->
+            <div class="col-sm-12 col-lg-10 col-md-12 col-xs-12 device-params" id="brightness">
+                <form class="">
+                    <div class="row col-11 ">
+                        <label for="slider-brightness" id="brightness-label" class="ui-label col-md-auto col-sm-12">Brightness</label>
+                        <input type="range" value=100 min=0 max=255 step=1 name="slider-brightness" class="form-control-range col-lg-6 col-md-5 col-sm-8 col-xs-auto" id="slider-brightness">
+                        <label id="brightness-value" class="align-middle ui-label">100</span>
                         </div>
                     </form>
                     <!--  <div class="row col-lg-12 col-md-10">
                     <label for="formControlRange" id="hue-label" class="ui-label align-middle">Hue</label>
-                    <input type="range" min="0" max="255" class="form-control-range col-lg" id="formControlRange">
-                </div> -->
-                </div> <!-- /BRIGHTNESS SLIDER -->
-                <!--     Devices NAME FORM -->
-                <div class="align-right device-params col-sm-12 col-md-12 col-lg-8" id="device-name">
-                    <form class="form-inline" form action="" form id="name-form">
-                        <label class="sr-only" for="inlineFormInputName2">Name</label>
-                        <input type="text" class="form-control col-sm-8 col-md-8" id="inputName" placeholder="New device name.">
-                        <button type="submit" class="btn btn-primary  col-3" id="save-name">Save</button>
-                    </form>
-                </div> <!-- close div for device name form -->
-            </div> <!-- close for parameter UI -->
-            <!-- <div class="row col-lg-2"> -->
-            <!-- <div class="row" id="device-info"> -->
-            <!-- </div> -->
-            <!-- </div> -->
-        </div> <!-- nested content -->
-    </div> <!-- main content div close -->
+                        <input type="range" min="0" max="255" class="form-control-range col-lg" id="formControlRange">
+                    </div> -->
+            </div>
+            <!-- /BRIGHTNESS SLIDER -->
+            <!--     Devices NAME FORM -->
+            <div class="align-right device-params col-sm-12 col-md-12 col-lg-8" id="device-name">
+                <form class="form-inline" form action="" form id="name-form">
+                    <label class="sr-only" for="inlineFormInputName2">Name</label>
+                    <input type="text" class="form-control col-sm-8 col-md-8" id="inputName" placeholder="New device name.">
+                    <button type="submit" class="btn btn-primary  col-3" id="save-name">Save</button>
+                </form>
+            </div>
+            <!-- close div for device name form -->
+        </div>
+        <!-- close for parameter UI -->
+        <!-- <div class="row col-lg-2"> -->
+        <!-- <div class="row" id="device-info"> -->
+        <!-- </div> -->
+        <!-- </div> -->
+    </div>
+    <!-- nested content -->
+    </div>
+    <!-- main content div close -->
     <!-- </div> -->
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -99,6 +123,8 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="js/apiUtils.js"></script>
     <script src="js/ledAPI.js"></script>
+
+
 </body>
 
 </html>

@@ -1,13 +1,14 @@
-/*
-  LED-IOT-APP v0.3
-  Simple sketch that uses ESP board to connect to local wifi network then gets LED state from python API (ledAPI.py)
+/************************************************************************************************************************
+   LED-IOT-APP v1.0
+   Communicates with a rest api server to get LED control parameters in order to control attached LEDs.
+   Also updates its state (e.g., "heartbeat") to rest API.
+ ********************************************************************************************************************/
 
-*/
 #include "Arduino_DebugUtils.h"
-//#include "SerialDebug.h" //https://github.com/JoaoLopesF/SerialDebug
 #include <FastLED.h>
-#include "credentials.h" // wifi network credentials stored in separate file
+#include "credentials.h" // wifi network credentials and authorization token stored in separate file
 #include "sha1.h"
+
 // if using ESP32
 #include <WiFiMulti.h>
 #include <WiFi.h>
@@ -15,7 +16,7 @@
 #include <HTTPClient.h>
 #include <ArduinoOTA.h>
 WiFiMulti wifiMulti;
-
+//#include <WiFiClientSecure.h>
 
 // if using OLED display
 #include "SSD1306Wire.h" // legacy include: `#include "SSD1306.h"` //OLED screen
@@ -31,40 +32,46 @@ SSD1306Wire  display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board disp
 //#include <ArduinoHttpClient.h>
 
 
-//*********** SerialDebug Library Stuff *********************//
 
-// Disable all debug ? Good to release builds (production)
-// as nothing of SerialDebug is compiled, zero overhead :-)
-// For it just uncomment the DEBUG_DISABLED
-//#define DEBUG_DISABLED true
+// This is GandiStandardSSLCA2.pem, the root Certificate Authority that signed
+// the server certifcate for the demo server https://jigsaw.w3.org in this
+// example. This certificate is valid until Sep 11 23:59:59 2024 GMT
+const char* rootCACertificate = \
+                                "-----BEGIN CERTIFICATE-----\n" \
+                                "MIIF6TCCA9GgAwIBAgIQBeTcO5Q4qzuFl8umoZhQ4zANBgkqhkiG9w0BAQwFADCB\n" \
+                                "iDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0pl\n" \
+                                "cnNleSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNV\n" \
+                                "BAMTJVVTRVJUcnVzdCBSU0EgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkwHhcNMTQw\n" \
+                                "OTEyMDAwMDAwWhcNMjQwOTExMjM1OTU5WjBfMQswCQYDVQQGEwJGUjEOMAwGA1UE\n" \
+                                "CBMFUGFyaXMxDjAMBgNVBAcTBVBhcmlzMQ4wDAYDVQQKEwVHYW5kaTEgMB4GA1UE\n" \
+                                "AxMXR2FuZGkgU3RhbmRhcmQgU1NMIENBIDIwggEiMA0GCSqGSIb3DQEBAQUAA4IB\n" \
+                                "DwAwggEKAoIBAQCUBC2meZV0/9UAPPWu2JSxKXzAjwsLibmCg5duNyj1ohrP0pIL\n" \
+                                "m6jTh5RzhBCf3DXLwi2SrCG5yzv8QMHBgyHwv/j2nPqcghDA0I5O5Q1MsJFckLSk\n" \
+                                "QFEW2uSEEi0FXKEfFxkkUap66uEHG4aNAXLy59SDIzme4OFMH2sio7QQZrDtgpbX\n" \
+                                "bmq08j+1QvzdirWrui0dOnWbMdw+naxb00ENbLAb9Tr1eeohovj0M1JLJC0epJmx\n" \
+                                "bUi8uBL+cnB89/sCdfSN3tbawKAyGlLfOGsuRTg/PwSWAP2h9KK71RfWJ3wbWFmV\n" \
+                                "XooS/ZyrgT5SKEhRhWvzkbKGPym1bgNi7tYFAgMBAAGjggF1MIIBcTAfBgNVHSME\n" \
+                                "GDAWgBRTeb9aqitKz1SA4dibwJ3ysgNmyzAdBgNVHQ4EFgQUs5Cn2MmvTs1hPJ98\n" \
+                                "rV1/Qf1pMOowDgYDVR0PAQH/BAQDAgGGMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYD\n" \
+                                "VR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMCIGA1UdIAQbMBkwDQYLKwYBBAGy\n" \
+                                "MQECAhowCAYGZ4EMAQIBMFAGA1UdHwRJMEcwRaBDoEGGP2h0dHA6Ly9jcmwudXNl\n" \
+                                "cnRydXN0LmNvbS9VU0VSVHJ1c3RSU0FDZXJ0aWZpY2F0aW9uQXV0aG9yaXR5LmNy\n" \
+                                "bDB2BggrBgEFBQcBAQRqMGgwPwYIKwYBBQUHMAKGM2h0dHA6Ly9jcnQudXNlcnRy\n" \
+                                "dXN0LmNvbS9VU0VSVHJ1c3RSU0FBZGRUcnVzdENBLmNydDAlBggrBgEFBQcwAYYZ\n" \
+                                "aHR0cDovL29jc3AudXNlcnRydXN0LmNvbTANBgkqhkiG9w0BAQwFAAOCAgEAWGf9\n" \
+                                "crJq13xhlhl+2UNG0SZ9yFP6ZrBrLafTqlb3OojQO3LJUP33WbKqaPWMcwO7lWUX\n" \
+                                "zi8c3ZgTopHJ7qFAbjyY1lzzsiI8Le4bpOHeICQW8owRc5E69vrOJAKHypPstLbI\n" \
+                                "FhfFcvwnQPYT/pOmnVHvPCvYd1ebjGU6NSU2t7WKY28HJ5OxYI2A25bUeo8tqxyI\n" \
+                                "yW5+1mUfr13KFj8oRtygNeX56eXVlogMT8a3d2dIhCe2H7Bo26y/d7CQuKLJHDJd\n" \
+                                "ArolQ4FCR7vY4Y8MDEZf7kYzawMUgtN+zY+vkNaOJH1AQrRqahfGlZfh8jjNp+20\n" \
+                                "J0CT33KpuMZmYzc4ZCIwojvxuch7yPspOqsactIGEk72gtQjbz7Dk+XYtsDe3CMW\n" \
+                                "1hMwt6CaDixVBgBwAc/qOR2A24j3pSC4W/0xJmmPLQphgzpHphNULB7j7UTKvGof\n" \
+                                "KA5R2d4On3XNDgOVyvnFqSot/kGkoUeuDcL5OWYzSlvhhChZbH2UF3bkRYKtcCD9\n" \
+                                "0m9jqNf6oDP6N8v3smWe2lBvP+Sn845dWDKXcCMu5/3EFZucJ48y7RetWIExKREa\n" \
+                                "m9T8bJUox04FB6b9HbwZ4ui3uRGKLXASUoWNjDNKD/yZkuBjcNqllEdjB+dYxzFf\n" \
+                                "BT02Vf6Dsuimrdfp5gJ0iHRc2jTbkNJtUQoj1iM=\n" \
+                                "-----END CERTIFICATE-----\n";
 
-// Define the initial debug level here (uncomment to do it)
-// #define DEBUG_INITIAL_LEVEL DEBUG_LEVEL_INFO
-
-// Disable SerialDebug debugger ? No more commands and features as functions and globals
-// Uncomment this to disable it
-//#define DEBUG_DISABLE_DEBUGGER true
-
-// Disable auto function name (good if your debug yet contains it)
-//#define DEBUG_AUTO_FUNC_DISABLED true
-
-// Force debug messages to can use flash ) ?
-// Disable native Serial.printf (if have)
-// Good for low memory, due use flash, but more slow and not use macros
-//#define DEBUG_USE_FLASH_F true
-
-//uint32_t mTimeSeconds = 0;
-//boolean mLedON = false; // Buildin Led ON ?
-
-// Debug levels
-
-//    printlnV(F("This is a message of debug level VERBOSE"));
-//    printlnD(F("This is a message of debug level DEBUG"));
-//    printlnI(F("This is a message of debug level INFO"));
-//    printlnW(F("This is a message of debug level WARNING"));
-//    printlnE(F("This is a message of debug level ERROR"));
-
-//***********************************************************//
 
 #define NETWORK_VANNEST
 
@@ -97,7 +104,7 @@ FASTLED_USING_NAMESPACE
 
 //#ifdef DEV_LIGHTCONTROL_TRIANGLE
 #define DATA_PIN   33
-char* hostname = "Trianglez";
+String hostname = "Trianglez";
 #define COLOR_ORDER GRB //pixels
 #define COLOR_CORRECT TypicalLEDStrip
 #define NUM_LEDS 200
@@ -122,10 +129,13 @@ int brightVal = BRIGHTNESS;
 
 #define NUM_SECONDS_TO_WAIT 5
 
-// Set up wireless updating if using ESP32
+/****************************************************************************************
+   setupAOTA: Set up wireless updating if using ESP32
+ ***************************************************************************************/
+
 void setupAOTA() {
 
-  ArduinoOTA.setHostname(hostname);
+  ArduinoOTA.setHostname(hostname.c_str());
 
   ArduinoOTA
   .onStart([]() {
@@ -157,9 +167,10 @@ void setupAOTA() {
 }
 
 
-/* setDeviceID: Generates a unique device ID based on performing SHA1 hashing of device's MAC address.
-                Returns this ID as a string variable.
-*/
+/* ****************************************************************************************
+    setDeviceID: Generates a unique device ID based on performing SHA1 hashing of device's
+                 MAC address.Returns this ID as a string variable.
+ *****************************************************************************************/
 String setDeviceID() {
   byte mac[6] = {};
 
@@ -209,6 +220,10 @@ String setDeviceID() {
   return device_hash;
 }
 
+/***************************************************************************************
+  setup
+***************************************************************************************/
+
 void setup() {
   Serial.begin(115200);
   Debug.timestampOn();
@@ -225,23 +240,6 @@ void setup() {
   delay(500); // Wait a time
 
 #endif
-
-  // Debug
-
-  // Attention:
-  // SerialDebug starts disabled and it only is enabled if have data avaliable in Serial
-  // Good to reduce overheads.
-  // if You want debug, just press any key and enter in monitor serial
-
-  // Note: all debug in setup must be debugA (always), due it is disabled now.
-
-  //    printlnA(F("**** Setup: initializing ..."));
-
-  // Buildin led
-  //
-  //    pinMode(LED_BUILTIN, OUTPUT);
-  //    digitalWrite(LED_BUILTIN, LOW);
-
 
 
   //all this is for OLED status screen
@@ -297,11 +295,13 @@ void setup() {
 }
 
 
-/*
-   monitorWiFi
-*/
+/****************************************************************************************
+    monitorWiFi
+****************************************************************************************/
 void monitorWiFi()
 {
+  Debug.print(DBG_INFO, "Monitoring wifi...");
+
   if (wifiMulti.run() != WL_CONNECTED)
   {
     if (connectioWasAlive == true)
@@ -327,39 +327,37 @@ void monitorWiFi()
 }
 
 
-/*
-    heartbeat: sends a POST request with device's unique ID to API
-*/
+/***************************************************************************
+   heartbeat: sends a POST request with device's unique ID to API
+***************************************************************************/
 
 void heartbeat() {
-  monitorWiFi();
+  //  monitorWiFi();
   //  EVERY_N_MILLISECONDS(500) {
   if (wifiMulti.run() == WL_CONNECTED) { //Check WiFi connection status
 
-    for (int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
-      Serial.print(".");
-      delay(1000);
-    }
-
-    Debug.print(DBG_VERBOSE, "setting heartbeat");
+    Debug.print(DBG_INFO, "setting heartbeat");
     HTTPClient http;
     String HB_URL = apiURL + "HB/" + DEVICE_ID;
+    //    String HB_URL = "https://jsonplaceholder.typicode.com/posts?userId=1";
+
     http.begin(HB_URL);
     //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
     http.addHeader("Content-Type", "application/json");             //Specify content-type header
+    http.addHeader("Authorization", "Bearer " + auth_token);
     //    delay(200);
-    Debug.print(DBG_VERBOSE, "about to POST");
+    Debug.print(DBG_INFO, "about to POST");
     //    char* httpResponse = http.POST(DEVICE_ID);
     int httpResponseCode = http.POST("{}");   //Send the actual POST request
-    Debug.print(DBG_VERBOSE, "POSTing complete");
+    Debug.print(DBG_INFO, "POSTing complete");
 
     if (httpResponseCode > 0) {
 
       String response = http.getString();                       //Get the response to the request
       //      Serial.println("POST RESPONSE CODE:");
-      Debug.print(DBG_VERBOSE, "%i", httpResponseCode);   //Print return code
+      Debug.print(DBG_INFO, "%i", httpResponseCode);   //Print return code
       //      Serial.print("POST RESPONSE: ");
-       Debug.print(DBG_VERBOSE, "%s", response);           //Print request answer
+      Debug.print(DBG_INFO, "%s", response);           //Print request answer
 
     } else {
 
@@ -373,136 +371,90 @@ void heartbeat() {
   } else {
 
     Debug.print(DBG_ERROR, "Error in WiFi connection");
-
+    for (int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
+      Serial.print(".");
+      delay(100);
+    }
   }
 
 
 }
 
+/*******************************************************
+  Main Loop
+*******************************************************/
 
 void loop() {
-  //  debugHandle();
 
-  //   check wifi status
-  for (int i = 0; i < 5 && WiFi.status() != WL_CONNECTED; i++) {
-    Serial.print(".");
-    delay(1000);
+  monitorWiFi();
+  EVERY_N_MILLISECONDS(500) {
+
+    heartbeat();
   }
 
   EVERY_N_MILLISECONDS(200) {
-    if (wifiMulti.run() != WL_CONNECTED) {
-      Debug.print(DBG_ERROR, "WiFi not connected!");
-      // turn first 5 leds to red if not connected
-      fill_solid(leds, 20, CRGB::Red);
-      FastLED.show();
-      //    delay(200);
-    }
-  }
 
-
-
-  EVERY_N_MILLISECONDS(500) {
-
-
-    monitorWiFi();
     ArduinoOTA.handle();
-    //    if (wifiMulti.run() == WL_CONNECTED) { //Check WiFi connection status
-    //
-    //      //      }
-    //      //    for(int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
-    //      //      Serial.print(".");
-    //      //      delay(1000);
-    //      //  }
-    //
-    ////      Serial.println("setting heartbeat");
-    //      HTTPClient http;
-    //      String HB_URL = IPaddress + ":5000/Devices/HB/" + DEVICE_ID;
-    //      Serial.println(HB_URL);
-    //      http.begin(HB_URL);
-    //      //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
-    //      http.addHeader("Content-Type", "application/json");             //Specify content-type header
-    //      //    delay(200);
-    //      Serial.println("about to POST");
-    //      //    char* httpResponse = http.POST(DEVICE_ID);
-    //      int httpResponseCode = http.POST("{}");   //Send the actual POST request
-    //      Serial.println("POSTing complete");
-    //
-    //      if (httpResponseCode > 0) {
-    //
-    //        String response = http.getString();                       //Get the response to the request
-    //        Serial.print("POST RESPONSE CODE:");
-    //        Serial.println(httpResponseCode);   //Print return code
-    //        //        Serial.print("POST RESPONSE: ");
-    //        //        Serial.println(response);           //Print request answer
-    //
-    //      } else {
-    //
-    //        Serial.print("Error on sending POST: ");
-    //        Serial.println(httpResponseCode);
-    //
-    //      }
-    //
-    //      http.end();  //Free resources
-    //
-    //    } else {
-    //
-    //      Serial.println("Error in WiFi connection");
-    //
-    //    }
+
 
     // wait for WiFi connection
     if ((wifiMulti.run() == WL_CONNECTED)) {
-      heartbeat();
-      //      Serial.println("wifi connected, connecting to api");
+
 
       HTTPClient http;
 
       // start connection and send HTTP header
-      //      Serial.print("beginning HTTP connection to: ");
-      //      Serial.println(apiURL + DEVICE_ID);
       http.begin(apiURL + DEVICE_ID);
+      http.addHeader("Authorization", "Bearer " + auth_token);
 
-
-
-
-
-      //      Serial.print("[HTTP] GET...\n");
       int httpCode = http.GET();
 
       // Check returning httpCode -- will be negative on error
       if (httpCode > 0) {
-        //          Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+        Debug.print(DBG_INFO, "[HTTP] GET... code: %d\n", httpCode);
 
         // file found at server
         if (httpCode == HTTP_CODE_OK) {
-          //          Serial.print("Found file at server: ");
+          Debug.print(DBG_INFO, "Found file at server: ");
           String payload = http.getString();
-          //          Serial.println(payload);
+          Debug.print(DBG_INFO, payload.c_str());
 
           // parse payload
 
-          const size_t capacity = JSON_ARRAY_SIZE(3) + JSON_OBJECT_SIZE(3) + 60;
+          const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + 100;
           DynamicJsonDocument doc(capacity);
-          //          const char* json = "[\"deviceID\",{\"brightness\":\"255\",\"name\":\"Default\",\"onState\":\"true\"},200]";
 
-          //        const char* json = "[{\"brightness\":17,\"name\":\"Ashley-Triangle\",\"onState\":true},200]";
+          //                    const char* json = "[\"device_266A08DBF47456428F703EEDF1E208B7117785DF\",{\"brightness\":\"123\",\"name\":\"triangle\",\"onState\":\"true\"}]";
 
           deserializeJson(doc, payload);
-          const char* root_0 = doc[0]; // "deviceID"
+
+          const char* root_0 = doc[0]; // "device_266A08DBF47456428F703EEDF1E208B7117785DF"
 
           JsonObject root_1 = doc[1];
-          const char* root_1_brightness = root_1["brightness"]; // "255"
-          const char* root_1_name = root_1["name"]; // "Default"
+          const char* root_1_brightness = root_1["brightness"]; // "123"
+          const char* root_1_name = root_1["name"]; // "triangle"
           const char* root_1_onState = root_1["onState"]; // "true"
+          Debug.print(DBG_DEBUG, "root_0 = ");
+          Debug.print(DBG_DEBUG, root_0);
+          Debug.print(DBG_DEBUG, "brightness = ");
+          Debug.print(DBG_DEBUG, root_1_brightness);
+          Debug.print(DBG_DEBUG, "name = ");
+          Debug.print(DBG_DEBUG, root_1_name);
+          onState = root_1_onState;
+          Debug.print(DBG_DEBUG, "onState = ");
+          Debug.print(DBG_DEBUG, root_1_onState);
+
+          //          strcpy(hostname, root_1_name);
+
+
           int root_2 = doc[2]; // 200
 
           int newBright = atoi(root_1_brightness);
 
-          onState = root_1_onState;
-          //          Serial.printf("brightVal = %d\n", brightVal);
           if (onState != lastState) {
             lastState = onState;
-            //            Serial.println("onState = " + onState);
+            Debug.print(DBG_INFO, "onState changed!");
+            Debug.print(DBG_INFO, onState.c_str());
 
           }
 
@@ -512,6 +464,10 @@ void loop() {
 
             FastLED.setBrightness(brightVal);
             FastLED.show();
+          }
+          if (hostname != root_1_name) {
+            hostname = root_1_name;
+            updateDisplay();
           }
 
         }
@@ -537,36 +493,41 @@ void loop() {
 
 }
 
-/*
-   updateLEDS: toggles LEDs on/off depending on onState; if LEDs are on then fills with rainbow fade
-*/
+/*****************************************************************************************************
+  updateLEDS: toggles LEDs on/off depending on onState; if LEDs are on then fills with rainbow fade
+*****************************************************************************************************/
 
 void updateLEDS() {
 
-  if (onState == "false") fill_solid(leds, NUM_LEDS, CRGB::Black);
+  if (onState == "false") {
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    Debug.print(DBG_VERBOSE, "onstate is false");
+    FastLED.show();
+  }
 
   else {
+    Debug.print(DBG_VERBOSE, "onState is true");
     fill_rainbow( leds, NUM_LEDS, gHue, speed);
     EVERY_N_MILLISECONDS( 10 ) {
       gHue++;  // slowly cycle the "base color" through the rainbow
+      FastLED.show();
     }
   }
   //  Serial.println("FastLED.show");
-  FastLED.show();
-
 
 }
 
-/*
-    updateDisplay: updates the little OLED status screen of device
-*/
+/**************************************************************************************************
+  updateDisplay: updates the little OLED status screen of device
+**************************************************************************************************/
 
 void updateDisplay() {
+  Debug.print(DBG_INFO, "updating display with hostname %s", hostname.c_str());
 
   display.clear();
   display.setFont(ArialMT_Plain_24); //11,16,24
   display.setTextAlignment(TEXT_ALIGN_LEFT);
-  display.drawString(0, 0, hostname);
+  display.drawString(0, 0, hostname.c_str());
   //display.display(); //draw the screen
 
   display.setFont(ArialMT_Plain_16);
