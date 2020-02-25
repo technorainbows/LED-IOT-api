@@ -1,3 +1,5 @@
+"""Authentication wrapper."""
+
 from functools import wraps
 import jwt
 from jwt.algorithms import RSAAlgorithm, HMACAlgorithm, get_default_algorithms
@@ -13,8 +15,10 @@ data = json.loads(data)
 client_secrets = data['web']
 
 def validate_access(func):
+    """Authenticate user."""
     @wraps(func)
     def wrapper_validate_access(*args, **kwargs):
+        """Validate access."""
         # decode and verify header
         # for i in args:
         #     print("args:", i.value)

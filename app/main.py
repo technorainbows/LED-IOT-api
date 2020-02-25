@@ -11,7 +11,7 @@ from flask_restplus import Api, Resource, fields
 # from werkzeug.contrib.fixers import ProxyFix
 import redis
 from redis.exceptions import WatchError
-from app.auth_decorator import validate_access
+from auth_decorator import validate_access
 # import json
 
 # import yaml
@@ -210,13 +210,13 @@ class Redis(object):
                         # time.sleep(5)
                         device = pipe.hgetall(key)
                         pipe.execute()
-                        logging.verbose("set: device now: %s", str(device))
+                        logging.info("set: device now: %s", str(device))
                         break
 
                     else:
                         pipe.hmset(key, {field: value})
                         device = pipe.hgetall(key)
-                        logging.verbose("set: device found: %s", str(device))
+                        logging.info("set: device found: %s", str(device))
                         break
 
                 except WatchError:
@@ -234,7 +234,7 @@ class Redis(object):
             for dkey, value in device.items():
                 new_dict[dkey.decode("utf-8")] = value.decode("utf-8")
             device = new_dict
-            logging.verbose("Set: new device = %s", str(device))
+            logging.info("Set: new device = %s", str(device))
 
             return device
 
@@ -242,7 +242,7 @@ class Redis(object):
         """Delete a key from Redis client."""
         try:
             response = self.redis.delete(key)
-            logging.verbose("response: %s", str(response))
+            logging.info("response: %s", str(response))
 
         except ConnectionError:
             logging.exception("Connection error")

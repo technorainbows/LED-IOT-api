@@ -8,7 +8,7 @@ import json
 
 
 def test_get_device(client):
-    """Make a tes call to /Devices/<device>"""
+    """Make a test call to /Devices/<device>."""
     response = client.get("/Devices/device200")
 
     assert response.status_code == 200
@@ -23,8 +23,7 @@ def test_get_device(client):
 
 
 def test_delete_device(client):
-    """Make a tes call to /Devices/<device>"""
-
+    """Make a tes call to /Devices/<device>."""
     response = client.delete("/Devices/device200")
 
     assert response.status_code == 200
@@ -35,8 +34,7 @@ def test_delete_device(client):
 
 
 def test_put_device(client):
-    """Makes a test put request to /Devices/<device>."""
-
+    """Make a test put request to /Devices/<device>."""
     response = client.put("/Devices/device50",
                           data=json.dumps({"brightness": "0"}),
                           content_type='application/json')
@@ -54,8 +52,7 @@ def test_put_device(client):
 
 
 def test_post_devices(client):
-    """Makes a test post to /Devices/."""
-
+    """Make a test post to /Devices/."""
     response = client.post("/Devices/",
                            data=json.dumps(
                                {"brightness": "100", "name": "New Device", "onState": "False"}),
@@ -71,7 +68,6 @@ def test_post_devices(client):
 
 def test_get_devicelist(client):
     """Make a test call to /Devices/"""
-
     response = client.get("/Devices/")
 
     assert response.status_code == 200
@@ -79,7 +75,6 @@ def test_get_devicelist(client):
 
 def test_post_hb(client):
     """Make a test post to set heartbeat."""
-
     response = client.post("/Devices/HB/device100",
                            data=json.dumps(
                                {"heartbeat": "device100"}),
@@ -91,7 +86,6 @@ def test_post_hb(client):
 
 def test_get_hblist(client):
     """Make a test call to /Devices/HB"""
-
     response = client.get("/Devices/HB/")
 
     assert response.status_code == 200
@@ -99,7 +93,6 @@ def test_get_hblist(client):
 
 def test_full_hb(client):
     """Test posting and then getting a device heartbeat."""
-
     client.post("/Devices/HB/device100",
                 data=json.dumps(
                     {"heartbeat": "device100"}),
