@@ -315,7 +315,7 @@ class Heartbeat(Resource):
         response = REDIS.set_hb(heartbeat)
         logging.warning("HB post response = %s", response)
         payload = API.payload
-        # logging.info("payload = %s", payload)
+        logging.info("payload = %s", payload)
         if response:
             logging.warn("heartbeat set: %s", response)
             return jsonify(response)
@@ -417,13 +417,13 @@ class DeviceList(Resource):
         # TODO: check if this does anything
         device_id = 'device%d' % (len(DEVICE) + 1)
         # DEVICES[device_id] = device
-        logging.info("json request received: ", str(request.json))
+        logging.info("json request received: %s", str(request.json))
 
         # Update a given resource's field with new property value received.
         for field in DEVICE:
             # print("field: ", field)
             if field in request.json:
-                print("field found: ", field, "value = ",request.json.get(field))
+                print("field found: ", field, "value = ", request.json.get(field))
                 REDIS.set(device_id, field, request.json.get(field))
 
         return jsonify(device_id, REDIS.get(device_id), 201)

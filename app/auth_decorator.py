@@ -1,11 +1,13 @@
 """Authentication wrapper."""
 
+
+import json
+# import time
 from functools import wraps
+from flask import Flask, request, make_response, jsonify
 import jwt
 from jwt.algorithms import RSAAlgorithm, HMACAlgorithm, get_default_algorithms
-import json
-import time
-from flask import Flask, request, make_response, jsonify
+
 
 with open('client_secrets.json', 'r') as myfile:
     data=myfile.read()
@@ -38,10 +40,9 @@ def validate_access(func):
             # assert(header['kid'] == kid)
             try:
                 claims = jwt.decode(access_token, client_secrets['client_secret'], verify=False)
-                # print("claims: ", claims)
-            
                 if (claims['cid'] == client_secrets['cid']) and (claims['aud'] == client_secrets['aud']):
                     print("token validated!!")
+                    
                     if claims['sub'] in client_secrets['allowed_users']:
                         # print("user permitted! - ", claims['sub'])
                         return func(*args, **kwargs)
@@ -51,8 +52,7 @@ def validate_access(func):
             except Exception as e:
                 print("Invalid token: ", str(e))
                 return make_response({'error': 'invalid token'}, 403)
-            # if we made it this far, we can continue with the main function
-        
+            # if we made it this far, we can continue with the main function     
         # else:
         #     response_body = {'error': 'invalid token'}
         #     return response_body, 401
