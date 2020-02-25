@@ -11,7 +11,7 @@ from flask_restplus import Api, Resource, fields
 # from werkzeug.contrib.fixers import ProxyFix
 import redis
 from redis.exceptions import WatchError
-from auth_decorator import validate_access
+from app.auth_decorator import validate_access
 # import json
 
 # import yaml
@@ -351,6 +351,7 @@ class Heartbeats(Resource):
 # @validate_access
 class Device(Resource):
     """Show a device's properties and let user delete or change properties."""
+
     @validate_access
     @API.response(200, 'Success', DEVICE)
     def get(self, device_id):
