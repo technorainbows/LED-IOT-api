@@ -10,8 +10,9 @@ jobs:
           command: |
             find . -type f -name '*.sh' | wc -l
             find . -type f -name '*.sh' | xargs shellcheck --external-sources
-            
-  build:
+            echo ls
+
+  build-job:
     docker:
       - image: circleci/python:3.7
         environment:
@@ -47,3 +48,12 @@ jobs:
             docker build -t $DOCKER_USER/led_iot_api:$CIRCLE_SHA1 .
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
+
+workflows:
+  version: 2
+  workflow:
+    jobs:
+      - shellcheck
+      - build-job:
+          requires:
+            - shellcheck
