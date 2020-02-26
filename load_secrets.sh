@@ -19,7 +19,7 @@ cat > ~/code/LED-IOT-api/client_secrets.json <<EOF
         ],
         "allowed_users": ["i@ashleynewton.net"],
         "cid": "$CLIENT_ID",
-        "aud": "$AUD"
+        "aud": "default"
     }
 }
 EOF
