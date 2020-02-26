@@ -29,7 +29,8 @@ jobs:
       - run:
           name: Run Config Script
           command: |
-            echo load_secrets.sh
+            chmod +x load_secrets.sh
+            echo ./load_secrets
             echo ls
       - run: 
           name: Test pylint and pycodestyle
