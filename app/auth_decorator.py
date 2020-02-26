@@ -1,6 +1,6 @@
 """Authentication wrapper."""
 
-
+import os
 import json
 # import time
 from functools import wraps
@@ -9,12 +9,15 @@ import jwt
 from jwt.algorithms import RSAAlgorithm, HMACAlgorithm, get_default_algorithms
 
 
-with open('client_secrets.json', 'r') as myfile:
+with open('./client_secrets.json', 'r') as myfile:
     data=myfile.read()
 
 # parse client secrets file
+# data = os.getenv('CLIENT_SECRETS')
 data = json.loads(data)
+print(data)
 client_secrets = data['web']
+# print(json.dumps(data))
 
 def validate_access(func):
     """Authenticate user."""
@@ -40,15 +43,19 @@ def validate_access(func):
             # assert(header['kid'] == kid)
             try:
                 claims = jwt.decode(access_token, client_secrets['client_secret'], verify=False)
+                print("claims = ", claims)
+
                 if (claims['cid'] == client_secrets['cid']) and (claims['aud'] == client_secrets['aud']):
                     print("token validated!!")
                     
                     if claims['sub'] in client_secrets['allowed_users']:
-                        # print("user permitted! - ", claims['sub'])
+                        print("user permitted! - ", claims['sub'])
                         return func(*args, **kwargs)
                     else:
                         print("user not allowed")
                         return make_response({'error': 'user not allowed'}, 403)
+                print("claims not validated")
+                    
             except Exception as e:
                 print("Invalid token: ", str(e))
                 return make_response({'error': 'invalid token'}, 403)
