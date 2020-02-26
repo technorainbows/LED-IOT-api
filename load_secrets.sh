@@ -4,7 +4,7 @@ set -e
 
 
 
-cat > ~/code/LED-IOT-api/client_secrets.json <<EOF
+cat > ./client_secrets.json <<EOF
 {
     "web": {
         "client_id": "$CLIENT_ID",
