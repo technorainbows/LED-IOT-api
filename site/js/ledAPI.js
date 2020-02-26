@@ -335,15 +335,16 @@
         device = device.slice(3, device.length)
         console.log("device to insert: ", device);
         var deviceShort = device.slice(7, 15);
+
         try {
             console.log("getting device name to insert");
-            let deviceName = await $apiUtils.getParam(apiUrl, device, "name");
+            var deviceName = await $apiUtils.getParam(apiUrl, device, "name");
         } catch (error) {
             console.error("Error caught!")
             console.error(error);
-            let deviceName = deviceShort;
+            var deviceName = deviceShort;
         }
-        console.log("deviceName = ", deviceName);
+        // console.log("deviceName = ", deviceName);
         $("<input/>").attr({ type: "button", class: "btn-device", id: device, value: deviceName.slice(0, nameMaxLength) }).appendTo("#deviceList");
 
     }
