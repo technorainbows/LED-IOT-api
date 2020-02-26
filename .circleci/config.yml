@@ -27,10 +27,9 @@ jobs:
           command: | 
             sudo python -m pip install -r requirements.txt
       - run:
-          name: Check Scripts
+          name: Run Config Script
           command: |
-            find . -type f -name '*.sh' | wc -l
-            find . -type f -name '*.sh' | xargs shellcheck --external-sources
+            echo load_secrets.sh
             echo ls
       - run: 
           name: Test pylint and pycodestyle
