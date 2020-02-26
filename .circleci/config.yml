@@ -19,7 +19,7 @@ jobs:
           FLASK_CONFIG: testing
           REDIS_HOST: localhost
       - image: circleci/redis:5.0.7
-      - image: koalaman/shellcheck-alpine:stable
+      # - image: koalaman/shellcheck-alpine:stable
     steps:
       - checkout
       - run:
@@ -29,8 +29,8 @@ jobs:
       - run:
           name: Run Config Script
           command: |
-            chmod +x load_secrets.sh
-            echo ./load_secrets
+            # sudo chmod +x load_secrets.sh
+            bash ./load_secrets.sh
             echo ls
       - run: 
           name: Test pylint and pycodestyle
