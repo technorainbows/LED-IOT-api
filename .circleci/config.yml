@@ -27,11 +27,11 @@ jobs:
           command: | 
             sudo python -m pip install -r requirements.txt
       - run:
-        name: Check Scripts
-        command: |
-          find . -type f -name '*.sh' | wc -l
-          find . -type f -name '*.sh' | xargs shellcheck --external-sources
-          echo ls
+          name: Check Scripts
+          command: |
+            find . -type f -name '*.sh' | wc -l
+            find . -type f -name '*.sh' | xargs shellcheck --external-sources
+            echo ls
       - run: 
           name: Test pylint and pycodestyle
           command: |
