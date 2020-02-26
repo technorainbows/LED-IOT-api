@@ -1,16 +1,16 @@
 version: 2
 jobs:
-  shellcheck:
-    docker:
-      - image: koalaman/shellcheck-alpine:stable
-    steps:
-      - checkout
-      - run:
-          name: Check Scripts
-          command: |
-            find . -type f -name '*.sh' | wc -l
-            find . -type f -name '*.sh' | xargs shellcheck --external-sources
-            echo ls
+  # shellcheck:
+  #   docker:
+  #     - image: koalaman/shellcheck-alpine:stable
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Check Scripts
+  #         command: |
+  #           find . -type f -name '*.sh' | wc -l
+  #           find . -type f -name '*.sh' | xargs shellcheck --external-sources
+  #           echo ls
 
   build-job:
     docker:
@@ -19,12 +19,19 @@ jobs:
           FLASK_CONFIG: testing
           REDIS_HOST: localhost
       - image: circleci/redis:5.0.7
+      - image: koalaman/shellcheck-alpine:stable
     steps:
       - checkout
       - run:
           name: Set Up Environment
           command: | 
             sudo python -m pip install -r requirements.txt
+      - run:
+        name: Check Scripts
+        command: |
+          find . -type f -name '*.sh' | wc -l
+          find . -type f -name '*.sh' | xargs shellcheck --external-sources
+          echo ls
       - run: 
           name: Test pylint and pycodestyle
           command: |
@@ -49,11 +56,11 @@ jobs:
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
 
-workflows:
-  version: 2
-  workflow:
-    jobs:
-      - shellcheck
-      - build-job:
-          requires:
-            - shellcheck
+# workflows:
+#   version: 2
+#   workflow:
+#     jobs:
+#       - shellcheck
+#       - build-job:
+#           requires:
+#             - shellcheck
