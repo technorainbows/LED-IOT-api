@@ -317,7 +317,7 @@ class Heartbeat(Resource):
         payload = API.payload
         logging.info("payload = %s", payload)
         if response:
-            logging.warn("heartbeat set: %s", response)
+            logging.warning("heartbeat set: %s", response)
             return jsonify(response)
         else:
             logging.error("Error, failed to set heartbeat")
