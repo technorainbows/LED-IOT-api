@@ -5,6 +5,21 @@ import json
 # import sys
 # from app.main import *
 # sys.path.append('../../code/LED-IOT-api')
+# from ../app.main import server
+
+
+# @pytest.fixture
+# def app():
+#     """Create a fixture whose name is "app" and returns our flask server instance."""
+#     app = server.app
+#     return app
+
+"""Load client secrets."""
+with open('../client_secrets.json', 'r') as myfile:
+    data=myfile.read()
+data = json.loads(data)
+print(data)
+client_secrets = data['web']
 
 
 def test_get_device(client):

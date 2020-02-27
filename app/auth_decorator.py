@@ -9,7 +9,7 @@ import jwt
 from jwt.algorithms import RSAAlgorithm, HMACAlgorithm, get_default_algorithms
 
 
-with open('./client_secrets.json', 'r') as myfile:
+with open('../client_secrets.json', 'r') as myfile:
     data=myfile.read()
 
 # parse client secrets file
@@ -55,7 +55,7 @@ def validate_access(func):
                         print("user not allowed")
                         return make_response({'error': 'user not allowed'}, 403)
                 print("claims not validated")
-                    
+
             except Exception as e:
                 print("Invalid token: ", str(e))
                 return make_response({'error': 'invalid token'}, 403)
