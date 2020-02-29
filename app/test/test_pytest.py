@@ -2,9 +2,9 @@
 
 """Test all API routes."""
 import json
-# import sys
+import sys
 # from app.main import *
-# sys.path.append('../../code/LED-IOT-api')
+sys.path.append('../../LED-IOT-api')
 # from ../app.main import server
 
 
@@ -15,10 +15,10 @@ import json
 #     return app
 
 """Load client secrets."""
-with open('../client_secrets.json', 'r') as myfile:
+with open('./client_secrets.json', 'r') as myfile:
     data=myfile.read()
 data = json.loads(data)
-print(data)
+# print(data)
 client_secrets = data['web']
 
 
@@ -38,7 +38,7 @@ def test_get_device(client):
 
 
 def test_delete_device(client):
-    """Make a tes call to /Devices/<device>."""
+    """Make a test call to /Devices/<device>."""
     response = client.delete("/Devices/device200")
 
     assert response.status_code == 200
