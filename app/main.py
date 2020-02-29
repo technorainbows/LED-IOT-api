@@ -11,7 +11,8 @@ from flask_restplus import Api, Resource, fields
 # from werkzeug.contrib.fixers import ProxyFix
 import redis
 from redis.exceptions import WatchError
-from auth_decorator import validate_access
+from modules.auth_decorator import validate_access
+
 # import json
 
 # import yaml
