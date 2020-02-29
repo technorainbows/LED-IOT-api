@@ -291,7 +291,7 @@ REDIS = Redis()
 class Heartbeat(Resource):
     """Update and check on a given device's heartbeat/online status."""
 
-    # @validate_access
+    @validate_access
     @API.response(200, 'Success')
     def get(self, device_id):
         """Check if a given heartbeat exists."""
@@ -308,7 +308,7 @@ class Heartbeat(Resource):
     @API.response(200, 'Success')
     # @API.param('heartbeat')
     @API.expect(HEARTBEAT, validate=False)
-    # @validate_access
+    @validate_access
     def post(self, device_id):
         """Set a heartbeat."""
         # hbTime = 15
@@ -353,7 +353,7 @@ class Heartbeats(Resource):
 class Device(Resource):
     """Show a device's properties and let user delete or change properties."""
 
-    # @validate_access
+    @validate_access
     @API.response(200, 'Success', DEVICE)
     def get(self, device_id):
         """Fetch a given resource."""
@@ -365,7 +365,7 @@ class Device(Resource):
         # return jsonify(DEVICES[device_id],200)
 
     @API.doc(responses={200: 'Device deleted'})
-    # @validate_access
+    @validate_access
     def delete(self, device_id):
         """Delete a given resource."""
         # abort_if_device_not_found(device_id)
@@ -381,7 +381,7 @@ class Device(Resource):
     @API.expect(DEVICE, validate=True)
     # @API.doc(parser=parser)
     @API.response(200, 'Success', DEVICE)
-    # @validate_access
+    @validate_access
     def put(self, device_id):
         """Update a given resource's field with new property value received."""
         logging.info("PUT request received")
@@ -403,7 +403,7 @@ class Device(Resource):
 class DeviceList(Resource):
     """Shows a list of all devices, and lets you POST to add new tasks."""
 
-    # @validate_access
+    @validate_access
     @API.response(200, 'Success', LIST_OF_DEVICES)
     def get(self):
         """Return a list of all devices and their properties."""
@@ -411,7 +411,7 @@ class DeviceList(Resource):
         logging.debug("returning Device List: %s", str(devices))
         return jsonify(devices, 200)
     
-    # @validate_access
+    @validate_access
     @API.expect(DEVICE, validate=True)
     def post(self):
         """Create a new device with next id."""

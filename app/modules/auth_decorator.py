@@ -15,7 +15,7 @@ with open('./client_secrets.json', 'r') as myfile:
 # parse client secrets file
 # data = os.getenv('CLIENT_SECRETS')
 data = json.loads(data)
-print(data)
+# print(data)
 client_secrets = data['web']
 # print(json.dumps(data))
 
@@ -34,7 +34,7 @@ def validate_access(func):
         # access_token = "eyJraWQiOiJYSlpsWnhmUVVUQkVxc2RpeUFXUWNSTWJQU3V6b0V2MVF0SUloVVdCbXV3IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULnY4X0pfV1VwaVdfNWpYdHVqNUNRc3BNMFkwVEd0cjZlc3pvQy1NWUhwaTAiLCJpc3MiOiJodHRwczovL2Rldi02MzU2MjMub2t0YS5jb20vb2F1dGgyL2RlZmF1bHQiLCJhdWQiOiJhcGk6Ly9kZWZhdWx0IiwiaWF0IjoxNTgxNTY4NjUxLCJleHAiOjE1ODE2NTUwNTEsImNpZCI6IjBvYTE1MTh4d29Nb2Fld0Y2NHg2IiwidWlkIjoiMDB1MTM3MnNtRjc3T0FNTFM0eDYiLCJzY3AiOlsib3BlbmlkIiwiZW1haWwiXSwic3ViIjoiaUBhc2hsZXluZXd0b24ubmV0In0.HBX9hWiY6klE5i-1JMfxIEYrJrtOCvK12-K0CWUIJmv3uO7NtMoNm5h4SjvtwHifDxDNLWqm2-tBATBkoMgYyxg8rkrdu1waPn3GmGgQjt6eCtCyc-BE_gydsulugJ161NhxaeGxjIZscpNprNH3UIKWX4sEMX5eeJVC5JMyEqf02D1Xybxdvo-DOOYDqBO-SKtOB83y-y1pPlxRPpfKfY5JHSTI8BUKZf4AoRySevfF0SgDb7qg7ibg4Lral0Fa7tenduOBuNauFQ29Wn1Umo7C3kXRA7jw7c1nLA35EsuO9ijyuAO2v4eYMefnBSbbTk1l7uQL3ZJ4Jvyfx8Ue2w"
         if 'Authorization' in request.headers and request.headers['Authorization'].startswith('Bearer '):
             access_token = request.headers['Authorization'].split(None, 1)[1].strip()
-            print("token found: ", access_token)
+            # print("token found: ", access_token)
 
             header = jwt.get_unverified_header(access_token)
             print("unverified header: ", header)
