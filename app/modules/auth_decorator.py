@@ -37,24 +37,24 @@ def validate_access(func):
             # print("token found: ", access_token)
 
             header = jwt.get_unverified_header(access_token)
-            print("unverified header: ", header)
+            # print("unverified header: ", header)
             
             # if header validated, then decode/check claims
             # assert(header['kid'] == kid)
             try:
                 claims = jwt.decode(access_token, client_secrets['client_secret'], verify=False)
-                print("claims = ", claims)
+                # print("claims = ", claims)
 
                 if (claims['cid'] == client_secrets['cid']) and (claims['aud'] == client_secrets['aud']):
-                    print("token validated!!")
+                    # print("token validated!!")
                     
                     if claims['sub'] in client_secrets['allowed_users']:
-                        print("user permitted! - ", claims['sub'])
+                        # print("user permitted! - ", claims['sub'])
                         return func(*args, **kwargs)
                     else:
-                        print("user not allowed")
+                        # print("user not allowed")
                         return make_response({'error': 'user not allowed'}, 403)
-                print("claims not validated")
+                # print("claims not validated")
 
             except Exception as e:
                 print("Invalid token: ", str(e))
