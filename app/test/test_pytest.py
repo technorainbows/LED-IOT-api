@@ -12,7 +12,7 @@ with open('./client_secrets.json', 'r') as myfile:
 data = json.loads(data)
 # print(data)
 client_secrets = data['web']
-
+print("token loaded: ", client_secrets['auth_token'])
 
 def test_get_device(client):
     """Make a test call to /Devices/<device>."""

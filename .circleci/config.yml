@@ -31,7 +31,7 @@ jobs:
           command: |
             # sudo chmod +x load_secrets.sh
             bash ./load_secrets.sh
-            echo ls
+            echo ./client_secrets.json
       - run: 
           name: Test pylint and pycodestyle
           command: |
