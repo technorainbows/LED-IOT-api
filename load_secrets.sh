@@ -19,7 +19,8 @@ cat > ./client_secrets.json <<EOF
         ],
         "allowed_users": ["i@ashleynewton.net"],
         "cid": "$CLIENT_ID",
-        "aud": "default"
+        "aud": "default",
+        "auth_token": "$AUTH_TOKEN"
     }
 }
 EOF
