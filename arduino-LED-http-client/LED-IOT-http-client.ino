@@ -16,7 +16,7 @@
 #include <HTTPClient.h>
 #include <ArduinoOTA.h>
 WiFiMulti wifiMulti;
-//#include <WiFiClientSecure.h>
+#include <WiFiClientSecure.h>
 
 // if using OLED display
 #include "SSD1306Wire.h" // legacy include: `#include "SSD1306.h"` //OLED screen
@@ -31,54 +31,11 @@ SSD1306Wire  display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board disp
 //ESP8266WiFiMulti wifiMulti;
 //#include <ArduinoHttpClient.h>
 
-
-
-// This is GandiStandardSSLCA2.pem, the root Certificate Authority that signed
-// the server certifcate for the demo server https://jigsaw.w3.org in this
-// example. This certificate is valid until Sep 11 23:59:59 2024 GMT
-const char* rootCACertificate = \
-                                "-----BEGIN CERTIFICATE-----\n" \
-                                "MIIF6TCCA9GgAwIBAgIQBeTcO5Q4qzuFl8umoZhQ4zANBgkqhkiG9w0BAQwFADCB\n" \
-                                "iDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0pl\n" \
-                                "cnNleSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNV\n" \
-                                "BAMTJVVTRVJUcnVzdCBSU0EgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkwHhcNMTQw\n" \
-                                "OTEyMDAwMDAwWhcNMjQwOTExMjM1OTU5WjBfMQswCQYDVQQGEwJGUjEOMAwGA1UE\n" \
-                                "CBMFUGFyaXMxDjAMBgNVBAcTBVBhcmlzMQ4wDAYDVQQKEwVHYW5kaTEgMB4GA1UE\n" \
-                                "AxMXR2FuZGkgU3RhbmRhcmQgU1NMIENBIDIwggEiMA0GCSqGSIb3DQEBAQUAA4IB\n" \
-                                "DwAwggEKAoIBAQCUBC2meZV0/9UAPPWu2JSxKXzAjwsLibmCg5duNyj1ohrP0pIL\n" \
-                                "m6jTh5RzhBCf3DXLwi2SrCG5yzv8QMHBgyHwv/j2nPqcghDA0I5O5Q1MsJFckLSk\n" \
-                                "QFEW2uSEEi0FXKEfFxkkUap66uEHG4aNAXLy59SDIzme4OFMH2sio7QQZrDtgpbX\n" \
-                                "bmq08j+1QvzdirWrui0dOnWbMdw+naxb00ENbLAb9Tr1eeohovj0M1JLJC0epJmx\n" \
-                                "bUi8uBL+cnB89/sCdfSN3tbawKAyGlLfOGsuRTg/PwSWAP2h9KK71RfWJ3wbWFmV\n" \
-                                "XooS/ZyrgT5SKEhRhWvzkbKGPym1bgNi7tYFAgMBAAGjggF1MIIBcTAfBgNVHSME\n" \
-                                "GDAWgBRTeb9aqitKz1SA4dibwJ3ysgNmyzAdBgNVHQ4EFgQUs5Cn2MmvTs1hPJ98\n" \
-                                "rV1/Qf1pMOowDgYDVR0PAQH/BAQDAgGGMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYD\n" \
-                                "VR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMCIGA1UdIAQbMBkwDQYLKwYBBAGy\n" \
-                                "MQECAhowCAYGZ4EMAQIBMFAGA1UdHwRJMEcwRaBDoEGGP2h0dHA6Ly9jcmwudXNl\n" \
-                                "cnRydXN0LmNvbS9VU0VSVHJ1c3RSU0FDZXJ0aWZpY2F0aW9uQXV0aG9yaXR5LmNy\n" \
-                                "bDB2BggrBgEFBQcBAQRqMGgwPwYIKwYBBQUHMAKGM2h0dHA6Ly9jcnQudXNlcnRy\n" \
-                                "dXN0LmNvbS9VU0VSVHJ1c3RSU0FBZGRUcnVzdENBLmNydDAlBggrBgEFBQcwAYYZ\n" \
-                                "aHR0cDovL29jc3AudXNlcnRydXN0LmNvbTANBgkqhkiG9w0BAQwFAAOCAgEAWGf9\n" \
-                                "crJq13xhlhl+2UNG0SZ9yFP6ZrBrLafTqlb3OojQO3LJUP33WbKqaPWMcwO7lWUX\n" \
-                                "zi8c3ZgTopHJ7qFAbjyY1lzzsiI8Le4bpOHeICQW8owRc5E69vrOJAKHypPstLbI\n" \
-                                "FhfFcvwnQPYT/pOmnVHvPCvYd1ebjGU6NSU2t7WKY28HJ5OxYI2A25bUeo8tqxyI\n" \
-                                "yW5+1mUfr13KFj8oRtygNeX56eXVlogMT8a3d2dIhCe2H7Bo26y/d7CQuKLJHDJd\n" \
-                                "ArolQ4FCR7vY4Y8MDEZf7kYzawMUgtN+zY+vkNaOJH1AQrRqahfGlZfh8jjNp+20\n" \
-                                "J0CT33KpuMZmYzc4ZCIwojvxuch7yPspOqsactIGEk72gtQjbz7Dk+XYtsDe3CMW\n" \
-                                "1hMwt6CaDixVBgBwAc/qOR2A24j3pSC4W/0xJmmPLQphgzpHphNULB7j7UTKvGof\n" \
-                                "KA5R2d4On3XNDgOVyvnFqSot/kGkoUeuDcL5OWYzSlvhhChZbH2UF3bkRYKtcCD9\n" \
-                                "0m9jqNf6oDP6N8v3smWe2lBvP+Sn845dWDKXcCMu5/3EFZucJ48y7RetWIExKREa\n" \
-                                "m9T8bJUox04FB6b9HbwZ4ui3uRGKLXASUoWNjDNKD/yZkuBjcNqllEdjB+dYxzFf\n" \
-                                "BT02Vf6Dsuimrdfp5gJ0iHRc2jTbkNJtUQoj1iM=\n" \
-                                "-----END CERTIFICATE-----\n";
-
-
 #define NETWORK_VANNEST
+#define HTTPS
 
 #ifdef NETWORK_CXE
-// on CXE network
 String IPaddress = "192.168.2.54";
-
 #endif
 
 #ifdef NETWORK_VANNEST
@@ -88,7 +45,14 @@ String IPaddress = "10.0.0.59";
 //String controllerURL = "10.0.0.59/site/index.html";
 #endif
 
+#ifdef HTTPS
+String apiURL = "https://" + IPaddress + ":5000/Devices/";
+#endif
+
+#ifdef HTTP
 String apiURL = "http://" + IPaddress + ":5000/Devices/";
+#endif
+
 String controllerURL = IPaddress + "site/index.html";
 
 String DEVICE_ID;
@@ -111,8 +75,6 @@ String hostname = "Trianglez";
 #define MILLI_AMPS         1000
 #define BRIGHTNESS          100
 #define FRAMES_PER_SECOND  120
-//#define DEVICE_ID "device1"
-
 //#endif
 
 
@@ -220,6 +182,29 @@ String setDeviceID() {
   return device_hash;
 }
 
+
+// Not sure if WiFiClientSecure checks the validity date of the certificate. 
+// Setting clock just to be sure...
+void setClock() {
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+
+  Serial.print(F("Waiting for NTP time sync: "));
+  time_t nowSecs = time(nullptr);
+  
+  while (nowSecs < 8 * 3600 * 2) {
+    delay(500);
+    Serial.print(F("."));
+    yield();
+    nowSecs = time(nullptr);
+  }
+
+  Serial.println();
+  struct tm timeinfo;
+  gmtime_r(&nowSecs, &timeinfo);
+  Serial.print(F("Current time: "));
+  Serial.print(asctime(&timeinfo));
+}
+
 /***************************************************************************************
   setup
 ***************************************************************************************/
@@ -228,6 +213,7 @@ void setup() {
   Serial.begin(115200);
   Debug.timestampOn();
   Debug.setDebugLevel(DBG_DEBUG);
+  Debug.print(DBG_DEBUG, "Debugger set to DEBUG");
 
 #ifdef __AVR_ATmega32U4__ // Arduino AVR Leonardo
 
@@ -263,7 +249,12 @@ void setup() {
   //  wifiMulti.addAP("ssid_from_AP_2", "your_password_for_AP_2");
   //  wifiMulti.addAP("ssid_from_AP_3", "your_password_for_AP_3");
 
-  Serial.println("Connecting Wifi...")  ;
+  // wait for WiFi connection
+  Serial.print("Waiting for WiFi to connect...");
+  // while ((WiFiMulti.run() != WL_CONNECTED)) {
+  //   Serial.print(".");
+  // }
+
   if (wifiMulti.run() == WL_CONNECTED) {
     Serial.println("");
     //    Serial.println("WiFi connected");
@@ -271,6 +262,8 @@ void setup() {
     //    Serial.println(WiFi.localIP());
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
+
+    setClock();
 
     // turn leds to green if connected
     fill_solid(leds, NUM_LEDS, CRGB::Green);
@@ -336,47 +329,55 @@ void heartbeat() {
   //  EVERY_N_MILLISECONDS(500) {
   if (wifiMulti.run() == WL_CONNECTED) { //Check WiFi connection status
 
-    Debug.print(DBG_INFO, "setting heartbeat");
-    HTTPClient http;
-    String HB_URL = apiURL + "HB/" + DEVICE_ID;
-    //    String HB_URL = "https://jsonplaceholder.typicode.com/posts?userId=1";
+    WiFiClientSecure *client = new WiFiClientSecure;
+    if(client) {
+      client -> setCACert(rootCACertificate);
+      {
 
-    http.begin(HB_URL);
-    //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
-    http.addHeader("Content-Type", "application/json");             //Specify content-type header
-    http.addHeader("Authorization", "Bearer " + auth_token);
-    //    delay(200);
-    Debug.print(DBG_INFO, "about to POST");
-    //    char* httpResponse = http.POST(DEVICE_ID);
-    int httpResponseCode = http.POST("{}");   //Send the actual POST request
-    Debug.print(DBG_INFO, "POSTing complete");
+        Debug.print(DBG_INFO, "setting heartbeat");
+        HTTPClient https;
+        String HB_URL = apiURL + "HB/" + DEVICE_ID;
 
-    if (httpResponseCode > 0) {
+        if(https.begin(*client, HB_URL)){
+          //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
+          https.addHeader("Content-Type", "application/json");             //Specify content-type header
+          https.addHeader("Authorization", "Bearer " + auth_token);
+          //    delay(200);
+          Debug.print(DBG_INFO, "about to POST");
+          //    char* httpResponse = http.POST(DEVICE_ID);
+          int httpResponseCode = https.POST("{}");   //Send the actual POST request
+          Debug.print(DBG_INFO, "POSTing complete");
 
-      String response = http.getString();                       //Get the response to the request
-      //      Serial.println("POST RESPONSE CODE:");
-      Debug.print(DBG_INFO, "%i", httpResponseCode);   //Print return code
-      //      Serial.print("POST RESPONSE: ");
-      Debug.print(DBG_INFO, "%s", response);           //Print request answer
+          if (httpResponseCode > 0) {
 
+            String response = https.getString();                       //Get the response to the request
+            //      Serial.println("POST RESPONSE CODE:");
+            Debug.print(DBG_INFO, "%i", httpResponseCode);   //Print return code
+            //      Serial.print("POST RESPONSE: ");
+            Debug.print(DBG_INFO, "%s", response);           //Print request answer
+
+          } else {
+
+            Debug.print(DBG_ERROR, "Error on sending POST: ");
+            Serial.println(https.errorToString(httpResponseCode).c_str());
+          }
+
+          https.end();  //Free resources
+          } else {
+            Serial.printf("[HTTPS] Unable to connect\n");
+          }
+      }
+    }
+    delete client;
     } else {
 
-      Debug.print(DBG_ERROR, "Error on sending POST: ");
-      Serial.println(httpResponseCode);
-
+      Debug.print(DBG_ERROR, "Error in WiFi connection");
+      for (int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
+        Serial.print(".");
+        delay(100);
+      }
     }
-
-    http.end();  //Free resources
-
-  } else {
-
-    Debug.print(DBG_ERROR, "Error in WiFi connection");
-    for (int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
-      Serial.print(".");
-      delay(100);
-    }
-  }
-
+  
 
 }
 
@@ -392,93 +393,108 @@ void loop() {
     heartbeat();
   }
 
-  EVERY_N_MILLISECONDS(200) {
+  // EVERY_N_MILLISECONDS(200) {
 
-    ArduinoOTA.handle();
-
-
-    // wait for WiFi connection
-    if ((wifiMulti.run() == WL_CONNECTED)) {
+  ArduinoOTA.handle();
 
 
-      HTTPClient http;
+  // wait for WiFi connection
+  // if ((wifiMulti.run() == WL_CONNECTED)) {
+
+  WiFiClientSecure *client = new WiFiClientSecure;
+  if(client) {
+    client -> setCACert(rootCACertificate);
+  
+    {
+
+      HTTPClient https;
 
       // start connection and send HTTP header
-      http.begin(apiURL + DEVICE_ID);
-      http.addHeader("Authorization", "Bearer " + auth_token);
+      if (https.begin(*client, apiURL + DEVICE_ID)) {
+        https.addHeader("Authorization", "Bearer " + auth_token);
+        
+        Serial.print("[HTTPS] GET...\n");
 
-      int httpCode = http.GET();
+        int httpCode = https.GET();
 
-      // Check returning httpCode -- will be negative on error
-      if (httpCode > 0) {
-        Debug.print(DBG_INFO, "[HTTP] GET... code: %d\n", httpCode);
+        // Check returning httpCode -- will be negative on error
+        if (httpCode > 0) {
+          Debug.print(DBG_INFO, "[HTTP] GET... code: %d\n", httpCode);
 
-        // file found at server
-        if (httpCode == HTTP_CODE_OK) {
-          Debug.print(DBG_INFO, "Found file at server: ");
-          String payload = http.getString();
-          Debug.print(DBG_INFO, payload.c_str());
+          // file found at server
+          if (httpCode == HTTP_CODE_OK) {
+            Debug.print(DBG_INFO, "Found file at server: ");
+            String payload = https.getString();
+            Debug.print(DBG_INFO, payload.c_str());
 
-          // parse payload
+            // parse payload
 
-          const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + 100;
-          DynamicJsonDocument doc(capacity);
+            const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + 100;
+            DynamicJsonDocument doc(capacity);
 
-          //                    const char* json = "[\"device_266A08DBF47456428F703EEDF1E208B7117785DF\",{\"brightness\":\"123\",\"name\":\"triangle\",\"onState\":\"true\"}]";
+            //                    const char* json = "[\"device_266A08DBF47456428F703EEDF1E208B7117785DF\",{\"brightness\":\"123\",\"name\":\"triangle\",\"onState\":\"true\"}]";
 
-          deserializeJson(doc, payload);
+            deserializeJson(doc, payload);
 
-          const char* root_0 = doc[0]; // "device_266A08DBF47456428F703EEDF1E208B7117785DF"
+            const char* root_0 = doc[0]; // "device_266A08DBF47456428F703EEDF1E208B7117785DF"
 
-          JsonObject root_1 = doc[1];
-          const char* root_1_brightness = root_1["brightness"]; // "123"
-          const char* root_1_name = root_1["name"]; // "triangle"
-          const char* root_1_onState = root_1["onState"]; // "true"
-          Debug.print(DBG_DEBUG, "root_0 = ");
-          Debug.print(DBG_DEBUG, root_0);
-          Debug.print(DBG_DEBUG, "brightness = ");
-          Debug.print(DBG_DEBUG, root_1_brightness);
-          Debug.print(DBG_DEBUG, "name = ");
-          Debug.print(DBG_DEBUG, root_1_name);
-          onState = root_1_onState;
-          Debug.print(DBG_DEBUG, "onState = ");
-          Debug.print(DBG_DEBUG, root_1_onState);
+            JsonObject root_1 = doc[1];
+            const char* root_1_brightness = root_1["brightness"]; // "123"
+            const char* root_1_name = root_1["name"]; // "triangle"
+            const char* root_1_onState = root_1["onState"]; // "true"
+            Debug.print(DBG_DEBUG, "root_0 = ");
+            Debug.print(DBG_DEBUG, root_0);
+            Debug.print(DBG_DEBUG, "brightness = ");
+            Debug.print(DBG_DEBUG, root_1_brightness);
+            Debug.print(DBG_DEBUG, "name = ");
+            Debug.print(DBG_DEBUG, root_1_name);
+            onState = root_1_onState;
+            Debug.print(DBG_DEBUG, "onState = ");
+            Debug.print(DBG_DEBUG, root_1_onState);
 
-          //          strcpy(hostname, root_1_name);
+            //          strcpy(hostname, root_1_name);
 
 
-          int root_2 = doc[2]; // 200
+            int root_2 = doc[2]; // 200
 
-          int newBright = atoi(root_1_brightness);
+            int newBright = atoi(root_1_brightness);
 
-          if (onState != lastState) {
-            lastState = onState;
-            Debug.print(DBG_INFO, "onState changed!");
-            Debug.print(DBG_INFO, onState.c_str());
+            if (onState != lastState) {
+              lastState = onState;
+              Debug.print(DBG_INFO, "onState changed!");
+              Debug.print(DBG_INFO, onState.c_str());
+
+            }
+
+            if (brightVal != newBright) {
+              brightVal = newBright;
+              //            Serial.printf("brightVal = %d\n", brightVal);
+
+              FastLED.setBrightness(brightVal);
+              FastLED.show();
+            }
+            if (hostname != root_1_name) {
+              hostname = root_1_name;
+              updateDisplay();
+            }
 
           }
 
-          if (brightVal != newBright) {
-            brightVal = newBright;
-            //            Serial.printf("brightVal = %d\n", brightVal);
-
-            FastLED.setBrightness(brightVal);
-            FastLED.show();
-          }
-          if (hostname != root_1_name) {
-            hostname = root_1_name;
-            updateDisplay();
-          }
-
+        } else {
+            Debug.print(DBG_ERROR, "[HTTP] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
         }
+      https.end(); // close connection
+        //      Serial.println("Closing connection");
       } else {
-        Debug.print(DBG_ERROR, "[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+          Serial.printf("[HTTPS] Unable to connect\n");
       }
 
-      http.end(); // close connection
-      //      Serial.println("Closing connection");
+      }
+
+      delete client;
+    } else {
+      Serial.println("Unable to create client");
     }
-  }
 
   //  Serial.println("Setting brightness");
   //  delay(500);
@@ -489,7 +505,7 @@ void loop() {
 
 
   // insert a delay to keep the framerate modest
-  FastLED.delay(800 / FRAMES_PER_SECOND);
+  FastLED.delay(1000 / FRAMES_PER_SECOND);
 
 }
 
