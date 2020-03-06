@@ -2,7 +2,7 @@
 
     var dc = {}; // namespace for document content
 
-    var apiUrl = 'http://lvh.me:5000/Devices'
+    var apiUrl = 'https://lvh.me:5000/Devices'
         // var apiUrl = 'http://10.0.0.59:5000/Devices' // ip address at home
         // var apiUrl = 'http://192.168.2.54:5000/Devices' // ip address when at CDA
 

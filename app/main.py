@@ -13,10 +13,6 @@ import redis
 from redis.exceptions import WatchError
 from modules.auth_decorator import validate_access
 
-# import json
-
-# import yaml
-# import traceback
 
 # Set up simple logging.
 logging.basicConfig(
@@ -44,12 +40,9 @@ else:
     except AttributeError:
         TEMP_LEVEL = logging.getLevelName(int(os.environ['LOG_LEVEL']))
         logging.info("temp_level got from env: %s", TEMP_LEVEL)
-        # print(type(TEMP_LEVEL))
-        # TEMP_LEVEL = logging.getLevelName(TEMP_LEVEL)
+
         if not TEMP_LEVEL.startswith('Level'):
             LOG_LEVEL = TEMP_LEVEL
-        # try:
-        #     LOG_LEVEL = get_levels(TEMP_LEVEL)
             logging.info("2. INT LOG_LEVEL set to: %s", LOG_LEVEL)
         else:
             LOG_LEVEL = logging.WARNING
@@ -138,11 +131,6 @@ LIST_OF_DEVICES = API.model('ListedDevices', {
 HEARTBEAT = API.model('Heartbeat', {
     'heartbeat': fields.String(required=False, description='Device heartbeat')
 })
-
-
-# def abort_if_device_not_found(device_id):
-#     if device_id not in DEVICES:
-#         API.abort(404, "Device {} doesn't exist".format(device_id))
 
 
 class Redis(object):
@@ -353,7 +341,7 @@ class Heartbeats(Resource):
 class Device(Resource):
     """Show a device's properties and let user delete or change properties."""
 
-    @validate_access
+    # @validate_access
     @API.response(200, 'Success', DEVICE)
     def get(self, device_id):
         """Fetch a given resource."""
@@ -433,9 +421,10 @@ class DeviceList(Resource):
 @APP.errorhandler(404)
 def not_found(error_rec):
     """Return not found error message."""
-    logging.error('Error, device not found: %s', error_rec)
-    return (jsonify({'error': 'Not found'}), 404)
+    logging.error('Error: %s', error_rec)
+    return (jsonify({'error': error_rec}), 404)
 
 
 if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=5000, debug=True)
+    APP.run(host='0.0.0.0', port=5000, debug=True, 
+            ssl_context=('certificates/localhost.crt', 'certificates/device.key'))
