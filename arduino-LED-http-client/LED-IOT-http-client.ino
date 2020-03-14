@@ -1,13 +1,14 @@
-/*
-  LED-IOT-APP v0.3
-  Simple sketch that uses ESP board to connect to local wifi network then gets LED state from python API (ledAPI.py)
+/************************************************************************************************************************
+   LED-IOT-APP v1.0
+   Communicates with a rest api server to get LED control parameters in order to control attached LEDs.
+   Also updates its state (e.g., "heartbeat") to rest API.
+ ********************************************************************************************************************/
 
-*/
 #include "Arduino_DebugUtils.h"
-//#include "SerialDebug.h" //https://github.com/JoaoLopesF/SerialDebug
 #include <FastLED.h>
-#include "credentials.h" // wifi network credentials stored in separate file
+#include "credentials.h" // wifi network credentials and authorization token stored in separate file
 #include "sha1.h"
+
 // if using ESP32
 #include <WiFiMulti.h>
 #include <WiFi.h>
@@ -15,7 +16,7 @@
 #include <HTTPClient.h>
 #include <ArduinoOTA.h>
 WiFiMulti wifiMulti;
-
+#include <WiFiClientSecure.h>
 
 // if using OLED display
 #include "SSD1306Wire.h" // legacy include: `#include "SSD1306.h"` //OLED screen
@@ -30,48 +31,11 @@ SSD1306Wire  display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board disp
 //ESP8266WiFiMulti wifiMulti;
 //#include <ArduinoHttpClient.h>
 
-
-//*********** SerialDebug Library Stuff *********************//
-
-// Disable all debug ? Good to release builds (production)
-// as nothing of SerialDebug is compiled, zero overhead :-)
-// For it just uncomment the DEBUG_DISABLED
-//#define DEBUG_DISABLED true
-
-// Define the initial debug level here (uncomment to do it)
-// #define DEBUG_INITIAL_LEVEL DEBUG_LEVEL_INFO
-
-// Disable SerialDebug debugger ? No more commands and features as functions and globals
-// Uncomment this to disable it
-//#define DEBUG_DISABLE_DEBUGGER true
-
-// Disable auto function name (good if your debug yet contains it)
-//#define DEBUG_AUTO_FUNC_DISABLED true
-
-// Force debug messages to can use flash ) ?
-// Disable native Serial.printf (if have)
-// Good for low memory, due use flash, but more slow and not use macros
-//#define DEBUG_USE_FLASH_F true
-
-//uint32_t mTimeSeconds = 0;
-//boolean mLedON = false; // Buildin Led ON ?
-
-// Debug levels
-
-//    printlnV(F("This is a message of debug level VERBOSE"));
-//    printlnD(F("This is a message of debug level DEBUG"));
-//    printlnI(F("This is a message of debug level INFO"));
-//    printlnW(F("This is a message of debug level WARNING"));
-//    printlnE(F("This is a message of debug level ERROR"));
-
-//***********************************************************//
-
 #define NETWORK_VANNEST
+#define HTTPS
 
 #ifdef NETWORK_CXE
-// on CXE network
 String IPaddress = "192.168.2.54";
-
 #endif
 
 #ifdef NETWORK_VANNEST
@@ -81,7 +45,14 @@ String IPaddress = "10.0.0.59";
 //String controllerURL = "10.0.0.59/site/index.html";
 #endif
 
+#ifdef HTTPS
+String apiURL = "https://" + IPaddress + ":5000/Devices/";
+#endif
+
+#ifdef HTTP
 String apiURL = "http://" + IPaddress + ":5000/Devices/";
+#endif
+
 String controllerURL = IPaddress + "site/index.html";
 
 String DEVICE_ID;
@@ -97,15 +68,13 @@ FASTLED_USING_NAMESPACE
 
 //#ifdef DEV_LIGHTCONTROL_TRIANGLE
 #define DATA_PIN   33
-char* hostname = "Trianglez";
+String hostname = "Trianglez";
 #define COLOR_ORDER GRB //pixels
 #define COLOR_CORRECT TypicalLEDStrip
 #define NUM_LEDS 200
 #define MILLI_AMPS         1000
 #define BRIGHTNESS          100
 #define FRAMES_PER_SECOND  120
-//#define DEVICE_ID "device1"
-
 //#endif
 
 
@@ -122,10 +91,13 @@ int brightVal = BRIGHTNESS;
 
 #define NUM_SECONDS_TO_WAIT 5
 
-// Set up wireless updating if using ESP32
+/****************************************************************************************
+   setupAOTA: Set up wireless updating if using ESP32
+ ***************************************************************************************/
+
 void setupAOTA() {
 
-  ArduinoOTA.setHostname(hostname);
+  ArduinoOTA.setHostname(hostname.c_str());
 
   ArduinoOTA
   .onStart([]() {
@@ -157,9 +129,10 @@ void setupAOTA() {
 }
 
 
-/* setDeviceID: Generates a unique device ID based on performing SHA1 hashing of device's MAC address.
-                Returns this ID as a string variable.
-*/
+/* ****************************************************************************************
+    setDeviceID: Generates a unique device ID based on performing SHA1 hashing of device's
+                 MAC address.Returns this ID as a string variable.
+ *****************************************************************************************/
 String setDeviceID() {
   byte mac[6] = {};
 
@@ -209,10 +182,38 @@ String setDeviceID() {
   return device_hash;
 }
 
+
+// Not sure if WiFiClientSecure checks the validity date of the certificate. 
+// Setting clock just to be sure...
+void setClock() {
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+
+  Serial.print(F("Waiting for NTP time sync: "));
+  time_t nowSecs = time(nullptr);
+  
+  while (nowSecs < 8 * 3600 * 2) {
+    delay(500);
+    Serial.print(F("."));
+    yield();
+    nowSecs = time(nullptr);
+  }
+
+  Serial.println();
+  struct tm timeinfo;
+  gmtime_r(&nowSecs, &timeinfo);
+  Serial.print(F("Current time: "));
+  Serial.print(asctime(&timeinfo));
+}
+
+/***************************************************************************************
+  setup
+***************************************************************************************/
+
 void setup() {
   Serial.begin(115200);
   Debug.timestampOn();
   Debug.setDebugLevel(DBG_DEBUG);
+  Debug.print(DBG_DEBUG, "Debugger set to DEBUG");
 
 #ifdef __AVR_ATmega32U4__ // Arduino AVR Leonardo
 
@@ -225,23 +226,6 @@ void setup() {
   delay(500); // Wait a time
 
 #endif
-
-  // Debug
-
-  // Attention:
-  // SerialDebug starts disabled and it only is enabled if have data avaliable in Serial
-  // Good to reduce overheads.
-  // if You want debug, just press any key and enter in monitor serial
-
-  // Note: all debug in setup must be debugA (always), due it is disabled now.
-
-  //    printlnA(F("**** Setup: initializing ..."));
-
-  // Buildin led
-  //
-  //    pinMode(LED_BUILTIN, OUTPUT);
-  //    digitalWrite(LED_BUILTIN, LOW);
-
 
 
   //all this is for OLED status screen
@@ -265,7 +249,12 @@ void setup() {
   //  wifiMulti.addAP("ssid_from_AP_2", "your_password_for_AP_2");
   //  wifiMulti.addAP("ssid_from_AP_3", "your_password_for_AP_3");
 
-  Serial.println("Connecting Wifi...")  ;
+  // wait for WiFi connection
+  Serial.print("Waiting for WiFi to connect...");
+  // while ((WiFiMulti.run() != WL_CONNECTED)) {
+  //   Serial.print(".");
+  // }
+
   if (wifiMulti.run() == WL_CONNECTED) {
     Serial.println("");
     //    Serial.println("WiFi connected");
@@ -273,6 +262,8 @@ void setup() {
     //    Serial.println(WiFi.localIP());
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
+
+    setClock();
 
     // turn leds to green if connected
     fill_solid(leds, NUM_LEDS, CRGB::Green);
@@ -297,11 +288,13 @@ void setup() {
 }
 
 
-/*
-   monitorWiFi
-*/
+/****************************************************************************************
+    monitorWiFi
+****************************************************************************************/
 void monitorWiFi()
 {
+  Debug.print(DBG_INFO, "Monitoring wifi...");
+
   if (wifiMulti.run() != WL_CONNECTED)
   {
     if (connectioWasAlive == true)
@@ -327,202 +320,181 @@ void monitorWiFi()
 }
 
 
-/*
-    heartbeat: sends a POST request with device's unique ID to API
-*/
+/***************************************************************************
+   heartbeat: sends a POST request with device's unique ID to API
+***************************************************************************/
 
 void heartbeat() {
-  monitorWiFi();
+  //  monitorWiFi();
   //  EVERY_N_MILLISECONDS(500) {
   if (wifiMulti.run() == WL_CONNECTED) { //Check WiFi connection status
 
-    for (int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
-      Serial.print(".");
-      delay(1000);
+    WiFiClientSecure *client = new WiFiClientSecure;
+    if(client) {
+      client -> setCACert(rootCACertificate);
+      {
+
+        Debug.print(DBG_INFO, "setting heartbeat");
+        HTTPClient https;
+        String HB_URL = apiURL + "HB/" + DEVICE_ID;
+
+        if(https.begin(*client, HB_URL)){
+          //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
+          https.addHeader("Content-Type", "application/json");             //Specify content-type header
+          https.addHeader("Authorization", "Bearer " + auth_token);
+          //    delay(200);
+          Debug.print(DBG_INFO, "about to POST");
+          //    char* httpResponse = http.POST(DEVICE_ID);
+          int httpResponseCode = https.POST("{}");   //Send the actual POST request
+          Debug.print(DBG_INFO, "POSTing complete");
+
+          if (httpResponseCode > 0) {
+
+            String response = https.getString();                       //Get the response to the request
+            //      Serial.println("POST RESPONSE CODE:");
+            Debug.print(DBG_INFO, "%i", httpResponseCode);   //Print return code
+            //      Serial.print("POST RESPONSE: ");
+            Debug.print(DBG_INFO, "%s", response);           //Print request answer
+
+          } else {
+
+            Debug.print(DBG_ERROR, "Error on sending POST: ");
+            Serial.println(https.errorToString(httpResponseCode).c_str());
+          }
+
+          https.end();  //Free resources
+          } else {
+            Serial.printf("[HTTPS] Unable to connect\n");
+          }
+      }
     }
-
-    Debug.print(DBG_VERBOSE, "setting heartbeat");
-    HTTPClient http;
-    String HB_URL = apiURL + "HB/" + DEVICE_ID;
-    http.begin(HB_URL);
-    //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
-    http.addHeader("Content-Type", "application/json");             //Specify content-type header
-    //    delay(200);
-    Debug.print(DBG_VERBOSE, "about to POST");
-    //    char* httpResponse = http.POST(DEVICE_ID);
-    int httpResponseCode = http.POST("{}");   //Send the actual POST request
-    Debug.print(DBG_VERBOSE, "POSTing complete");
-
-    if (httpResponseCode > 0) {
-
-      String response = http.getString();                       //Get the response to the request
-      //      Serial.println("POST RESPONSE CODE:");
-      Debug.print(DBG_VERBOSE, "%i", httpResponseCode);   //Print return code
-      //      Serial.print("POST RESPONSE: ");
-       Debug.print(DBG_VERBOSE, "%s", response);           //Print request answer
-
+    delete client;
     } else {
 
-      Debug.print(DBG_ERROR, "Error on sending POST: ");
-      Serial.println(httpResponseCode);
-
+      Debug.print(DBG_ERROR, "Error in WiFi connection");
+      for (int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
+        Serial.print(".");
+        delay(100);
+      }
     }
-
-    http.end();  //Free resources
-
-  } else {
-
-    Debug.print(DBG_ERROR, "Error in WiFi connection");
-
-  }
-
+  
 
 }
 
+/*******************************************************
+  Main Loop
+*******************************************************/
 
 void loop() {
-  //  debugHandle();
 
-  //   check wifi status
-  for (int i = 0; i < 5 && WiFi.status() != WL_CONNECTED; i++) {
-    Serial.print(".");
-    delay(1000);
-  }
-
-  EVERY_N_MILLISECONDS(200) {
-    if (wifiMulti.run() != WL_CONNECTED) {
-      Debug.print(DBG_ERROR, "WiFi not connected!");
-      // turn first 5 leds to red if not connected
-      fill_solid(leds, 20, CRGB::Red);
-      FastLED.show();
-      //    delay(200);
-    }
-  }
-
-
-
+  monitorWiFi();
   EVERY_N_MILLISECONDS(500) {
 
+    heartbeat();
+  }
 
-    monitorWiFi();
-    ArduinoOTA.handle();
-    //    if (wifiMulti.run() == WL_CONNECTED) { //Check WiFi connection status
-    //
-    //      //      }
-    //      //    for(int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
-    //      //      Serial.print(".");
-    //      //      delay(1000);
-    //      //  }
-    //
-    ////      Serial.println("setting heartbeat");
-    //      HTTPClient http;
-    //      String HB_URL = IPaddress + ":5000/Devices/HB/" + DEVICE_ID;
-    //      Serial.println(HB_URL);
-    //      http.begin(HB_URL);
-    //      //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
-    //      http.addHeader("Content-Type", "application/json");             //Specify content-type header
-    //      //    delay(200);
-    //      Serial.println("about to POST");
-    //      //    char* httpResponse = http.POST(DEVICE_ID);
-    //      int httpResponseCode = http.POST("{}");   //Send the actual POST request
-    //      Serial.println("POSTing complete");
-    //
-    //      if (httpResponseCode > 0) {
-    //
-    //        String response = http.getString();                       //Get the response to the request
-    //        Serial.print("POST RESPONSE CODE:");
-    //        Serial.println(httpResponseCode);   //Print return code
-    //        //        Serial.print("POST RESPONSE: ");
-    //        //        Serial.println(response);           //Print request answer
-    //
-    //      } else {
-    //
-    //        Serial.print("Error on sending POST: ");
-    //        Serial.println(httpResponseCode);
-    //
-    //      }
-    //
-    //      http.end();  //Free resources
-    //
-    //    } else {
-    //
-    //      Serial.println("Error in WiFi connection");
-    //
-    //    }
+  // EVERY_N_MILLISECONDS(200) {
 
-    // wait for WiFi connection
-    if ((wifiMulti.run() == WL_CONNECTED)) {
-      heartbeat();
-      //      Serial.println("wifi connected, connecting to api");
+  ArduinoOTA.handle();
 
-      HTTPClient http;
+
+  // wait for WiFi connection
+  // if ((wifiMulti.run() == WL_CONNECTED)) {
+
+  WiFiClientSecure *client = new WiFiClientSecure;
+  if(client) {
+    client -> setCACert(rootCACertificate);
+  
+    {
+
+      HTTPClient https;
 
       // start connection and send HTTP header
-      //      Serial.print("beginning HTTP connection to: ");
-      //      Serial.println(apiURL + DEVICE_ID);
-      http.begin(apiURL + DEVICE_ID);
+      if (https.begin(*client, apiURL + DEVICE_ID)) {
+        https.addHeader("Authorization", "Bearer " + auth_token);
+        
+        Serial.print("[HTTPS] GET...\n");
+
+        int httpCode = https.GET();
+
+        // Check returning httpCode -- will be negative on error
+        if (httpCode > 0) {
+          Debug.print(DBG_INFO, "[HTTP] GET... code: %d\n", httpCode);
+
+          // file found at server
+          if (httpCode == HTTP_CODE_OK) {
+            Debug.print(DBG_INFO, "Found file at server: ");
+            String payload = https.getString();
+            Debug.print(DBG_INFO, payload.c_str());
+
+            // parse payload
+
+            const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + 100;
+            DynamicJsonDocument doc(capacity);
+
+            //                    const char* json = "[\"device_266A08DBF47456428F703EEDF1E208B7117785DF\",{\"brightness\":\"123\",\"name\":\"triangle\",\"onState\":\"true\"}]";
+
+            deserializeJson(doc, payload);
+
+            const char* root_0 = doc[0]; // "device_266A08DBF47456428F703EEDF1E208B7117785DF"
+
+            JsonObject root_1 = doc[1];
+            const char* root_1_brightness = root_1["brightness"]; // "123"
+            const char* root_1_name = root_1["name"]; // "triangle"
+            const char* root_1_onState = root_1["onState"]; // "true"
+            Debug.print(DBG_DEBUG, "root_0 = ");
+            Debug.print(DBG_DEBUG, root_0);
+            Debug.print(DBG_DEBUG, "brightness = ");
+            Debug.print(DBG_DEBUG, root_1_brightness);
+            Debug.print(DBG_DEBUG, "name = ");
+            Debug.print(DBG_DEBUG, root_1_name);
+            onState = root_1_onState;
+            Debug.print(DBG_DEBUG, "onState = ");
+            Debug.print(DBG_DEBUG, root_1_onState);
+
+            //          strcpy(hostname, root_1_name);
 
 
+            int root_2 = doc[2]; // 200
 
+            int newBright = atoi(root_1_brightness);
 
+            if (onState != lastState) {
+              lastState = onState;
+              Debug.print(DBG_INFO, "onState changed!");
+              Debug.print(DBG_INFO, onState.c_str());
 
-      //      Serial.print("[HTTP] GET...\n");
-      int httpCode = http.GET();
+            }
 
-      // Check returning httpCode -- will be negative on error
-      if (httpCode > 0) {
-        //          Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+            if (brightVal != newBright) {
+              brightVal = newBright;
+              //            Serial.printf("brightVal = %d\n", brightVal);
 
-        // file found at server
-        if (httpCode == HTTP_CODE_OK) {
-          //          Serial.print("Found file at server: ");
-          String payload = http.getString();
-          //          Serial.println(payload);
-
-          // parse payload
-
-          const size_t capacity = JSON_ARRAY_SIZE(3) + JSON_OBJECT_SIZE(3) + 60;
-          DynamicJsonDocument doc(capacity);
-          //          const char* json = "[\"deviceID\",{\"brightness\":\"255\",\"name\":\"Default\",\"onState\":\"true\"},200]";
-
-          //        const char* json = "[{\"brightness\":17,\"name\":\"Ashley-Triangle\",\"onState\":true},200]";
-
-          deserializeJson(doc, payload);
-          const char* root_0 = doc[0]; // "deviceID"
-
-          JsonObject root_1 = doc[1];
-          const char* root_1_brightness = root_1["brightness"]; // "255"
-          const char* root_1_name = root_1["name"]; // "Default"
-          const char* root_1_onState = root_1["onState"]; // "true"
-          int root_2 = doc[2]; // 200
-
-          int newBright = atoi(root_1_brightness);
-
-          onState = root_1_onState;
-          //          Serial.printf("brightVal = %d\n", brightVal);
-          if (onState != lastState) {
-            lastState = onState;
-            //            Serial.println("onState = " + onState);
+              FastLED.setBrightness(brightVal);
+              FastLED.show();
+            }
+            if (hostname != root_1_name) {
+              hostname = root_1_name;
+              updateDisplay();
+            }
 
           }
 
-          if (brightVal != newBright) {
-            brightVal = newBright;
-            //            Serial.printf("brightVal = %d\n", brightVal);
-
-            FastLED.setBrightness(brightVal);
-            FastLED.show();
-          }
-
+        } else {
+            Debug.print(DBG_ERROR, "[HTTP] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
         }
+      https.end(); // close connection
+        //      Serial.println("Closing connection");
       } else {
-        Debug.print(DBG_ERROR, "[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+          Serial.printf("[HTTPS] Unable to connect\n");
       }
 
-      http.end(); // close connection
-      //      Serial.println("Closing connection");
+      }
+
+      delete client;
+    } else {
+      Serial.println("Unable to create client");
     }
-  }
 
   //  Serial.println("Setting brightness");
   //  delay(500);
@@ -533,40 +505,45 @@ void loop() {
 
 
   // insert a delay to keep the framerate modest
-  FastLED.delay(800 / FRAMES_PER_SECOND);
+  FastLED.delay(1000 / FRAMES_PER_SECOND);
 
 }
 
-/*
-   updateLEDS: toggles LEDs on/off depending on onState; if LEDs are on then fills with rainbow fade
-*/
+/*****************************************************************************************************
+  updateLEDS: toggles LEDs on/off depending on onState; if LEDs are on then fills with rainbow fade
+*****************************************************************************************************/
 
 void updateLEDS() {
 
-  if (onState == "false") fill_solid(leds, NUM_LEDS, CRGB::Black);
+  if (onState == "false") {
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    Debug.print(DBG_VERBOSE, "onstate is false");
+    FastLED.show();
+  }
 
   else {
+    Debug.print(DBG_VERBOSE, "onState is true");
     fill_rainbow( leds, NUM_LEDS, gHue, speed);
     EVERY_N_MILLISECONDS( 10 ) {
       gHue++;  // slowly cycle the "base color" through the rainbow
+      FastLED.show();
     }
   }
   //  Serial.println("FastLED.show");
-  FastLED.show();
-
 
 }
 
-/*
-    updateDisplay: updates the little OLED status screen of device
-*/
+/**************************************************************************************************
+  updateDisplay: updates the little OLED status screen of device
+**************************************************************************************************/
 
 void updateDisplay() {
+  Debug.print(DBG_INFO, "updating display with hostname %s", hostname.c_str());
 
   display.clear();
   display.setFont(ArialMT_Plain_24); //11,16,24
   display.setTextAlignment(TEXT_ALIGN_LEFT);
-  display.drawString(0, 0, hostname);
+  display.drawString(0, 0, hostname.c_str());
   //display.display(); //draw the screen
 
   display.setFont(ArialMT_Plain_16);

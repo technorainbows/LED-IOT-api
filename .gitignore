@@ -4,6 +4,11 @@
 node_modules/
 *.log
 .vscode/
+*.envrc
+package-lock.json
+package.json
+client_secrets.json
+credentials.h
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

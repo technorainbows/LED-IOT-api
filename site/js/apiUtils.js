@@ -2,7 +2,10 @@
 
     // set up namespace for our utility
     var apiUtils = {};
-
+    accessToken = localStorage.getItem('accessToken');
+    if (accessToken != null) {
+        console.log("got accesstoken in apiutils: ", accessToken);
+    } else { console.log("no accesstoken"); }
     /*
      * TODO: UPDATE - WILL NOT WORK ANYMORE
      * Sends POST request to URL+paramRoute with provided paramValue
@@ -13,20 +16,21 @@
         // url += paramRoute;
         console.log('POST request: ' + url)
         fetch(url, {
-                "credentials": "omit",
-                "headers": {
-                    "accept": "application/json",
-                    "content-type": "application/json",
-                    "Access-Control-Allow-Origin'": "*'"
-                },
-                "referrer": url,
-                "referrerPolicy": "no-referrer-when-downgrade",
-                // "body": JSON.stringify(paramValue),
-                "method": "POST",
-                "mode": "cors",
-            })
+            "credentials": "omit",
+            "headers": {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Authorization": "Bearer " + accessToken
+            },
+            "referrer": url,
+            "referrerPolicy": "no-referrer-when-downgrade",
+            // "body": JSON.stringify(paramValue),
+            "method": "POST",
+            "mode": "cors",
+        })
 
-            .then(function(response) {
+        .then(function(response) {
                 // console.log(response);
                 return response.json();
 
@@ -48,28 +52,29 @@
         console.log('PUT request: ' + url)
         var responseBody = {}
         if (paramID == 'name') {
-        	console.log("param is name");
-        	responseBody[paramID] = paramValue;
+            console.log("param is name");
+            responseBody[paramID] = paramValue;
         } else {
-        	responseBody[paramID] = JSON.stringify(paramValue);
+            responseBody[paramID] = JSON.stringify(paramValue);
         }
 
         console.log('PUT body:' + JSON.stringify(responseBody))
         fetch(url, {
-                "credentials": "omit",
-                "headers": {
-                    "accept": "application/json",
-                    "content-type": "application/json",
-                    "Access-Control-Allow-Origin": "*'"
-                },
-                "referrer": url,
-                "referrerPolicy": "no-referrer-when-downgrade",
-                "body": JSON.stringify(responseBody),
-                "method": "PUT",
-                "mode": "cors",
-            })
+            "credentials": "omit",
+            "headers": {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Authorization": "Bearer " + accessToken
+            },
+            "referrer": url,
+            "referrerPolicy": "no-referrer-when-downgrade",
+            "body": JSON.stringify(responseBody),
+            "method": "PUT",
+            "mode": "cors",
+        })
 
-            .then(function(response) {
+        .then(function(response) {
                 // console.log(response);
                 return response.json();
 
@@ -90,12 +95,12 @@
         url += ("/" + deviceID);
         // url += paramRoute;
         console.log('GET request:' + url)
-        // GET
+            // GET
         const rec = fetch(url, {
             "credentials": "omit",
             "headers": {
                 "accept": "application/json",
-                // "Access-Control-Allow-Origin'": "*'"
+                "Access-Control-Allow-Origin": "*"
             },
             "referrer": url,
             "referrerPolicy": "no-referrer-when-downgrade",
@@ -116,7 +121,7 @@
 
             // TODO: write "displayErrrorOnPage" function and call that here
             // updateServerStatus(false);
-            errorHandler();
+            // errorHandler();
             return
         }
 
@@ -125,14 +130,25 @@
         // console.dir(res);
 
         // if no error, then get response 
-        let device = await res.json();
-        console.log("device returned: ", device);
-        let paramReq = device[1][parameter];
-        console.log("parameter = ", paramReq);
-        updateServerStatus(true);
-        // responseHandler(device);
-        console.log("")
-        return paramReq;
+        let device;
+        try {
+            device = await res.json();
+            console.log("device returned: ", device);
+            let paramReq = device[1][parameter];
+            console.log("parameter = ", paramReq);
+            updateServerStatus(true);
+            // responseHandler(device);
+            console.log("")
+            return paramReq;
+        } catch (error) {
+            console.error("Error caught!")
+            console.error(error);
+
+            // TODO: write "displayErrrorOnPage" function and call that here
+            // updateServerStatus(false);
+            // errorHandler();
+            return
+        }
 
     };
 
@@ -146,12 +162,14 @@
         url += ("/" + deviceID);
         // url += paramRoute;
         console.log('GET request:' + url)
-        // GET
+            // GET
         const rec = fetch(url, {
             "credentials": "omit",
             "headers": {
                 "accept": "application/json",
-                // "Access-Control-Allow-Origin'": "*'"
+                "Access-Control-Allow-Origin": "*",
+                "Authorization": "Bearer " + accessToken
+
             },
             "referrer": url,
             "referrerPolicy": "no-referrer-when-downgrade",
