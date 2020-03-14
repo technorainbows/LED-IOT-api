@@ -439,6 +439,7 @@ class DeviceList(Resource):
     @API.expect(DEVICE, validate=True)
     def post(self):
         """Create a new device with next id."""
+        
         # TODO: check if this does anything
         device_id = 'device%d' % (len(DEVICE) + 1)
         # DEVICES[device_id] = device
