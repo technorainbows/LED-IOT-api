@@ -5,6 +5,7 @@ import os
 import sys
 import logging
 import logging.config
+import json
 from flask_cors import CORS
 from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
@@ -20,11 +21,6 @@ logging.basicConfig(
     level=logging.INFO,
     datefmt='%Y-%m-%d %H:%M:%S',
 )
-
-# LOG_LEVEL_NAMES = [logging.getLevelName(v) for v in
-#                    sorted(getattr(logging, '_levelToName', None)
-#                           or logging._levelNames)
-#                    if getattr(v, "real", 0)]
 
 # Get LOG_LEVEL from environment if set, otherwise set to default
 if 'LOG_LEVEL' not in os.environ:
@@ -62,6 +58,14 @@ else:
     logging.warning("No HB_EXP set; using default (10). ")
     HB_EXP = 10
 
+# load and parse client secrets file
+with open('./client_secrets.json', 'r') as myfile:
+    data = myfile.read()
+data = json.loads(data)
+logging.debug(data)
+client_secrets = data['web']
+
+
 
 class Server(object):
     """Flask app and api methods."""
@@ -69,12 +73,40 @@ class Server(object):
     def __init__(self):
         """Initialize Flask app and api."""
         self.app = Flask(__name__)
+        self.app.config.SWAGGER_UI_OAUTH_CLIENT_ID = client_secrets['client_id']
+        self.app.config.SWAGGER_UI_OAUTH_REALM = '-'
+        self.app.config.SWAGGER_UI_DOC_EXPANSION = 'list'
+        # self.app.config.SWAGGER_UI_OAUTH_APP_NAME = 'Demo'
+        # api = Api(app, security='Bearer Auth', authorizations=authorizations)
+        
+        authorizations = {
+            'OAuth2': {
+                'type': 'oauth2',
+                'flow': 'implicit',
+                'authorizationUrl': client_secrets['auth_uri'],
+                'clientId': self.app.config.SWAGGER_UI_OAUTH_CLIENT_ID,
+                'clientSecret': client_secrets['client_secret'],
+                'scopes': {
+                    'read': 'Grant read-only access',
+                    'write': 'Grant read-write access',
+                }
+            },
+            'Bearer Auth': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+            },
+        }
+
         self.api = Api(self.app,
                        version='0.4',
                        title='LED API',
                        description='A simple LED IOT API',
-                       doc='/docs'
-                       )
+                       doc='/docs',
+                       security=['Bearer Auth', {'OAuth2': 'read'}],
+                       authorizations=authorizations
+                    )
+
         CORS(self.app)
 
     def run(self):
@@ -275,10 +307,12 @@ REDIS = Redis()
 #########################
 #   Heartbeat Methods   #
 #########################
+@API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
 @API.route('/Devices/HB/<string:device_id>', methods=['GET', 'POST'])
 class Heartbeat(Resource):
     """Update and check on a given device's heartbeat/online status."""
 
+    
     @validate_access
     @API.response(200, 'Success')
     def get(self, device_id):
@@ -318,6 +352,7 @@ class Heartbeats(Resource):
     """Monitor which devices are online or not via heartbeat."""
 
     @API.response(202, 'Success')
+    @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
     @validate_access
     def get(self):
         """Return a list of all heartbeats."""
@@ -337,11 +372,12 @@ class Heartbeats(Resource):
          params={'device_id': 'The Device ID'})
 @API.doc(description='device_id should be {0}'.format(
     ', '.join(REDIS.keys("device_id"))))
+@API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
 # @validate_access
 class Device(Resource):
     """Show a device's properties and let user delete or change properties."""
 
-    # @validate_access
+    @validate_access
     @API.response(200, 'Success', DEVICE)
     def get(self, device_id):
         """Fetch a given resource."""
@@ -386,11 +422,12 @@ class Device(Resource):
 ####################################
 # List of Devices Response Methods #
 ####################################
+@API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
 @API.route('/Devices/')
 # @validate_access
 class DeviceList(Resource):
     """Shows a list of all devices, and lets you POST to add new tasks."""
-
+    @API.doc(security=[{'oath2': ['read', 'write']}])
     @validate_access
     @API.response(200, 'Success', LIST_OF_DEVICES)
     def get(self):
@@ -412,7 +449,7 @@ class DeviceList(Resource):
         for field in DEVICE:
             # print("field: ", field)
             if field in request.json:
-                print("field found: ", field, "value = ", request.json.get(field))
+                # print("field found: ", field, "value = ", request.json.get(field))
                 REDIS.set(device_id, field, request.json.get(field))
 
         return jsonify(device_id, REDIS.get(device_id), 201)
@@ -422,7 +459,7 @@ class DeviceList(Resource):
 def not_found(error_rec):
     """Return not found error message."""
     logging.error('Error: %s', error_rec)
-    return (jsonify({'error': error_rec}), 404)
+    return (jsonify({'error_handler': error_rec}), 404)
 
 
 if __name__ == '__main__':

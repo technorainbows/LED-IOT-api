@@ -7,7 +7,43 @@ from functools import wraps
 from flask import Flask, request, make_response, jsonify
 import jwt
 from jwt.algorithms import RSAAlgorithm, HMACAlgorithm, get_default_algorithms
+import logging
+import logging.config
 
+# Set up simple logging.
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S',
+)
+
+# Get LOG_LEVEL from environment if set, otherwise set to default
+if 'LOG_LEVEL' not in os.environ:
+    logging.warning("LOG_LEVEL not set, using default")
+    LOG_LEVEL = logging.DEBUG
+else:
+    # Check if env variable correponds to logging level word or number.
+    try:
+        # getattr(logging, os.environ['LOG_LEVEL'].upper())
+        LOG_LEVEL = getattr(logging, os.environ['LOG_LEVEL'].upper())
+        logging.info("1. LOG_LEVEL set to: %s", LOG_LEVEL)
+
+    except AttributeError:
+        TEMP_LEVEL = logging.getLevelName(int(os.environ['LOG_LEVEL']))
+        logging.info("temp_level got from env: %s", TEMP_LEVEL)
+
+        if not TEMP_LEVEL.startswith('Level'):
+            LOG_LEVEL = TEMP_LEVEL
+            logging.info("2. INT LOG_LEVEL set to: %s", LOG_LEVEL)
+        else:
+            LOG_LEVEL = logging.WARNING
+            logging.warning(
+                "Incorrect LOG_LEVEL provided (%s). Setting to WARNING.", TEMP_LEVEL)
+    except Exception:
+        logging.error("Error with LOG_LEVEL provided. Using default.")
+        LOG_LEVEL = logging.WARNING
+
+logging.getLogger().setLevel(LOG_LEVEL)
 
 with open('./client_secrets.json', 'r') as myfile:
     data = myfile.read()
@@ -27,7 +63,7 @@ def validate_access(func):
         # decode and verify header
         # for i in args:
         #     print("args:", i.value)
-        # print("in wrapper")
+        print("in wrapper")
         # print("request: ", request.headers)
         access_token = None
         
@@ -37,7 +73,7 @@ def validate_access(func):
             # print("token found: ", access_token)
 
             header = jwt.get_unverified_header(access_token)
-            # print("unverified header: ", header)
+            print("unverified header: ", header)
             
             # if header validated, then decode/check claims
             # assert(header['kid'] == kid)
@@ -46,15 +82,15 @@ def validate_access(func):
                 # print("claims = ", claims)
 
                 if (claims['cid'] == client_secrets['cid']) and (claims['aud'] == client_secrets['aud']):
-                    # print("token validated!!")
+                    print("token validated!!")
                     
                     if claims['sub'] in client_secrets['allowed_users']:
-                        # print("user permitted! - ", claims['sub'])
+                        print("user permitted! - ", claims['sub'])
                         return func(*args, **kwargs)
                     else:
                         # print("user not allowed")
                         return make_response({'error': 'user not allowed'}, 403)
-                # print("claims not validated")
+                print("claims not validated")
 
             except Exception as e:
                 print("Invalid token: ", str(e))
@@ -63,7 +99,7 @@ def validate_access(func):
         # else:
         #     response_body = {'error': 'invalid token'}
         #     return response_body, 401
-
+    print("token validated and user permitted")
     return wrapper_validate_access
 
 
