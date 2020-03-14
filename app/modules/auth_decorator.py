@@ -4,11 +4,12 @@ import os
 import json
 # import time
 from functools import wraps
-from flask import Flask, request, make_response, jsonify
-import jwt
-from jwt.algorithms import RSAAlgorithm, HMACAlgorithm, get_default_algorithms
 import logging
 import logging.config
+from flask import Flask, request, make_response, jsonify
+import jwt
+# from jwt.algorithms import RSAAlgorithm, HMACAlgorithm, get_default_algorithms
+
 
 # Set up simple logging.
 logging.basicConfig(
@@ -63,18 +64,18 @@ def validate_access(func):
         # decode and verify header
         # for i in args:
         #     print("args:", i.value)
-        print("in wrapper")
+        logging.debug("in wrapper")
         # print("request: ", request.headers)
         access_token = None
-        
+
         # access_token = "eyJraWQiOiJYSlpsWnhmUVVUQkVxc2RpeUFXUWNSTWJQU3V6b0V2MVF0SUloVVdCbXV3IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULnY4X0pfV1VwaVdfNWpYdHVqNUNRc3BNMFkwVEd0cjZlc3pvQy1NWUhwaTAiLCJpc3MiOiJodHRwczovL2Rldi02MzU2MjMub2t0YS5jb20vb2F1dGgyL2RlZmF1bHQiLCJhdWQiOiJhcGk6Ly9kZWZhdWx0IiwiaWF0IjoxNTgxNTY4NjUxLCJleHAiOjE1ODE2NTUwNTEsImNpZCI6IjBvYTE1MTh4d29Nb2Fld0Y2NHg2IiwidWlkIjoiMDB1MTM3MnNtRjc3T0FNTFM0eDYiLCJzY3AiOlsib3BlbmlkIiwiZW1haWwiXSwic3ViIjoiaUBhc2hsZXluZXd0b24ubmV0In0.HBX9hWiY6klE5i-1JMfxIEYrJrtOCvK12-K0CWUIJmv3uO7NtMoNm5h4SjvtwHifDxDNLWqm2-tBATBkoMgYyxg8rkrdu1waPn3GmGgQjt6eCtCyc-BE_gydsulugJ161NhxaeGxjIZscpNprNH3UIKWX4sEMX5eeJVC5JMyEqf02D1Xybxdvo-DOOYDqBO-SKtOB83y-y1pPlxRPpfKfY5JHSTI8BUKZf4AoRySevfF0SgDb7qg7ibg4Lral0Fa7tenduOBuNauFQ29Wn1Umo7C3kXRA7jw7c1nLA35EsuO9ijyuAO2v4eYMefnBSbbTk1l7uQL3ZJ4Jvyfx8Ue2w"
         if 'Authorization' in request.headers and request.headers['Authorization'].startswith('Bearer '):
             access_token = request.headers['Authorization'].split(None, 1)[1].strip()
             # print("token found: ", access_token)
 
             header = jwt.get_unverified_header(access_token)
-            print("unverified header: ", header)
-            
+            logging.info("unverified header: %s", header)
+
             # if header validated, then decode/check claims
             # assert(header['kid'] == kid)
             try:
@@ -82,24 +83,24 @@ def validate_access(func):
                 # print("claims = ", claims)
 
                 if (claims['cid'] == client_secrets['cid']) and (claims['aud'] == client_secrets['aud']):
-                    print("token validated!!")
-                    
+                    logging.info("token validated!!")
+
                     if claims['sub'] in client_secrets['allowed_users']:
-                        print("user permitted! - ", claims['sub'])
+                        logging.info("user permitted! - %s", claims['sub'])
                         return func(*args, **kwargs)
                     else:
                         # print("user not allowed")
                         return make_response({'error': 'user not allowed'}, 403)
-                print("claims not validated")
+                logging.error("claims not validated")
 
             except Exception as e:
-                print("Invalid token: ", str(e))
+                logging.error("Invalid token: %s", str(e))
                 return make_response({'error': 'invalid token'}, 403)
-            # if we made it this far, we can continue with the main function     
+            # if we made it this far, we can continue with the main function
         # else:
         #     response_body = {'error': 'invalid token'}
         #     return response_body, 401
-    print("token validated and user permitted")
+    logging.info("token validated and user permitted")
     return wrapper_validate_access
 
 

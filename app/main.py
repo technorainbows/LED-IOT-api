@@ -78,7 +78,7 @@ class Server(object):
         self.app.config.SWAGGER_UI_DOC_EXPANSION = 'list'
         # self.app.config.SWAGGER_UI_OAUTH_APP_NAME = 'Demo'
         # api = Api(app, security='Bearer Auth', authorizations=authorizations)
-        
+
         authorizations = {
             'OAuth2': {
                 'type': 'oauth2',
@@ -92,9 +92,9 @@ class Server(object):
                 }
             },
             'Bearer Auth': {
-            'type': 'apiKey',
-            'in': 'header',
-            'name': 'Authorization'
+                'type': 'apiKey',
+                'in': 'header',
+                'name': 'Authorization'
             },
         }
 
@@ -105,7 +105,7 @@ class Server(object):
                        doc='/docs',
                        security=['Bearer Auth', {'OAuth2': 'read'}],
                        authorizations=authorizations
-                    )
+                      )
 
         CORS(self.app)
 
@@ -312,7 +312,6 @@ REDIS = Redis()
 class Heartbeat(Resource):
     """Update and check on a given device's heartbeat/online status."""
 
-    
     @validate_access
     @API.response(200, 'Success')
     def get(self, device_id):
@@ -435,7 +434,7 @@ class DeviceList(Resource):
         devices = REDIS.keys("device_")
         logging.debug("returning Device List: %s", str(devices))
         return jsonify(devices, 200)
-    
+
     @validate_access
     @API.expect(DEVICE, validate=True)
     def post(self):
@@ -463,5 +462,5 @@ def not_found(error_rec):
 
 
 if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=5000, debug=True, 
+    APP.run(host='0.0.0.0', port=5000, debug=True,
             ssl_context=('certificates/localhost.crt', 'certificates/device.key'))
