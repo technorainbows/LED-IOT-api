@@ -426,6 +426,7 @@ class Device(Resource):
 # @validate_access
 class DeviceList(Resource):
     """Shows a list of all devices, and lets you POST to add new tasks."""
+    
     @API.doc(security=[{'oath2': ['read', 'write']}])
     @validate_access
     @API.response(200, 'Success', LIST_OF_DEVICES)
@@ -438,8 +439,7 @@ class DeviceList(Resource):
     @validate_access
     @API.expect(DEVICE, validate=True)
     def post(self):
-        """Create a new device with next id."""
-        
+        """Create a new device with next id."""  
         # TODO: check if this does anything
         device_id = 'device%d' % (len(DEVICE) + 1)
         # DEVICES[device_id] = device
