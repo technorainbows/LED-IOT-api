@@ -41,7 +41,8 @@ jobs:
           name: Test API routes
           command: |
             python -m pytest
-      
+                
+            
       # Install via apk on alpine based images
       # - run:
       #     name: Install Docker client
@@ -55,6 +56,11 @@ jobs:
             docker build -t $DOCKER_USER/led_iot_api:$CIRCLE_SHA1 .
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
+      
+      - push_aws
+      - run:
+        name: Push AWS
+        command: aws s3 sync ./site/. s3://lights.ashleynewton.net --recursive
 
 # workflows:
 #   version: 2
