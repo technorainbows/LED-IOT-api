@@ -60,7 +60,7 @@ jobs:
     
       - run:
           name: Push AWS
-          command: aws s3 sync ./site/. s3://lights.ashleynewton.net --recursive
+          command: aws s3 sync ./site s3://lights.ashleynewton.net
 
 # workflows:
 #   version: 2
