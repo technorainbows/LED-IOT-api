@@ -25,4 +25,4 @@ typed-ast == 1.4.1
 wcwidth == 0.1.8
 wrapt == 1.11
 pyjwt == 1.7.1
-aws-cli == 1.18.21
+awscli == 1.18.21
