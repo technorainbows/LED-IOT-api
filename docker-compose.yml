@@ -2,10 +2,14 @@ version: "3.7"
 services:
   rest-api:
     volumes:
-      - ./app:/app/
-    command:  python /app/main.py
+      - ./app:/app
+    # command:  python /app/main.py
     environment:
-      LOG_LEVEL: warning
+      FOO:
+      CLIENT_SECRET:
+      CLIENT_ID:
+      AUTH_TOKEN:
+      LOG_LEVEL: debug
       HB_EXP: 30
       REDIS_HOST: redis
       PYTHONUNBUFFERED: 1
