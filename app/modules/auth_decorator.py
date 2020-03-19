@@ -100,7 +100,7 @@ def validate_access(func):
         # else:
         #     response_body = {'error': 'invalid token'}
         #     return response_body, 401
-    logging.info("token validated and user permitted")
+        logging.info("token validated and user permitted")
     return wrapper_validate_access
 
 
