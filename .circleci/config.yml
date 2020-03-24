@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 jobs:
   test:
     docker:
@@ -30,6 +30,8 @@ jobs:
           command: |
             python -m pytest
   build:
+      machine:
+        image: ubuntu-1604:201903-01
       steps:
         - checkout       
         - setup_remote_docker
@@ -49,7 +51,7 @@ jobs:
           
 
 workflows:
-  version: 2
+  version: 2.1
   test_and_build:
     jobs:
       - test
