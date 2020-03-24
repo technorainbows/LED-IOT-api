@@ -1,7 +1,5 @@
 version: 2
 jobs:
-  
-
   test:
     docker:
       - image: circleci/python:3.7
@@ -50,13 +48,19 @@ jobs:
 
 workflows:
   version: 2
-  build-and-deploy:
+  test-and-build:
     jobs:
-      - build
-      - deploy:
+      - test
+      - build:
           requires:
-            - build
-          filters:
-            branches:
-              only: master
+            - test
+            filters:
+              branches:
+                only: master
+      # - deploy:
+      #     requires:
+      #       - build
+      #     filters:
+      #       branches:
+      #         only: master
 
