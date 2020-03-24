@@ -13,7 +13,7 @@ jobs:
       - run:
           name: Set Up Environment
           command: | 
-            sudo python -m pip install -r /app/requirements.txt
+            sudo python -m pip install -r /home/circleci/project/app/requirements.txt
       - run:
           name: Run Config Script
           command: |
