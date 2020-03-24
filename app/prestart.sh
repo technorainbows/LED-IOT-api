@@ -1,9 +1,9 @@
 #! /usr/bin/env bash
 set -e
 
-echo "####################################################################in docker-entrypoint file"
+echo "###############################in docker-prestart file###################"
 
-echo $FOO
+# echo $FOO
 
 
 cat > /app/client_secrets.json <<EOF

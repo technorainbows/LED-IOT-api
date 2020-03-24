@@ -40,12 +40,12 @@ jobs:
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
 
-  deploy:
-      - run:
-          name: Push AWS
-          command: aws s3 sync ./site s3://lights.ashleynewton.net
-      - run:
-          name: Deploy Fargate
+  # deploy:
+  #     - run:
+  #         name: Push AWS
+  #         command: aws s3 sync ./site s3://lights.ashleynewton.net
+  #     - run:
+  #         name: Deploy Fargate
           
 
 workflows:
