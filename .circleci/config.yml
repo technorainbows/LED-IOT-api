@@ -29,14 +29,16 @@ jobs:
           name: Test API routes
           command: |
             python -m pytest
-  build:       
-      - setup_remote_docker
-      - run:
-          name: Push Docker Repo
-          command: |
-            docker build -t $DOCKER_USER/led_iot_api:$CIRCLE_SHA1 .
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
+  build:
+      steps:
+        - checkout       
+        - setup_remote_docker
+        - run:
+            name: Push Docker Repo
+            command: |
+              docker build -t $DOCKER_USER/led_iot_api:$CIRCLE_SHA1 .
+              echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+              docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
 
   # deploy:
   #     - run:
