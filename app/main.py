@@ -66,7 +66,6 @@ data = json.loads(data)
 client_secrets = data['web']
 
 
-
 class Server(object):
     """Flask app and api methods."""
 
@@ -106,7 +105,7 @@ class Server(object):
                        doc='/docs',
                        security=['Bearer Auth', {'OAuth2': 'read'}],
                        authorizations=authorizations
-                      )
+                       )
 
         CORS(self.app)
 
@@ -441,7 +440,7 @@ class DeviceList(Resource):
     @validate_access
     @API.expect(DEVICE, validate=True)
     def post(self):
-        """Create a new device with next id."""  
+        """Create a new device with next id."""
         # TODO: check if this does anything
         device_id = 'device%d' % (len(DEVICE) + 1)
         # DEVICES[device_id] = device
@@ -461,7 +460,7 @@ class DeviceList(Resource):
 def not_found(error_rec):
     """Return not found error message."""
     logging.error('Error: %s', error_rec)
-    return (jsonify({'error_handler': error_rec}), 404)
+    return (jsonify({'error_handler': str(error_rec)}), 404)
 
 
 if __name__ == '__main__':
