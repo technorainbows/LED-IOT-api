@@ -1,5 +1,5 @@
 /************************************************************************************************************************
-   LED-IOT-APP v1.0
+   LED-IOT-APP v1.2
    Communicates with a rest api server to get LED control parameters in order to control attached LEDs.
    Also updates its state (e.g., "heartbeat") to rest API.
  ********************************************************************************************************************/
@@ -32,7 +32,7 @@ SSD1306Wire display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board dispp
 //ESP8266WiFiMulti wifiMulti;
 //#include <ArduinoHttpClient.h>
 
-#define NETWORK_CXE
+#define NETWORK_VANNEST
 #define HTTPS
 
 #ifdef NETWORK_CXE
@@ -46,14 +46,8 @@ String IPaddress = "10.0.0.59";
 //String controllerURL = "10.0.0.59/site/index.html";
 #endif
 
-#ifdef HTTPS
-String apiURL = "https://" + IPaddress + ":5000/Devices/";
-#endif
-
-#ifdef HTTP
-String apiURL = "http://" + IPaddress + ":5000/Devices/";
-#endif
-
+bool SERVER_SECURE = true; // global variable to indicate whether HTTPS or HTTP is used
+String apiURL = IPaddress + ":5000/Devices/";
 String controllerURL = IPaddress + "site/index.html";
 
 String DEVICE_ID;
@@ -252,11 +246,9 @@ void setup()
   WiFi.mode(WIFI_STA);
   wifiMulti.addAP(ssid1, password1);
   wifiMulti.addAP(ssid2, password2);
-  //  wifiMulti.addAP("ssid_from_AP_2", "your_password_for_AP_2");
-  //  wifiMulti.addAP("ssid_from_AP_3", "your_password_for_AP_3");
 
   // allow reuse (if server supports it)
-  http.setReuse(true);
+  // http.setReuse(true);
 
   // wait for WiFi connection
   Serial.print("Waiting for WiFi to connect...");
@@ -284,6 +276,9 @@ void setup()
 
     // inititalize deviceID
     DEVICE_ID = setDeviceID();
+
+    // check if server is secure
+    checkSSL();
   }
 
   setupAOTA(); // set up arduino over-the-air updating
@@ -324,65 +319,55 @@ void monitorWiFi()
 }
 
 /***************************************************************************
-   heartbeat: sends a POST request with device's unique ID to API
+   checkSSL: checks whether HTTPS or HTTP should be used with server and
+            updates global variable bool SERVER_SECURE.
 ***************************************************************************/
+void checkSSL()
+{
+  Debug.print(DBG_VERBOSE, "in checkSSL");
 
-// void heartbeat() {
-//   //  monitorWiFi();
-//   //  EVERY_N_MILLISECONDS(500) {
-//   if (wifiMulti.run() == WL_CONNECTED) { //Check WiFi connection status
+  WiFiClientSecure *client = new WiFiClientSecure;
+  if (client)
+  {
+    // client->setCACert(rootCACertificate); // comment out this to skip verifying certificate -- less secure
+    Debug.print(DBG_VERBOSE, "checkSSL: client created");
 
-//     // WiFiClientSecure *client = new WiFiClientSecure;
-//     // if(client) {
-//     //   client -> setCACert(rootCACertificate);
-//     //   {
+    {
 
-//         Debug.print(DBG_INFO, "setting heartbeat");
-//         // HTTPClient http;
+      if (http.begin(*client, "https://" + apiURL + DEVICE_ID))
+      {
+        http.addHeader("Authorization", "Bearer " + auth_token);
 
-//         String HB_URL = apiURL + "HB/" + DEVICE_ID;
+        Debug.print(DBG_VERBOSE, "checkSSL: [HTTPS] GET...\n");
 
-//         if(http.begin(*client, HB_URL)){
-//           //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
-//           https.addHeader("Content-Type", "application/json");             //Specify content-type header
-//           https.addHeader("Authorization", "Bearer " + auth_token);
-//           //    delay(200);
-//           Debug.print(DBG_INFO, "about to POST");
-//           //    char* httpResponse = http.POST(DEVICE_ID);
-//           int httpResponseCode = https.POST("{}");   //Send the actual POST request
-//           Debug.print(DBG_INFO, "POSTing complete");
+        int httpCode = http.GET();
 
-//           if (httpResponseCode > 0) {
+        if (httpCode > 0)
+        {
+          String response = http.getString();                 //Get the response to the request
+          Debug.print(DBG_VERBOSE, "checkSSL: %i", httpCode); //Print return code
+          // Debug.print(DBG_INFO, "%s", response);         //Print request answer
+          SERVER_SECURE = true;
+          Debug.print(DBG_INFO, "checkSSL: ***SERVER_SECURE set to TRUE");
+        }
+        else
+        {
+          Debug.print(DBG_VERBOSE, "checkSSL: Insecure connection, updating bool");
+          Serial.println(http.errorToString(httpCode).c_str());
+          SERVER_SECURE = false;
+          Debug.print(DBG_INFO, "checkSSL: ***SERVER_SECURE set to FALSE");
+        }
 
-//             String response = https.getString();                       //Get the response to the request
-//             //      Serial.println("POST RESPONSE CODE:");
-//             Debug.print(DBG_INFO, "%i", httpResponseCode);   //Print return code
-//             //      Serial.print("POST RESPONSE: ");
-//             Debug.print(DBG_INFO, "%s", response);           //Print request answer
-
-//           } else {
-
-//             Debug.print(DBG_ERROR, "Error on sending POST: ");
-//             Serial.println(https.errorToString(httpResponseCode).c_str());
-//           }
-
-//           https.end();  //Free resources
-//           } else {
-//             Serial.printf("[HTTPS] Unable to connect\n");
-//           }
-//       }
-//     }
-//     delete client;
-//     } else {
-
-//       Debug.print(DBG_ERROR, "Error in WiFi connection");
-//       for (int i = 0; i < NUM_SECONDS_TO_WAIT && WiFi.status() != WL_CONNECTED; i++) {
-//         Serial.print(".");
-//         delay(100);
-//       }
-//     }
-
-// }
+        http.end(); //Free resources
+      }
+      else
+      {
+        Debug.print(DBG_INFO, "checkSSL: ***SERVER_SECURE set to FALSE");
+      }
+    }
+    delete client;
+  }
+}
 
 /*******************************************************
   Main Loop
@@ -392,78 +377,247 @@ void loop()
 {
 
   monitorWiFi();
-  // EVERY_N_MILLISECONDS(500) {
-
-  //   heartbeat();
-  // }
-
-  // EVERY_N_MILLISECONDS(200) {
 
   ArduinoOTA.handle();
 
-  // wait for WiFi connection
-  // if ((wifiMulti.run() == WL_CONNECTED)) {
+  // use HTTP or HTTPS depending on SERVER_SECURE state
+  switch (SERVER_SECURE)
+  {
+  case true:
+    Debug.print(DBG_INFO, "main: server is secure - using to https");
+    secure_connection("https://");
+    break;
+
+  case false:
+    Debug.print(DBG_INFO, "main: server is insecure - using to http");
+    insecure_connection("http://");
+    break;
+  }
+
+  //  Serial.println("Setting brightness");
+  //  delay(500);
+  FastLED.setBrightness(brightVal);
+  FastLED.show();
+  updateLEDS();
+
+  // insert a delay to keep the framerate modest
+  FastLED.delay(1000 / FRAMES_PER_SECOND);
+
+  checkSSL();
+}
+
+/***************************************************************************
+   insecure_connection: sets heartbeat and gets device info using HTTP
+***************************************************************************/
+void insecure_connection(String protocol)
+{
+  HTTPClient http;
+
+  Debug.print(DBG_INFO, "insecure connection!");
+
+  ////// SET HEARTBEAT ////////////////
+  Debug.print(DBG_INFO, "insecure: setting heartbeat");
+  String HB_URL = protocol + apiURL + "HB/" + DEVICE_ID;
+  Debug.print(DBG_DEBUG, "insecure: HB_URL is %s", HB_URL);
+
+  if (http.begin(HB_URL))
+  {
+    http.addHeader("Content-Type", "application/json"); //Specify content-type header
+    http.addHeader("Authorization", "Bearer " + auth_token);
+    Debug.print(DBG_INFO, "insecure: [HTTP] about to POST");
+    int httpResponseCode = http.POST("{}"); //Send the actual POST request
+
+    if (httpResponseCode > 0)
+    {
+      String response = http.getString();                      //Get the response to the request
+      Debug.print(DBG_INFO, "insecure: %i", httpResponseCode); //Print return code
+      Debug.print(DBG_INFO, "insecure: %s", response);         //Print request answer
+    }
+    else
+    {
+      Debug.print(DBG_ERROR, "insecure: [HTTP] Error on sending POST: ");
+      Debug.print(DBG_ERROR, "%s", http.errorToString(httpResponseCode).c_str());
+      SERVER_SECURE = true;
+    }
+
+    http.end(); //Free resources
+  }
+  else
+  {
+    Debug.print(DBG_ERROR, "insecure: [HTTP] Unable to connect\n");
+    SERVER_SECURE = true;
+  }
+
+  /////////////////////// get device parameters ///////////////////
+
+  String get_URL = protocol + apiURL + DEVICE_ID;
+  Debug.print(DBG_VERBOSE, "insecure: opening connection to %s", get_URL);
+
+  if (http.begin(get_URL))
+  {
+    http.addHeader("Authorization", "Bearer " + auth_token);
+
+    // Serial.print("[HTTPS] GET...\n");
+
+    int httpCode = http.GET();
+
+    // Check returning httpCode -- will be negative on error
+    if (httpCode > 0)
+    {
+      Debug.print(DBG_VERBOSE, "insecure: [HTTP] GET... code: %d\n", httpCode);
+
+      // file found at server
+      if (httpCode == HTTP_CODE_OK)
+      {
+        Debug.print(DBG_INFO, "insecure: Found file at server: ");
+        String payload = http.getString();
+        Debug.print(DBG_INFO, "insecure: %s", payload.c_str());
+
+        // parse payload
+
+        const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + 100;
+        DynamicJsonDocument doc(capacity);
+
+        //                    const char* json = "[\"device_266A08DBF47456428F703EEDF1E208B7117785DF\",{\"brightness\":\"123\",\"name\":\"triangle\",\"onState\":\"true\"}]";
+
+        deserializeJson(doc, payload);
+
+        const char *root_0 = doc[0]; // "device_266A08DBF47456428F703EEDF1E208B7117785DF"
+
+        JsonObject root_1 = doc[1];
+        const char *root_1_brightness = root_1["brightness"]; // "123"
+        const char *root_1_name = root_1["name"];             // "triangle"
+        const char *root_1_onState = root_1["onState"];       // "true"
+        // Debug.print(DBG_DEBUG, "root_0 = ");
+        // Debug.print(DBG_DEBUG, root_0);
+        // Debug.print(DBG_DEBUG, "brightness = ");
+        // Debug.print(DBG_DEBUG, root_1_brightness);
+        // Debug.print(DBG_DEBUG, "name = ");
+        // Debug.print(DBG_DEBUG, root_1_name);
+        onState = root_1_onState;
+        // Debug.print(DBG_DEBUG, "onState = ");
+        // Debug.print(DBG_DEBUG, root_1_onState);
+
+        //          strcpy(hostname, root_1_name);
+
+        int root_2 = doc[2]; // 200
+
+        int newBright = atoi(root_1_brightness);
+
+        if (onState != lastState)
+        {
+          lastState = onState;
+          Debug.print(DBG_INFO, "insecure: onState changed!");
+          Debug.print(DBG_INFO, "insecure: %s", onState.c_str());
+        }
+
+        if (brightVal != newBright)
+        {
+          brightVal = newBright;
+          //            Serial.printf("brightVal = %d\n", brightVal);
+
+          FastLED.setBrightness(brightVal);
+          FastLED.show();
+        }
+        if (hostname != root_1_name)
+        {
+          hostname = root_1_name;
+          updateDisplay();
+        }
+      }
+    }
+    else
+    {
+      Debug.print(DBG_ERROR, "insecure: [HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+      // checkSSL();
+      SERVER_SECURE = true;
+      // return;
+    }
+    http.end(); // close connection
+                //      Serial.println("Closing connection");
+  }
+  else
+  {
+    Serial.printf("insecure: [HTTP] Unable to connect\n");
+    SERVER_SECURE = true;
+  }
+}
+
+/***************************************************************************
+   secure_connection: sets heartbeat and gets device info using HTTPS
+***************************************************************************/
+void secure_connection(String protocol)
+{
+  // Debug.print(DBG_INFO, "secure connection!");
+  HTTPClient http;
 
   WiFiClientSecure *client = new WiFiClientSecure;
   if (client)
   {
-    // client->setCACert(rootCACertificate);
-    Debug.print(DBG_DEBUG, "secure client created and certificate set");
+    // client->setCACert(rootCACertificate); // comment out this to skip verifying certificate -- less secure
+    Debug.print(DBG_DEBUG, "secure: [HTTPS] client created");
 
     {
       ////// SET HEARTBEAT ////////////////
-      Debug.print(DBG_INFO, "setting heartbeat");
-      // HTTPClient http;
-      String HB_URL = apiURL + "HB/" + DEVICE_ID;
-      Debug.print(DBG_DEBUG, "HB_URL is %s", HB_URL);
+      Debug.print(DBG_VERBOSE, "secure: setting heartbeat");
+      String HB_URL = protocol + apiURL + "HB/" + DEVICE_ID;
+      Debug.print(DBG_DEBUG, "secure: HB_URL is %s", HB_URL);
 
       if (http.begin(*client, HB_URL))
       {
         //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
         http.addHeader("Content-Type", "application/json"); //Specify content-type header
         http.addHeader("Authorization", "Bearer " + auth_token);
-        Debug.print(DBG_INFO, "about to POST");
+        Debug.print(DBG_DEBUG, "secure: [HTTPS] about to POST");
         int httpResponseCode = http.POST("{}"); //Send the actual POST request
-        Debug.print(DBG_INFO, "POSTing complete");
+        // Debug.print(DBG_INFO, "POSTing complete");
 
         if (httpResponseCode > 0)
         {
-          String response = http.getString();            //Get the response to the request
-          Debug.print(DBG_INFO, "%i", httpResponseCode); //Print return code
-          Debug.print(DBG_INFO, "%s", response);         //Print request answer
+          String response = http.getString();                    //Get the response to the request
+          Debug.print(DBG_INFO, "secure: %i", httpResponseCode); //Print return code
+          Debug.print(DBG_INFO, "secure: %s", response);         //Print request answer
         }
         else
         {
-          Debug.print(DBG_ERROR, "Error on sending POST: ");
+          Debug.print(DBG_ERROR, "secure: [HTTPS] Error on sending POST: ");
           Serial.println(http.errorToString(httpResponseCode).c_str());
+          // checkSSL();
+          SERVER_SECURE = false;
+          // return;
         }
 
         http.end(); //Free resources
       }
       else
       {
-        Serial.printf("[HTTP] Unable to connect\n");
+        Debug.print(DBG_ERROR, "secure: [HTTPS] Unable to connect\n");
+        SERVER_SECURE = false;
       }
       //}
 
       /////////////////////// get device parameters ///////////////////
-      if (http.begin(*client, apiURL + DEVICE_ID))
+
+      String get_URL = protocol + apiURL + DEVICE_ID;
+      Debug.print(DBG_INFO, "secure: [HTTPS] opening connection to %s", get_URL);
+
+      if (http.begin(*client, get_URL))
       {
         http.addHeader("Authorization", "Bearer " + auth_token);
 
-        Serial.print("[HTTPS] GET...\n");
+        // Serial.print("[HTTPS] GET...\n");
 
         int httpCode = http.GET();
 
         // Check returning httpCode -- will be negative on error
         if (httpCode > 0)
         {
-          Debug.print(DBG_INFO, "[HTTP] GET... code: %d\n", httpCode);
+          Debug.print(DBG_INFO, "secure: [HTTPS] GET... code: %d\n", httpCode);
 
           // file found at server
           if (httpCode == HTTP_CODE_OK)
           {
-            Debug.print(DBG_INFO, "Found file at server: ");
+            Debug.print(DBG_INFO, "secure: Found file at server: ");
             String payload = http.getString();
             Debug.print(DBG_INFO, payload.c_str());
 
@@ -482,15 +636,15 @@ void loop()
             const char *root_1_brightness = root_1["brightness"]; // "123"
             const char *root_1_name = root_1["name"];             // "triangle"
             const char *root_1_onState = root_1["onState"];       // "true"
-            Debug.print(DBG_DEBUG, "root_0 = ");
-            Debug.print(DBG_DEBUG, root_0);
-            Debug.print(DBG_DEBUG, "brightness = ");
-            Debug.print(DBG_DEBUG, root_1_brightness);
-            Debug.print(DBG_DEBUG, "name = ");
-            Debug.print(DBG_DEBUG, root_1_name);
+            // Debug.print(DBG_DEBUG, "secure: root_0 = ");
+            // Debug.print(DBG_DEBUG, root_0);
+            // Debug.print(DBG_DEBUG, "secure: brightness = ");
+            // Debug.print(DBG_DEBUG, root_1_brightness);
+            // Debug.print(DBG_DEBUG, "secure: name = ");
+            // Debug.print(DBG_DEBUG, root_1_name);
             onState = root_1_onState;
-            Debug.print(DBG_DEBUG, "onState = ");
-            Debug.print(DBG_DEBUG, root_1_onState);
+            // Debug.print(DBG_DEBUG, "secure: onState = ");
+            // Debug.print(DBG_DEBUG, root_1_onState);
 
             //          strcpy(hostname, root_1_name);
 
@@ -501,7 +655,7 @@ void loop()
             if (onState != lastState)
             {
               lastState = onState;
-              Debug.print(DBG_INFO, "onState changed!");
+              Debug.print(DBG_INFO, "secure: onState changed!");
               Debug.print(DBG_INFO, onState.c_str());
             }
 
@@ -522,14 +676,21 @@ void loop()
         }
         else
         {
-          Debug.print(DBG_ERROR, "[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+          Debug.print(DBG_ERROR, "secure: [HTTPS] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+          // checkSSL();
+          SERVER_SECURE = false;
+          // delete client;
+          // return;
         }
         http.end(); // close connection
                     //      Serial.println("Closing connection");
       }
       else
       {
-        Serial.printf("[HTTP] Unable to connect\n");
+        Debug.print(DBG_ERROR, "secure: [HTTPS] Unable to connect\n");
+        SERVER_SECURE = false;
+        // delete client;
+        // return;
       }
     } // end client
 
@@ -537,17 +698,9 @@ void loop()
   }
   else
   {
-    Serial.println("Unable to create client - trying http ");
+    Debug.print(DBG_ERROR, "secure: [HTTPS] Unable to create client  ");
+    SERVER_SECURE = false;
   }
-
-  //  Serial.println("Setting brightness");
-  //  delay(500);
-  FastLED.setBrightness(brightVal);
-  FastLED.show();
-  updateLEDS();
-
-  // insert a delay to keep the framerate modest
-  FastLED.delay(1000 / FRAMES_PER_SECOND);
 }
 
 /*****************************************************************************************************
@@ -560,13 +713,13 @@ void updateLEDS()
   if (onState == "false")
   {
     fill_solid(leds, NUM_LEDS, CRGB::Black);
-    Debug.print(DBG_VERBOSE, "onstate is false");
+    Debug.print(DBG_VERBOSE, "updateLEDS: onstate is false");
     FastLED.show();
   }
 
   else
   {
-    Debug.print(DBG_VERBOSE, "onState is true");
+    Debug.print(DBG_VERBOSE, "updateLEDS: onState is true");
     fill_rainbow(leds, NUM_LEDS, gHue, speed);
     EVERY_N_MILLISECONDS(10)
     {
@@ -583,7 +736,7 @@ void updateLEDS()
 
 void updateDisplay()
 {
-  Debug.print(DBG_INFO, "updating display with hostname %s", hostname.c_str());
+  Debug.print(DBG_INFO, "updateDisplay: updating display with hostname %s", hostname.c_str());
 
   display.clear();
   display.setFont(ArialMT_Plain_24); //11,16,24
