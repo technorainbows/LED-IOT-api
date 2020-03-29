@@ -31,30 +31,33 @@ jobs:
             python -m pytest
 
   build:
-      machine:
-        image: ubuntu-1604:201903-01
-      steps:
-        - checkout       
-        - setup_remote_docker
-        - run:
-            name: Push Docker Repo
-            command: |
-              docker build -t $DOCKER_USER/led_iot_api:$CIRCLE_SHA1 .
-              echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-              docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout       
+      - setup_remote_docker
+      - run:
+          name: Push Docker Repo
+          command: |
+            docker build -t $DOCKER_USER/led_iot_api:$CIRCLE_SHA1 .
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
 
   deploy:
-      steps:
-        - run:
-            name: Push Site to AWS
-            command: aws s3 sync ./site s3://lights.ashleynewton.net
-        # - run:
-        #     name: Deploy Fargate
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - run:
+          name: Push Site to AWS
+          command: aws s3 sync ./site s3://lights.ashleynewton.net
+      # - run:
+      #     name: Deploy Fargate
           
 
 workflows:
   version: 2.1
-  test_and_build:
+  test_build_deploy:
     jobs:
       - test
       - build:
