@@ -1,18 +1,6 @@
-version: 2
+version: 2.1
 jobs:
-  # shellcheck:
-  #   docker:
-  #     - image: koalaman/shellcheck-alpine:stable
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Check Scripts
-  #         command: |
-  #           find . -type f -name '*.sh' | wc -l
-  #           find . -type f -name '*.sh' | xargs shellcheck --external-sources
-  #           echo ls
-
-  build:
+  test:
     docker:
       - image: circleci/python:3.7
         environment:
@@ -25,7 +13,7 @@ jobs:
       - run:
           name: Set Up Environment
           command: | 
-            sudo python -m pip install -r requirements.txt
+            sudo python -m pip install -r /home/circleci/project/app/requirements.txt
       - run:
           name: Run Config Script
           command: |
@@ -41,26 +29,42 @@ jobs:
           name: Test API routes
           command: |
             python -m pytest
-      
-      # Install via apk on alpine based images
-      # - run:
-      #     name: Install Docker client
-      #     command: apk add docker-cli
+  build:
+      machine:
+        image: ubuntu-1604:201903-01
+      steps:
+        - checkout       
+        - setup_remote_docker
+        - run:
+            name: Push Docker Repo
+            command: |
+              docker build -t $DOCKER_USER/led_iot_api:$CIRCLE_SHA1 .
+              echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+              docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
 
-      - setup_remote_docker
-      
-      - run:
-          name: Push Docker Repo
-          command: |
-            docker build -t $DOCKER_USER/led_iot_api:$CIRCLE_SHA1 .
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
+  # deploy:
+  #     - run:
+  #         name: Push AWS
+  #         command: aws s3 sync ./site s3://lights.ashleynewton.net
+  #     - run:
+  #         name: Deploy Fargate
+          
 
-# workflows:
-#   version: 2
-#   workflow:
-#     jobs:
-#       - shellcheck
-#       - build-job:
-#           requires:
-#             - shellcheck
+workflows:
+  version: 2.1
+  test_and_build:
+    jobs:
+      - test
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      # - deploy:
+      #     requires:
+      #       - build
+      #     filters:
+      #       branches:
+      #         only: master
+
