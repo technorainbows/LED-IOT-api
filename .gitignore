@@ -9,6 +9,7 @@ package-lock.json
 package.json
 client_secrets.json
 credentials.h
+certificates/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

@@ -28,8 +28,35 @@ cat > /app/client_secrets.json <<EOF
 EOF
 
 
-#ls -la
+
 
 cat /app/client_secrets.json
+
+
+
+cat > /etc/nginx/conf.d/https.conf <<EOF
+
+server {
+    listen 443 ssl;
+    server_name localhost;
+    ssl_certificate /app/certificates/localhost.crt;
+    ssl_certificate_key /app/certificates/device.key;
+    location / {
+        try_files \$uri @app;
+    }
+    location @app {
+        include uwsgi_params;
+        uwsgi_pass unix:///tmp/uwsgi.sock;
+    }
+    location /static {
+        alias /app/static;
+    }
+}
+
+EOF
+
+ls -la
+
+cat  /etc/nginx/nginx.conf
 
 #exec "$@"
