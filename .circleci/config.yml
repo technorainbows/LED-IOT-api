@@ -29,6 +29,7 @@ jobs:
           name: Test API routes
           command: |
             python -m pytest
+
   build:
       machine:
         image: ubuntu-1604:201903-01
@@ -42,12 +43,13 @@ jobs:
               echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
               docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
 
-  # deploy:
-  #     - run:
-  #         name: Push AWS
-  #         command: aws s3 sync ./site s3://lights.ashleynewton.net
-  #     - run:
-  #         name: Deploy Fargate
+  deploy:
+      steps:
+        - run:
+            name: Push Site to AWS
+            command: aws s3 sync ./site s3://lights.ashleynewton.net
+        # - run:
+        #     name: Deploy Fargate
           
 
 workflows:
@@ -61,10 +63,10 @@ workflows:
           filters:
             branches:
               only: master
-      # - deploy:
-      #     requires:
-      #       - build
-      #     filters:
-      #       branches:
-      #         only: master
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
 
