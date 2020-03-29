@@ -7,9 +7,13 @@ node_modules/
 *.envrc
 package-lock.json
 package.json
+
+### secrets ###
 client_secrets.json
 credentials.h
 certificates/
+*.crt
+*.key
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
