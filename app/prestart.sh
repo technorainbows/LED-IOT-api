@@ -1,11 +1,22 @@
 #! /usr/bin/env bash
 set -e
 
-echo "###############################in docker-prestart file###################"
+echo "########################## in docker-prestart file ###################"
 
-# echo $FOO
+######## Generate HTTPS certificates from environment ###########
+# touch /app/certificates/test.crt
+cat > /app/certificates/testing.crt <<EOF
+$API_CERTIFICATE
+EOF
 
+cat > /app/certificates/testing.key <<EOF
+$API_KEY
+EOF
 
+cat /app/certificates/testing.crt
+cat /app/certificates/testing.key
+
+######## create client_secrets.json file from environment ###########
 cat > /app/client_secrets.json <<EOF
 {
     "web": {
@@ -33,14 +44,14 @@ EOF
 cat /app/client_secrets.json
 
 
-
+########### add https to nginx config ##############
 cat > /etc/nginx/conf.d/https.conf <<EOF
 
 server {
     listen 443 ssl;
     server_name localhost;
-    ssl_certificate /app/certificates/localhost.crt;
-    ssl_certificate_key /app/certificates/device.key;
+    ssl_certificate /app/certificates/testing.crt;
+    ssl_certificate_key /app/certificates/testing.key;
     location / {
         try_files \$uri @app;
     }
