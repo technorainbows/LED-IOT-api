@@ -6,31 +6,31 @@ Simple REST API for controlling networked LED devices.
 
 <!-- PROJECT SHIELDS -->
 [![CircleCI](https://circleci.com/gh/technorainbows/LED-IOT-api.svg?style=svg)](https://circleci.com/gh/technorainbows/LED-IOT-api)
-[![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
+<!-- [![MIT License][license-shield]][license-url] -->
 
 
 
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <a href="https://github.com/technorainbows/LED-web-app-demo-project">
+  <a href="https://github.com/technorainbows/LED-IOT-api">
     <!-- <img src="images/logo.png" alt="Logo" width="80" height="80"> -->
   </a>
 
   <h3 align="center">LED Web App - Demo Project</h3>
 
   <p align="center">
-    This is a simple web app that controls networked LEDs
+    This is a demo web app that controls networked LEDs.
     <br />
-    <a href="https://github.com/technorainbows/LED-web-app-demo-project"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/technorainbows/LED-web-app-demo-project">View Demo</a>
+    <a href="https://github.com/technorainbows/LED-IOT-api"><strong>Explore the docs »</strong></a>
+    <!-- <br /> -->
+    <!-- <br /> -->
+    <!-- <a href="https://github.com/technorainbows/LED-IOT-api">View Demo</a> -->
     <!-- ·
-    <a href="https://github.com/technorainbows/LED-web-app-demo-project/issues">Bugs</a> -->
+    <a href="https://github.com/technorainbows/LED-IOT-api/issues">Bugs</a> -->
     <!-- · -->
-    <!-- <a href="https://github.com/technorainbows/LED-web-app-demo-project/issues">Request Feature</a>
+    <!-- <a href="https://github.com/technorainbows/LED-IOT-api/issues">Request Feature</a>
   </p> -->
 </p>
 
@@ -41,13 +41,13 @@ Simple REST API for controlling networked LED devices.
 
 * [About the Project](#about-the-project)
   * [Built With](#built-with)
-* [Getting Started](#getting-started)
-  * [Prerequisites](#prerequisites)
-  * [Installation](#installation)
-* [Usage](#usage)
-* [Roadmap](#roadmap)
+<!-- * [Getting Started](#getting-started) -->
+  <!-- * [Prerequisites](#prerequisites) -->
+  <!-- * [Installation](#installation) -->
+<!-- * [Usage](#usage) -->
+<!-- * [Roadmap](#roadmap) -->
 <!-- * [Contributing](#contributing) -->
-* [License](#license)
+<!-- * [License](#license) -->
 * [Contact](#contact)
 * [Acknowledgements](#acknowledgements)
 
@@ -56,7 +56,7 @@ Simple REST API for controlling networked LED devices.
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+<!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
 
 ### Built With
@@ -65,6 +65,7 @@ Simple REST API for controlling networked LED devices.
 * Python 3
 * [Flask RESTPlus](https://flask-restplus.readthedocs.io/en/stable/)
 * Redis
+* PyJwt
 
 #### Webpage
 * Javascript + jQuery
@@ -80,52 +81,51 @@ Simple REST API for controlling networked LED devices.
 #### Deployment
 * Docker
 * CircleCI
-* AWS
+* Amazon
 * [Pytest](https://docs.pytest.org/en/latest/) + [Pytest-Flask](https://pypi.org/project/pytest-flask/)
 
+#### Authentication
+* Okta
 
 
 
 
 <!-- GETTING STARTED -->
-## Getting Started
+<!-- ## Getting Started -->
 
-To get a local copy up and running follow these simple steps.
+<!-- To get a local copy up and running follow these simple steps. -->
 
-### Prerequisites
+<!-- ### Prerequisites -->
 
-This is an example of how to list things you need to use the software and how to install them.
+<!-- This is an example of how to list things you need to use the software and how to install them.
 * npm
 ```sh
 npm install npm@latest -g
-```
+``` -->
 
-### Installation
+<!-- ### Installation -->
  
-1. Clone the LED-web-app-demo-project
+<!-- 1. Clone the LED-IOT-api
 ```sh
-git clone https://github.com/technorainbows/LED-web-app-demo-project.git
-```
-2. Install NPM packages
-```sh
-npm install
-```
+git clone https://github.com/technorainbows/LED-IOT-api.git
+``` -->
+
 
 
 
 <!-- USAGE EXAMPLES -->
-## Usage
+<!-- ## Usage -->
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+<!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
 _For more examples, please refer to the [Documentation](https://example.com)_
-
+ -->
 
 
 <!-- ROADMAP -->
-## Roadmap
+<!-- ## Roadmap -->
 
-<!-- See the [open issues](https://github.com/technorainbows/LED-web-app-demo-project/issues) for a list of proposed features (and known issues). -->
+<!-- See the [open issues](https://github.com/technorainbows/LED-IOT-api/issues) for a list of proposed features (and known issues). -->
 
 
 
@@ -143,27 +143,27 @@ Contributions are what make the open source community such an amazing place to b
 
 
 <!-- LICENSE -->
-## License
+<!-- ## License -->
 
-See `LICENSE` for more information.
+<!-- See `LICENSE` for more information. -->
 
 
 
 <!-- CONTACT -->
 ## Contact
 
-Ashley Newton - [@technorainbows](https://twitter.com/technorainbows) - i@ashleynewton.net
+[Ashley Newton](http://www.ashleynewton.net) - [@technorainbows](https://github.com/technorainbows/) - [i@ashleynewton.net](mailto:i@ashleynewton.net)
 
-Project Link: [https://github.com/technorainbows/LED-web-app-demo-project](https://github.com/technorainbows/LED-web-app-demo-project)
+Project Link: [https://github.com/technorainbows/LED-IOT-api](https://github.com/technorainbows/LED-IOT-api)
 
 
 
 <!-- ACKNOWLEDGEMENTS -->
 ## Acknowledgements
 
-* [Mr. J]()
-* []()
-* []()
+* [@jmorris0x0](https://github.com/jmorris0x0/) for primary mentorship
+* [@cagerton](https://github.com/cagerton/) for support mentorship
+<!-- *  -->
 
 
 
@@ -180,8 +180,8 @@ Project Link: [https://github.com/technorainbows/LED-web-app-demo-project](https
 [stars-url]: https://github.com/othneildrew/Best-README-Template/stargazers
 [issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=flat-square
 [issues-url]: https://github.com/othneildrew/Best-README-Template/issues -->
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=flat-square
-[license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
+<!-- [license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=flat-square -->
+<!-- [license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt -->
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/othneildrew
-[product-screenshot]: images/screenshot.png
+[linkedin-url]: https://linkedin.com/in/ashleymnewton
+<!-- [product-screenshot]: images/screenshot.png -->
