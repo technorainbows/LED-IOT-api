@@ -1,0 +1,21 @@
+{
+    "AWSEBDockerrunVersion": "1",
+    "Logging": "/tmp/led-api",
+    "Image": {
+        "Name": "technorainbows/led_iot_api:IMAGE_TAG_PLACEHOLDER",
+        "Update": "true"
+    },
+    "Ports": [{
+            "ContainerPort": "5000",
+            "hostPort": "80"
+        },
+        {
+            "ContainerPort": "443",
+            "hostPort": "443"
+        },
+        {
+            "ContainerPort": "8080",
+            "hostPort": "8080"
+        }
+    ]
+}
