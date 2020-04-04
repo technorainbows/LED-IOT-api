@@ -45,8 +45,8 @@ jobs:
       - run:
           name: Update Dockerrun.aws.json
           command: |
-            sed -i "s/IMAGE_TAGE_PLACEHOLDER/led_iot:$CIRCLE_SHA1/g" /deploy/Dockerrun.aws.json
-            cat /deploy/Dockerrun.aws.json
+            sed -i "s/IMAGE_TAGE_PLACEHOLDER/$CIRCLE_SHA1/g" ./deploy/Dockerrun.aws.json
+            cat ./deploy/Dockerrun.aws.json
 
   deploy:
     machine:
