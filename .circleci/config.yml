@@ -58,7 +58,7 @@ jobs:
           command: aws s3 sync ./site s3://lights.ashleynewton.net
       - run:
           name: Push Dockerrun.aws.json to AWS S3
-          command: aws s3 sync /deploy/Dockerrun.aws.json s3://lights-deploy
+          command: aws s3 sync ./deploy/Dockerrun.aws.json s3://lights-deploy
           
 
 workflows:
