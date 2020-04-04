@@ -59,7 +59,7 @@ jobs:
             cat ./deploy/Dockerrun.aws.json
       - run:
           name: Push Dockerrun.aws.json to AWS S3
-          command: aws s3 sync ./deploy/Dockerrun.aws.json s3://lights-deploy
+          command: aws s3 sync ./deploy/ s3://lights-deploy
           
 
 workflows:

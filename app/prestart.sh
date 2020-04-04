@@ -5,6 +5,8 @@ echo "########################## in docker-prestart file ###################"
 
 ######## Generate HTTPS certificates from environment ###########
 # touch /app/certificates/test.crt
+mkdir -p /app/certificates
+
 cat > /app/certificates/testing.crt <<EOF
 $API_CERTIFICATE
 EOF
