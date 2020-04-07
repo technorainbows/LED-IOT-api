@@ -13,14 +13,13 @@ services:
       HB_EXP: 30
       REDIS_HOST: redis
       PYTHONUNBUFFERED: 1
-      API_CERTIFICATE:
-      API_KEY:
+      API_CERTIFICATE_B64:
+      API_KEY_B64:
       # SESSION_SECRET:
     build: ./
     ports:
       - "5000:80"
       - "443:443"
-      - "8080:8080"
     depends_on:
       - redis
     networks:

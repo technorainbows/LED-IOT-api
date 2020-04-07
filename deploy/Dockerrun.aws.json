@@ -12,10 +12,6 @@
         {
             "ContainerPort": "443",
             "hostPort": "443"
-        },
-        {
-            "ContainerPort": "8080",
-            "hostPort": "8080"
         }
     ]
 }
