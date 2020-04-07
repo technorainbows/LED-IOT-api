@@ -7,13 +7,14 @@ echo "########################## in docker-prestart file ###################"
 # touch /app/certificates/test.crt
 mkdir -p /app/certificates
 
-cat > /app/certificates/testing.crt <<EOF
-$API_CERTIFICATE
-EOF
+# apt-get install coreutils
 
-cat > /app/certificates/testing.key <<EOF
-$API_KEY
-EOF
+# echo cl-base64 --version
+# cat /app/certificates/testing.crt
+echo $API_CERTIFICATE_B64 | python -m base64 -d > /app/certificates/testing.crt
+
+# cat /app/certificates/testing.key
+echo $API_KEY_B64 | python -m base64 -d > /app/certificates/testing.key
 
 cat /app/certificates/testing.crt
 cat /app/certificates/testing.key
