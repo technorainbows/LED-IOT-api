@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 set -e
 
-echo "########################## in docker-prestart file ###################"
+echo "########################## HELLO in docker-prestart file ###################"
 
 ######## Generate HTTPS certificates from environment ###########
 # touch /app/certificates/test.crt
@@ -10,13 +10,13 @@ mkdir -p /app/certificates
 # apt-get install coreutils
 
 # base64 --version
-touch /app/certificates/temp_cert.crt
-touch /app/certificates/temp_key.crt
-# echo $API_CERTIFICATE_B64
+touch /app/certificates/temp_cert.pem
+touch /app/certificates/temp_key.key
+echo $API_CERTIFICATE_B64
 
-echo $API_CERTIFICATE_B64 | base64 -di > /app/certificates/temp_cert.crt
-mv /app/certificates/temp_cert.crt /app/certificates/testing.crt
-cat /app/certificates/testing.crt
+echo $API_CERTIFICATE_B64 | base64 -di > /app/certificates/temp_cert.pem
+mv /app/certificates/temp_cert.pem /app/certificates/testing.pem
+cat /app/certificates/testing.pem
 
 # cat /app/certificates/testing.key
 echo $API_KEY_B64 | base64 -di > /app/certificates/temp_key.key
@@ -57,7 +57,7 @@ cat > /etc/nginx/conf.d/https.conf <<EOF
 server {
     listen 443 ssl;
     server_name localhost;
-    ssl_certificate /app/certificates/testing.crt;
+    ssl_certificate /app/certificates/testing.pem;
     ssl_certificate_key /app/certificates/testing.key;
     location / {
         try_files \$uri @app;
