@@ -9,14 +9,18 @@ mkdir -p /app/certificates
 
 # apt-get install coreutils
 
-# echo cl-base64 --version
-# cat /app/certificates/testing.crt
-echo $API_CERTIFICATE_B64 | python -m base64 -d > /app/certificates/testing.crt
+# base64 --version
+touch /app/certificates/temp_cert.crt
+touch /app/certificates/temp_key.crt
+# echo $API_CERTIFICATE_B64
+
+echo $API_CERTIFICATE_B64 | base64 -di > /app/certificates/temp_cert.crt
+mv /app/certificates/temp_cert.crt /app/certificates/testing.crt
+cat /app/certificates/testing.crt
 
 # cat /app/certificates/testing.key
-echo $API_KEY_B64 | python -m base64 -d > /app/certificates/testing.key
-
-cat /app/certificates/testing.crt
+echo $API_KEY_B64 | base64 -di > /app/certificates/temp_key.key
+mv /app/certificates/temp_key.key /app/certificates/testing.key
 cat /app/certificates/testing.key
 
 ######## create client_secrets.json file from environment ###########
