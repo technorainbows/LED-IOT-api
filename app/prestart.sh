@@ -1,27 +1,33 @@
 #! /usr/bin/env bash
 set -e
 
-echo "########################## HELLO in docker-prestart file ###################"
+echo "########################## in docker-prestart file ###################"
 
-######## Generate HTTPS certificates from environment ###########
-# touch /app/certificates/test.crt
-mkdir -p /app/certificates
+# cert_file=temp_cert.crt
+# key_file=testing.key
 
-# apt-get install coreutils
+# echo "######## Generate HTTPS certificates from environment ###########"
+# # touch /app/certificates/test.crt
+# mkdir -p /app/certificates
 
-# base64 --version
-touch /app/certificates/temp_cert.pem
-touch /app/certificates/temp_key.key
-echo $API_CERTIFICATE_B64
+# echo "#### create files #####"
+# # rm /app/certificates/$cert_file.crt
+# touch /app/certificates/$cert_file
 
-echo $API_CERTIFICATE_B64 | base64 -di > /app/certificates/temp_cert.pem
-mv /app/certificates/temp_cert.pem /app/certificates/testing.pem
-cat /app/certificates/testing.pem
+# # rm /app/certificates/$key_file
+# touch /app/certificates/$key_file
 
-# cat /app/certificates/testing.key
-echo $API_KEY_B64 | base64 -di > /app/certificates/temp_key.key
-mv /app/certificates/temp_key.key /app/certificates/testing.key
-cat /app/certificates/testing.key
+# echo "# check variables exist"
+# echo $API_CERTIFICATE_B64   
+
+# echo $API_CERTIFICATE_B64 | base64 -di > /app/certificates/$cert_file
+# # mv /app/certificates/temp_cert.pem /app/certificates/testing.pem
+# cat /app/certificates/$cert_file
+
+# # cat /app/certificates/testing.key
+# echo $API_KEY_B64 | base64 -di > /app/certificates/$key_file
+# # mv /app/certificates/temp_key.key /app/certificates/testing.key
+# cat /app/certificates/$key_file
 
 ######## create client_secrets.json file from environment ###########
 cat > /app/client_secrets.json <<EOF
@@ -35,7 +41,7 @@ cat > /app/client_secrets.json <<EOF
         "userinfo_uri": "https://dev-635623.okta.com/oauth2/default/userinfo",
         "token_introspection_uri": "https://dev-635623.okta.com/oauth2/default/v1/introspect",
         "redirect_uris": [
-            "http://localhost:80/authorization-code/callback", "http://localhost:3002/authorization-code/callback", "http://localhost:3002/index.html", "http://localhost:3002/", "http://localhost:3002", "http://localhost:80", "http://localhost:80/api", "http://localhost:80/private", "http://localhost"
+            "https://lights.ashleynewton.net", "http://lights.ashleynewton.net", "http://localhost:80/authorization-code/callback", "http://localhost:3002/authorization-code/callback", "http://localhost:3002/index.html", "http://localhost:3002/", "http://localhost:3002", "http://localhost:80", "http://localhost:80/api", "http://localhost:80/private", "http://localhost"
         ],
         "allowed_users": ["i@ashleynewton.net"],
         "cid": "$CLIENT_ID",
@@ -52,29 +58,29 @@ cat /app/client_secrets.json
 
 
 ########### add https to nginx config ##############
-cat > /etc/nginx/conf.d/https.conf <<EOF
+# cat > /etc/nginx/conf.d/https.conf <<EOF
 
-server {
-    listen 443 ssl;
-    server_name localhost;
-    ssl_certificate /app/certificates/testing.pem;
-    ssl_certificate_key /app/certificates/testing.key;
-    location / {
-        try_files \$uri @app;
-    }
-    location @app {
-        include uwsgi_params;
-        uwsgi_pass unix:///tmp/uwsgi.sock;
-    }
-    location /static {
-        alias /app/static;
-    }
-}
+# server {
+#     listen 443 ssl;
+#     server_name localhost;
+#     ssl_certificate /app/certificates/$cert_file;
+#     ssl_certificate_key /app/certificates/$key_file;
+#     location / {
+#         try_files \$uri @app;
+#     }
+#     location @app {
+#         include uwsgi_params;
+#         uwsgi_pass unix:///tmp/uwsgi.sock;
+#     }
+#     location /static {
+#         alias /app/static;
+#     }
+# }
 
-EOF
+# EOF
 
-ls -la
+# ls -la
 
-cat  /etc/nginx/nginx.conf
+# cat  /etc/nginx/nginx.conf
 
 #exec "$@"

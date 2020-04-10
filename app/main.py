@@ -465,5 +465,5 @@ def not_found(error_rec):
 
 if __name__ == '__main__':
     logging.debug("attempting APP.run")
-    APP.run(host='0.0.0.0', port=5000, debug=True,
-            ssl_context=('app/certificates/testing.crt', 'app/certificates/testing.key'))
+    APP.run(host='0.0.0.0', port=5000, debug=True)
+    # ssl_context=('app/certificates/testing.crt', 'app/certificates/testing.key'))
