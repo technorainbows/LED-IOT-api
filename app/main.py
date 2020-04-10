@@ -294,7 +294,7 @@ class Redis(object):
             logging.exception("Connection error")
         except AuthenticationError:
             logging.error("Redis Authentication Error")
-            self.redis = redis.Redis(host=REDIS_HOST, port=6379, db=0)
+            # self.redis = redis.Redis(host=REDIS_HOST, port=6379, db=0)
         except Exception:
             logging.exception("Unexpected error occured")
         return keys
