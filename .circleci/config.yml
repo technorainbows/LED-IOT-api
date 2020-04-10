@@ -5,7 +5,7 @@ jobs:
       - image: circleci/python:3.7
         environment:
           FLASK_CONFIG: testing
-          # REDIS_HOST: localhost
+          REDIS_HOST: localhost
       - image: circleci/redis:5.0.7
       # - image: koalaman/shellcheck-alpine:stable
     steps:
