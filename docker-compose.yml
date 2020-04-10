@@ -18,8 +18,8 @@ services:
       # SESSION_SECRET:
     build: ./
     ports:
-      - "5000:80"
-      - "443:443"
+      - "80:80"
+      # - "443:443"
     depends_on:
       - redis
     networks:

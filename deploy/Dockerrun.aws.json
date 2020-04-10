@@ -6,12 +6,7 @@
         "Update": "true"
     },
     "Ports": [{
-            "ContainerPort": "5000",
-            "hostPort": "80"
-        },
-        {
-            "ContainerPort": "443",
-            "hostPort": "443"
-        }
-    ]
+        "ContainerPort": "80",
+        "hostPort": "80"
+    }]
 }

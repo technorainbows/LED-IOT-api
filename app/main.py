@@ -11,7 +11,7 @@ from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
 # from werkzeug.contrib.fixers import ProxyFix
 import redis
-from redis.exceptions import WatchError
+from redis.exceptions import WatchError, AuthenticationError, ConnectionError
 from modules.auth_decorator import validate_access
 
 
@@ -221,6 +221,7 @@ class Redis(object):
                     continue
                 except redis.ConnectionError:
                     logging.exception("Connection error")
+
                 except Exception:
                     logging.exception("Unexpected error")
 
@@ -291,6 +292,9 @@ class Redis(object):
 
         except ConnectionError:
             logging.exception("Connection error")
+        except AuthenticationError:
+            logging.error("Redis Authentication Error")
+            self.redis = redis.Redis(host=REDIS_HOST, port=6379, db=0)
         except Exception:
             logging.exception("Unexpected error occured")
         return keys
