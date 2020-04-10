@@ -173,7 +173,8 @@ class Redis(object):
         """Initialize Redis Object."""
         if 'REDIS_HOST' in os.environ:
             REDIS_HOST = os.environ['REDIS_HOST']
-            self.redis = redis.Redis(host=REDIS_HOST, port=6379, db=0)
+            self.redis = redis.Redis(
+                host=REDIS_HOST, port=6379, db=0, password=REDIS_PASSWORD)
         else:
             try:
                 raise Exception
