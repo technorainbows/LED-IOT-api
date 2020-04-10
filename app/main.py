@@ -173,8 +173,15 @@ class Redis(object):
         """Initialize Redis Object."""
         if 'REDIS_HOST' in os.environ:
             REDIS_HOST = os.environ['REDIS_HOST']
-            self.redis = redis.Redis(
-                host=REDIS_HOST, port=6379, db=0, password=REDIS_PASSWORD)
+            if 'REDIS_PASSWORD' in os.environ:
+                REDIS_PASSWORD = os.environ['REDIS_PASSWORD']
+                logging.info("Redis password found %s", REDIS_PASSWORD)
+                self.redis = redis.Redis(
+                    host=REDIS_HOST, port=6379, db=0, password=REDIS_PASSWORD)
+            else:
+                logging.info(
+                    "No redis password found, initializing without auth")
+                self.redis = redis.Redis(host=REDIS_HOST, port=6379, db=0)
         else:
             try:
                 raise Exception
