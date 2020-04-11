@@ -100,7 +100,8 @@
             "credentials": "omit",
             "headers": {
                 "accept": "application/json",
-                "Access-Control-Allow-Origin": "*"
+                "Access-Control-Allow-Origin": "*",
+                "Authorization": "Bearer " + accessToken
             },
             "referrer": url,
             "referrerPolicy": "no-referrer-when-downgrade",
