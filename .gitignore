@@ -14,6 +14,7 @@ credentials.h
 certificates/
 *.crt
 *.key
+*.pem
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -110,7 +111,7 @@ celerybeat-schedule
 .pydevproject
 
 # mkdocs documentation
-/site
+# /site
 
 # mypy
 .mypy_cache/
