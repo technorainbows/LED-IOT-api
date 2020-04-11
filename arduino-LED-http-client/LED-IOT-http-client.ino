@@ -41,13 +41,14 @@ String IPaddress = "192.168.2.54";
 
 #ifdef NETWORK_VANNEST
 // on vannet
-String IPaddress = "10.0.0.59";
+String IPaddress = "api.ashleynewton.net";
+// String IPaddress = "10.0.0.59";
 //String apiURL = "http://10.0.0.59:5000/Devices/";
 //String controllerURL = "10.0.0.59/site/index.html";
 #endif
 
 bool SERVER_SECURE = true; // global variable to indicate whether HTTPS or HTTP is used
-String apiURL = IPaddress + ":5000/Devices/";
+String apiURL = IPaddress + "/Devices/";
 String controllerURL = IPaddress + "site/index.html";
 
 String DEVICE_ID;
