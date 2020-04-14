@@ -467,7 +467,8 @@ class DeviceList(Resource):
 
 @APP.route('/')
 def home():
-    return (jsonify({'msg': 'this is not for humans.'}))
+    """Not for humans."""
+    return jsonify({'msg': 'this is not for humans.'})
 
 
 @APP.errorhandler(404)
