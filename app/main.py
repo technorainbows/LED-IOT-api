@@ -465,7 +465,7 @@ class DeviceList(Resource):
         return jsonify(device_id, REDIS.get(device_id), 201)
 
 
-@APP.route('/')
+@APP.route('/', methods=['GET'])
 def home():
     """Not for humans."""
     return jsonify({'msg': 'this is not for humans.'})
