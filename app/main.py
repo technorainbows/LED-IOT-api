@@ -465,6 +465,11 @@ class DeviceList(Resource):
         return jsonify(device_id, REDIS.get(device_id), 201)
 
 
+@APP.route('/')
+def home():
+    return (jsonify({'msg': 'this is not for humans.'}))
+
+
 @APP.errorhandler(404)
 def not_found(error_rec):
     """Return not found error message."""
