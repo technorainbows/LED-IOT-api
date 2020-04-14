@@ -35,17 +35,17 @@ SSD1306Wire display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board dispp
 #define NETWORK_VANNEST
 #define HTTPS
 
-#ifdef NETWORK_CXE
-String IPaddress = "192.168.2.54";
-#endif
+// #ifdef NETWORK_CXE
+// String IPaddress = "192.168.2.54";
+// #endif
 
-#ifdef NETWORK_VANNEST
+// #ifdef NETWORK_VANNEST
 // on vannet
 String IPaddress = "api.ashleynewton.net";
 // String IPaddress = "10.0.0.59";
 //String apiURL = "http://10.0.0.59:5000/Devices/";
 //String controllerURL = "10.0.0.59/site/index.html";
-#endif
+// #endif
 
 bool SERVER_SECURE = true; // global variable to indicate whether HTTPS or HTTP is used
 String apiURL = IPaddress + "/Devices/";
