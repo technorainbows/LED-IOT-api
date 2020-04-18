@@ -198,7 +198,7 @@ class Redis(object):
                 sys.exit("!!!Exiting. Please set REDIS_HOST in env & restart.")
 
     def health(self):
-        """Returns a ping response from redis client."""
+        """Return a ping response from redis client."""
         return self.redis.ping()
 
     def get(self, key):
@@ -493,11 +493,13 @@ class DeviceList(Resource):
 @API.doc(responses={200: 'Server healthy', 500: 'Server error'})
 @API.route('/health', methods=['GET'])
 class Health(Resource):
+    """Health check endpoint."""
+
     def get(self):
-        """Health check endpoint."""
+        """Return health status of redis client."""
         redis_healthy = REDIS.health()
 
-        if (redis_healthy == True):
+        if (redis_healthy is True):
             logging.info('Health: healthy')
             return 200
 
