@@ -12,6 +12,7 @@ from flask_restplus import Api, Resource, fields
 # from werkzeug.contrib.fixers import ProxyFix
 import redis
 from redis.exceptions import WatchError
+# from redis.Connection
 from modules.auth_decorator import validate_access
 
 
@@ -80,17 +81,21 @@ class Server(object):
         # api = Api(app, security='Bearer Auth', authorizations=authorizations)
 
         authorizations = {
-            'OAuth2': {
-                'type': 'oauth2',
-                'flow': 'implicit',
-                'authorizationUrl': client_secrets['auth_uri'],
-                'clientId': self.app.config.SWAGGER_UI_OAUTH_CLIENT_ID,
-                'clientSecret': client_secrets['client_secret'],
-                'scopes': {
-                    'read': 'Grant read-only access',
-                    'write': 'Grant read-write access',
-                }
-            },
+            # 'OAuth2': {
+            #     'type': 'oauth2',
+            #     'flow': 'accessCode',
+            #     'authorizationUrl': client_secrets['auth_uri'],
+            #     'tokenUrl': client_secrets['token_uri'],
+            #     'clientId': self.app.config.SWAGGER_UI_OAUTH_CLIENT_ID,
+            #     'clientSecret': client_secrets['client_secret']
+            # },
+            # 'OAuth2': {
+            #     'type': 'oauth2',
+            #     'flow': 'implicit',
+            #     'authorizationUrl': client_secrets['auth_uri'],
+            #     'clientId': self.app.config.SWAGGER_UI_OAUTH_CLIENT_ID,
+            #     'clientSecret': client_secrets['client_secret']
+            # },
             'Bearer Auth': {
                 'type': 'apiKey',
                 'in': 'header',
@@ -99,11 +104,14 @@ class Server(object):
         }
 
         self.api = Api(self.app,
-                       version='0.4',
+                       version='0.5',
                        title='LED API',
                        description='A simple LED IOT API',
+                       host='api.ashleynewton.net',
                        doc='/docs',
-                       security=['Bearer Auth', {'OAuth2': 'read'}],
+                       security=['Bearer Auth',
+                                 #    {'OAuth2': ['read', 'write']}
+                                 ],
                        authorizations=authorizations
                        )
 
@@ -189,6 +197,10 @@ class Redis(object):
                 logging.error('REDIS_HOST not set.')
                 sys.exit("!!!Exiting. Please set REDIS_HOST in env & restart.")
 
+    def health(self):
+        """Returns a ping response from redis client."""
+        return self.redis.ping()
+
     def get(self, key):
         """Get device from redit if it exists, otherwise load with DEFAULT."""
         with self.redis.pipeline() as pipe:
@@ -221,6 +233,7 @@ class Redis(object):
                     continue
                 except redis.ConnectionError:
                     logging.exception("Connection error")
+                    return "Error: error connectiong to Redis host"
 
                 except Exception:
                     logging.exception("Unexpected error")
@@ -317,7 +330,8 @@ REDIS = Redis()
 #########################
 #   Heartbeat Methods   #
 #########################
-@API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
+# @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
+@API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
 @API.route('/Devices/HB/<string:device_id>', methods=['GET', 'POST'])
 class Heartbeat(Resource):
     """Update and check on a given device's heartbeat/online status."""
@@ -331,12 +345,12 @@ class Heartbeat(Resource):
         response = REDIS.keys(heartbeat)
         logging.debug("HB get response = %s", str(response))
         if response == []:
-            logging.error('Error, device not found')
-            return ('Error, device not found', 404)
+            logging.error('Error, unable to get device.')
+            return ('Error, unable to get device', 500)
         else:
             return jsonify(response)
 
-    @API.response(200, 'Success')
+    @API.response(201, 'Success')
     # @API.param('heartbeat')
     @API.expect(HEARTBEAT, validate=False)
     @validate_access
@@ -345,23 +359,24 @@ class Heartbeat(Resource):
         # hbTime = 15
         heartbeat = "hb_" + device_id
         response = REDIS.set_hb(heartbeat)
-        logging.warning("HB post response = %s", response)
+        logging.info("HB post response = %s", response)
         payload = API.payload
         logging.info("payload = %s", payload)
         if response:
-            logging.warning("heartbeat set: %s", response)
+            logging.info("heartbeat set: %s", response)
             return jsonify(response)
         else:
             logging.error("Error, failed to set heartbeat")
-            return "Error, failed to set heartbeat.", 404
+            return "Error, failed to set heartbeat.", 500
 
-# @validate_access
+
+@API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
 @API.route('/Devices/HB/', methods=['GET'])
 class Heartbeats(Resource):
     """Monitor which devices are online or not via heartbeat."""
 
-    @API.response(202, 'Success')
-    @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
+    @API.response(200, 'Success')
+    # @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
     @validate_access
     def get(self):
         """Return a list of all heartbeats."""
@@ -377,17 +392,15 @@ class Heartbeats(Resource):
 # TODO: add list of device_ids from redis to check if decive there
 @API.route('/Devices/<string:device_id>',
            methods=['GET', 'POST', 'PUT', 'DELETE'])
-@API.doc(responses={404: 'Device not found', 200: 'Device found'},
+@API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'},
          params={'device_id': 'The Device ID'})
-@API.doc(description='device_id should be {0}'.format(
-    ', '.join(REDIS.keys("device_id"))))
-@API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
-# @validate_access
+@API.doc(description='device_id should be {}'.format(' '.join(REDIS.keys("device_"))))
+# @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
 class Device(Resource):
     """Show a device's properties and let user delete or change properties."""
 
     @validate_access
-    @API.response(200, 'Success', DEVICE)
+    @API.response(200, 'Success: device retrieved.', DEVICE)
     def get(self, device_id):
         """Fetch a given resource."""
         # abort_if_device_not_found(device_id)
@@ -413,7 +426,7 @@ class Device(Resource):
 
     @API.expect(DEVICE, validate=True)
     # @API.doc(parser=parser)
-    @API.response(200, 'Success', DEVICE)
+    @API.response(201, 'Success: device updated.', DEVICE)
     @validate_access
     def put(self, device_id):
         """Update a given resource's field with new property value received."""
@@ -425,19 +438,20 @@ class Device(Resource):
                 REDIS.set(device_id, field, request.json.get(field))
 
         # print('returned redisSet = ', redisSet)
-        return jsonify(device_id, REDIS.get(device_id), 200)
+        return jsonify(device_id, REDIS.get(device_id), 201)
 
 
 ####################################
 # List of Devices Response Methods #
 ####################################
-@API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
+# @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
+@API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
 @API.route('/Devices/')
 # @validate_access
 class DeviceList(Resource):
     """Shows a list of all devices, and lets you POST to add new tasks."""
 
-    @API.doc(security=[{'oath2': ['read', 'write']}])
+    # @API.doc(security=[{'oath2': ['read', 'write']}])
     @validate_access
     @API.response(200, 'Success', LIST_OF_DEVICES)
     def get(self):
@@ -448,6 +462,7 @@ class DeviceList(Resource):
 
     @validate_access
     @API.expect(DEVICE, validate=True)
+    @API.response(201, 'Device created')
     def post(self):
         """Create a new device with next id."""
         # TODO: check if this does anything
@@ -465,17 +480,51 @@ class DeviceList(Resource):
         return jsonify(device_id, REDIS.get(device_id), 201)
 
 
-@APP.route('/', methods=['GET'])
-def home():
-    """Not for humans."""
-    return jsonify({'msg': 'this is not for humans.'})
+# @API.route('/', methods=['GET'])
+# # @validate_access
+# class Home(Resource):
+#     # @API.response(300, 'nothing to see here.')
+#     def get(self):
+#         """Not for humans."""
+#         return 200
+        # return jsonify({'msg': 'this is not for humans.'}, 300)
 
 
-@APP.errorhandler(404)
-def not_found(error_rec):
-    """Return not found error message."""
+@API.doc(responses={200: 'Server healthy', 500: 'Server error'})
+@API.route('/health', methods=['GET'])
+class Health(Resource):
+    def get(self):
+        """Health check endpoint."""
+        redis_healthy = REDIS.health()
+
+        if (redis_healthy == True):
+            logging.info('Health: healthy')
+            return 200
+
+        else:
+            logging.error('Health: %s', redis_healthy)
+            return {'Health': redis_healthy}, 500
+
+
+# @APP.errorhandler(404)
+# def not_found(error_rec):
+#     """Return not found error message."""
+#     logging.error('Error: %s', error_rec)
+#     return (jsonify({'error_handler': str(error_rec)}), 404)
+
+
+# @APP.errorhandler(418)
+# def not_found(error_rec):
+#     """Return nothing to see here."""
+#     # logging.error('Error: %s', error_rec)
+#     return ('nothing to see', 418)
+
+
+@APP.errorhandler(500)
+def server_error(error_rec):
+    """Return server error message."""
     logging.error('Error: %s', error_rec)
-    return (jsonify({'error_handler': str(error_rec)}), 404)
+    return (jsonify({'server error': str(error_rec)}), 500)
 
 
 if __name__ == '__main__':
