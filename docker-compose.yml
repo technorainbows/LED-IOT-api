@@ -3,23 +3,19 @@ services:
   rest-api:
     volumes:
       - ./app:/app
-    # command:  python /app/main.py
+
     environment:
-      FOO:
       CLIENT_SECRET:
       CLIENT_ID:
       AUTH_TOKEN:
       LOG_LEVEL: debug
       HB_EXP: 30
-      REDIS_HOST: redis
+      REDIS_HOST:
+      REDIS_PASSWORD:
       PYTHONUNBUFFERED: 1
-      API_CERTIFICATE_B64:
-      API_KEY_B64:
-      # SESSION_SECRET:
     build: ./
     ports:
       - "80:80"
-      # - "443:443"
     depends_on:
       - redis
     networks:
