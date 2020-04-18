@@ -491,7 +491,7 @@ class DeviceList(Resource):
 
 
 @API.doc(responses={200: 'Server healthy', 500: 'Server error'})
-@API.route('/health', methods=['GET'])
+@API.route('/Health', methods=['GET'])
 class Health(Resource):
     """Health check endpoint."""
 

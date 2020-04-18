@@ -80,7 +80,7 @@ def test_post_devices(client):
 
 def test_check_health(client):
     """Make a test call to /"""
-    response = client.get("/health")
+    response = client.get("/Health")
     assert response.status_code == 200
 
 
