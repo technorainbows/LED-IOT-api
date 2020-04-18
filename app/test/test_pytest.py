@@ -58,7 +58,7 @@ def test_put_device(client):
             "name": "Default",
             "onState": "true"
         },
-        200
+        201
     ]
 
 
@@ -78,9 +78,9 @@ def test_post_devices(client):
     }
 
 
-def test_get_root(client):
+def test_check_health(client):
     """Make a test call to /"""
-    response = client.get("/")
+    response = client.get("/health")
     assert response.status_code == 200
 
 
