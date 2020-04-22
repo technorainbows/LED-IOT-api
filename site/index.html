@@ -30,24 +30,44 @@
 
 
     <div id="main-content" class="container-fluid">
-
-        <div class="row" id="nested-content">
+        <div class="row "> </div>
+        <div id="onlineDevices" class="col-lg-8 col-md-7 col-sm-7 container-fluid align-middle label-heartbeat">Select Device <label for="device-info" id="deviceList">
+        </div>
+        <div class="row "> </div>
             <!-- <div class="col-lg-3 col-md-3 col-sm-8 container-fluid device-params" id="device-info"> -->
             <!-- <div class="row col-lg-12" -->
             <!-- <div id="currentDevice" class="col-lg-12  label-current-device align-middle">Current Device <label for="currentDevice" id="currentDeviceLabel" value="currentDeviceValue" class="label-device"></label>
-            </div> -->
+        </div> -->
 
-            <!-- <div class="btn-toolbar col-lg-2 align-middle" role="toolbar" aria-label="..." id="devices"></div> -->
-            <!-- </div> -->
-            <!-- close div for device-info -->
-            <!-- <div class="col-md-1 cl-sm-12 col-xs-hidden">
+        <!-- <div class="btn-toolbar col-lg-2 align-middle" role="toolbar" aria-label="..." id="devices"></div> -->
+
+        <!-- </div> -->
+        <!-- close div for device-info -->
+        <!-- <div class="col-md-1 cl-sm-12 col-xs-hidden">
             </div> -->
-            <div class="col-lg-8 col-md-7 col-sm-7 container-fluid device-params" id="parameter-UI">
-                <!-- <div> -->
-                <div id="currentDevice" class="col-sm-3 label-current-device align-middle">Current Device: <label for="currentDevice" id="currentDeviceLabel" value="currentDeviceValue"></label>
-                    <!-- </div> -->
-                    <!--        ON/OFF BUTTON -->
-                    <span class="custom-switch col-md-3 col-lg-3 align-middle align-center">
+        <div class="col-lg-8 col-md-7 col-sm-7 container-fluid device-params" id="parameter-UI">
+            <!-- <div> -->
+            <h4>
+                <div class="row" id="heading">
+                    <!-- <h4> -->
+                    <span id="currentDevice">
+                <svg class="bi bi-gear" width="2em" height="2em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M8.837 1.626c-.246-.835-1.428-.835-1.674 0l-.094.319A1.873 1.873 0 014.377 3.06l-.292-.16c-.764-.415-1.6.42-1.184 1.185l.159.292a1.873 1.873 0 01-1.115 2.692l-.319.094c-.835.246-.835 1.428 0 1.674l.319.094a1.873 1.873 0 011.115 2.693l-.16.291c-.415.764.42 1.6 1.185 1.184l.292-.159a1.873 1.873 0 012.692 1.116l.094.318c.246.835 1.428.835 1.674 0l.094-.319a1.873 1.873 0 012.693-1.115l.291.16c.764.415 1.6-.42 1.184-1.185l-.159-.291a1.873 1.873 0 011.116-2.693l.318-.094c.835-.246.835-1.428 0-1.674l-.319-.094a1.873 1.873 0 01-1.115-2.692l.16-.292c.415-.764-.42-1.6-1.185-1.184l-.291.159A1.873 1.873 0 018.93 1.945l-.094-.319zm-2.633-.283c.527-1.79 3.065-1.79 3.592 0l.094.319a.873.873 0 001.255.52l.292-.16c1.64-.892 3.434.901 2.54 2.541l-.159.292a.873.873 0 00.52 1.255l.319.094c1.79.527 1.79 3.065 0 3.592l-.319.094a.873.873 0 00-.52 1.255l.16.292c.893 1.64-.902 3.434-2.541 2.54l-.292-.159a.873.873 0 00-1.255.52l-.094.319c-.527 1.79-3.065 1.79-3.592 0l-.094-.319a.873.873 0 00-1.255-.52l-.292.16c-1.64.893-3.433-.902-2.54-2.541l.159-.292a.873.873 0 00-.52-1.255l-.319-.094c-1.79-.527-1.79-3.065 0-3.592l.319-.094a.873.873 0 00.52-1.255l-.16-.292c-.892-1.64.902-3.433 2.541-2.54l.292.159a.873.873 0 001.255-.52l.094-.319z" clip-rule="evenodd"/>
+                    <path fill-rule="evenodd" d="M8 5.754a2.246 2.246 0 100 4.492 2.246 2.246 0 000-4.492zM4.754 8a3.246 3.246 0 116.492 0 3.246 3.246 0 01-6.492 0z" clip-rule="evenodd"/>
+                  </svg>
+
+                <!-- <svg class="bi bi-gear-fill" width="2em" height="2em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 01-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 01.872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 012.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 012.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 01.872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 01-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 01-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 100-5.86 2.929 2.929 0 000 5.858z" clip-rule="evenodd"/>
+              </svg> --></span>
+                    <label for="currentDevice" class="label-current-device" id="currentDeviceLabel" value="currentDeviceValue"></label>
+                    <!-- </span> -->
+                    <!-- </h4> -->
+                </div>
+            </h4>
+            <!-- <hr> -->
+            <!--        ON/OFF BUTTON -->
+            <div class="row ">
+                <span class="custom-switch col-md-3 col-lg-3 align-middle align-center">
                         <!-- Rectangular switch -->
                         <div id="label-onSwitch" class="justify-content-center align-middle align-center">
                             <!-- <label class="label-primary"> -->
@@ -55,21 +75,25 @@
                             <label class="switch">
                     <input type="checkbox" id="onSwitch">
                     <span class="slider"></span>
-                    </label>
-                    <!-- <label>On</label> -->
-                    </label>
-                </div>
-                </span>
+                </label>
+                <!-- <label>On</label> -->
+                <!-- </label> -->
             </div>
+            </span>
+            <!-- </div> -->
             <!-- on/off button div close -->
-            <!-- </div>  -->
+            <!-- </div> -->
             <!-- <div class="row" padding=10px> -->
             <!--         BRIGHTNESS SLIDER -->
-            <div class="col-sm-12 col-lg-10 col-md-12 col-xs-12 device-params" id="brightness">
+            <div class="col-sm-12 col-lg-10 col-md-11 col-12" id="brightness">
+                <!-- <span>test</span> -->
                 <form class="">
-                    <div class="row col-11 ">
-                        <label for="slider-brightness" id="brightness-label" class="ui-label col-md-auto col-sm-12">Brightness</label>
-                        <input type="range" value=100 min=0 max=255 step=1 name="slider-brightness" class="form-control-range col-lg-6 col-md-5 col-sm-8 col-xs-auto" id="slider-brightness">
+                    <div class="row col-12">
+                        <label for="slider-brightness" id="brightness-label" class="align-right col-3 col-xl-1 col-lg-2 col-md-2 col-sm-4"><svg class="bi bi-brightness-high-fill" width=80% height=80% viewBox="0 0 15 15" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="8" cy="8" r="4"/>
+                            <path fill-rule="evenodd" d="M8 0a.5.5 0 01.5.5v2a.5.5 0 01-1 0v-2A.5.5 0 018 0zm0 13a.5.5 0 01.5.5v2a.5.5 0 01-1 0v-2A.5.5 0 018 13zm8-5a.5.5 0 01-.5.5h-2a.5.5 0 010-1h2a.5.5 0 01.5.5zM3 8a.5.5 0 01-.5.5h-2a.5.5 0 010-1h2A.5.5 0 013 8zm10.657-5.657a.5.5 0 010 .707l-1.414 1.415a.5.5 0 11-.707-.708l1.414-1.414a.5.5 0 01.707 0zm-9.193 9.193a.5.5 0 010 .707L3.05 13.657a.5.5 0 01-.707-.707l1.414-1.414a.5.5 0 01.707 0zm9.193 2.121a.5.5 0 01-.707 0l-1.414-1.414a.5.5 0 01.707-.707l1.414 1.414a.5.5 0 010 .707zM4.464 4.465a.5.5 0 01-.707 0L2.343 3.05a.5.5 0 01.707-.707l1.414 1.414a.5.5 0 010 .708z" clip-rule="evenodd"/>
+                          </svg></label>
+                        <input type="range" value=100 min=0 max=255 step=1 name="slider-brightness" class="form-control-range col-lg-6 col-md-6 col-sm-5 col" id="slider-brightness">
                         <label id="brightness-value" class="align-middle ui-label">100</span>
                         </div>
                     </form>
@@ -78,29 +102,31 @@
                         <input type="range" min="0" max="255" class="form-control-range col-lg" id="formControlRange">
                     </div> -->
             </div>
-            <!-- /BRIGHTNESS SLIDER -->
-            <!--     Devices NAME FORM -->
-            <div class="align-right device-params col-sm-12 col-md-12 col-lg-8" id="device-name">
-                <form class="form-inline" form action="" form id="name-form">
-                    <label class="sr-only" for="inlineFormInputName2">Name</label>
-                    <input type="text" class="form-control col-sm-8 col-md-8" id="inputName" placeholder="Rename device.">
-                    <button type="submit" class="btn ui-label  col-3" id="save-name">Save</button>
-                </form>
-            </div>
-            <!-- close div for device name form -->
         </div>
-        <!-- close for parameter UI -->
-        <div id="onlineDevices" class="col-md-3 col-lg-4 align-middle label-heartbeat">Devices Online <label for="device-info" id="deviceList">
+        <!-- /BRIGHTNESS SLIDER -->
+        <!--     Devices NAME FORM -->
+
+        <div class="align-right col-sm-12 col-md-12 col-lg-8" id="device-name">
+            <form class="form-inline" form action="" form id="name-form">
+                <label class="sr-only" for="inlineFormInputName2">Name</label>
+                <input type="text" class="form-control col-sm-8 col-md-5" id="inputName" placeholder="Rename device.">
+                <button type="submit" class="btn ui-label  col" id="save-name">Save</button>
+            </form>
         </div>
-        <!-- <div class="row col-lg-2"> -->
-        <!-- <div class="row" id="device-info"> -->
-        <!-- </div> -->
-        <!-- </div> -->
+        <!-- close div for device name form -->
+    </div>
+    <!-- close for parameter UI -->
+    <!-- </div> -->
+
+    <!-- <div class="row col-lg-2"> -->
+    <!-- <div class="row" id="device-info"> -->
+    <!-- </div> -->
+    <!-- </div> -->
     </div>
     <!-- nested content -->
     </div>
     <!-- main content div close -->
-    <!-- </div> -->
+    </div>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

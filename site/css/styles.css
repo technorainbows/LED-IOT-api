@@ -32,7 +32,9 @@
         background-color: #ccc;
         -webkit-transition: .4s;
         transition: .4s;
+        border-radius: 5px;
     }
+    /* Off position */
     
     .slider:before {
         position: absolute;
@@ -41,17 +43,10 @@
         width: 26px;
         left: 4px;
         bottom: 4px;
-        background-color: #6DAEDB;
+        background-color: rgb(125, 144, 157);
         -webkit-transition: .4s;
         transition: .4s;
-    }
-    
-    input:checked+.slider {
-        background-color: #006989;
-    }
-    
-    input:focus+.slider {
-        box-shadow: 0 0 1px #2196F3;
+        border-radius: 5px;
     }
     
     input:checked+.slider:before {
@@ -59,6 +54,15 @@
         -ms-transform: translateX(26px);
         transform: translateX(26px);
         background-color: #6DAEDB;
+    }
+    /* On position */
+    
+    input:checked+.slider {
+        background-color: #006989;
+    }
+    
+    input:focus+.slider {
+        box-shadow: 0 0 1px #6DAEDB;
     }
     /************************************* SLIDER RANGE STUFF ****************************************/
     
@@ -181,9 +185,9 @@
     
     .device-params {
         /* margin-bottom: 10px; */
-        padding: 10px;
+        padding: 5px;
         /* margin: 10px; */
-        vertical-align: middle;
+        /* vertical-align: middle; */
         background-color: #2892D7;
     }
     
@@ -226,17 +230,22 @@
     
     .label-current-device {
         border-style: none;
-        font-weight: 200;
+        font-weight: bold;
+        font-size: 2em;
+        /* font-stretch: expanded; */
         /*border-width:2px;*/
         border-color: black;
         color: white;
-        margin: 5px;
-        padding: 10px;
-        /* background-color: #3A83F5; */
-        /*border-radius: 10px;*/
+        margin-top: 5px;
+        margin-left: 10px;
+        align-content: bottom;
+        /* padding-top: 15px; */
+        /* background-color: #006989; */
+        /* border-radius: 10px; */
+        /* width: 100% */
         /*height:55px;*/
-        min-height: 60px;
-        min-width: 270px;
+        /* min-height: 60px; */
+        /* min-width: 270px; */
     }
     
     .ui-label {
@@ -244,10 +253,16 @@
         /* border-width: 5px; */
         border-color: black;
         color: white;
-        padding: 10px;
+        padding: 7px;
         background-color: #006989;
         border-radius: 10px;
         margin: 5px;
+        text-align: center;
+        vertical-align: middle;
+        align-content: middle;
+        align-items: middle;
+        -webkit-box-align: center;
+        /* max-height: 25px; */
         /*maring-left:-5px;*/
     }
     
@@ -260,6 +275,12 @@
   white-space: nowrap;
 }
 */
+    
+    #brightness-label {
+        padding-top: 10px;
+        /* margin-left: -15px; */
+        margin-right: -15px;
+    }
     
     #save-name {
         margin-left: 10px;
@@ -281,8 +302,31 @@
     }
     
     .form-control-range {
-        margin-left: 10px;
-        margin-right: 10px;
+        /* margin-left: 10px; */
+        /* margin-right: 10px; */
+    }
+    
+    #currentDevice {
+        /* margin-bottom: 10px; */
+        /* padding-bottom: 5px; */
+        padding-top: 12px;
+        /* padding-top: -10px; */
+        vertical-align: middle;
+        margin-left: 25px;
+        /* margin-right: -15px; */
+        /* color: #006989; */
+        color: white;
+    }
+    
+    h4 {
+        border-bottom-color: #6DAEDB;
+        /* border-width: 5px; */
+        border-bottom-style: dotted;
+        /* border-style: solid; */
+        /* border-bottom: 5px; */
+        border-bottom-width: 2px;
+        /* border-bottom: 80 */
+        /* border-color: black; */
     }
     
     .label-device {
