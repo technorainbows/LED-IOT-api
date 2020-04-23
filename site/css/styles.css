@@ -106,7 +106,7 @@
         /* vertical-align: -webkit-baseline-middle; */
         margin-top: -4px;
         /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
-        box-shadow: 1px 1px 1px #1B4353, 0px 0px 1px #0d0d0d;
+        box-shadow: 1px 1px 1px #1B4353, 0px 0px 1px #173753;
         /* Add cool effects to your sliders! */
     }
     
@@ -126,15 +126,15 @@
     /************* OTHER UI ELEMENTS **********************/
     
     #label-onSwitch {
-        padding: 5px;
-        align-content: center;
+        /* padding: 5px; */
+        align-content: left;
         margin-top: 25px;
         /* padding-top: 5px; */
         /* background-color: */
     }
     
     #device-info {
-        color: black;
+        color: #173753;
         float: right;
         margin-top: 20px;
     }
@@ -175,7 +175,7 @@
     .btn-device.active,
     .open>.dropdown-toggle.btn-device {
         background-color: white;
-        color: black;
+        color: #173753;
     }
     /*.btn-success {
   background-color: white;
@@ -192,7 +192,7 @@
     }
     
     .look-disabled {
-        opacity: 0.4;
+        opacity: 0.2;
         pointer-events: none;
     }
     
@@ -234,7 +234,7 @@
         font-size: 2em;
         /* font-stretch: expanded; */
         /*border-width:2px;*/
-        border-color: black;
+        border-color: #173753;
         color: white;
         margin-top: 5px;
         margin-left: 10px;
@@ -251,7 +251,7 @@
     .ui-label {
         border-style: none;
         /* border-width: 5px; */
-        border-color: black;
+        border-color: #173753;
         color: white;
         padding: 7px;
         background-color: #006989;
@@ -269,17 +269,19 @@
     #inputName {
         width: 100%;
         border-radius: 5px;
+        /* padding-left: 2px; */
     }
-    /*#device-name {
-  display:inline-block;
-  white-space: nowrap;
-}
-*/
+    
+    #device-name {
+        margin-left: 5px;
+        display: inline-block;
+        white-space: nowrap;
+    }
     
     #brightness-label {
         padding-top: 10px;
-        /* margin-left: -15px; */
-        margin-right: -15px;
+        margin-left: 5px;
+        margin-right: -20px;
     }
     
     #save-name {
@@ -292,7 +294,7 @@
     
     #name-form {
         /*margin-right: 10px;*/
-        padding-right: 15px;
+        padding-right: 10px;
     }
     
     #main-content .row {
@@ -356,3 +358,57 @@
         min-width: 270px;
         /*border-radius: 10px;*/
     }
+    /* NAV-BAR */
+    
+    #title {}
+    
+    #server-label {
+        /* margin-bottom: 5px; */
+        vertical-align: bottom;
+        /* font-size: 1em; */
+    }
+    /* Extra small devices (portrait phones, less than 576px) */
+    
+    @media (max-width: 575.98px) {
+        /* @include media-breakpoint-down(xs) { */
+        .xs-hide {
+            display: none;
+            font-size: .7em;
+            /* background: purple; */
+            /* color: purple; */
+        }
+        /* #server-label {
+            color: blue;
+        } */
+        .navbar-brand {
+            width: 50%;
+            /* font-size: 1em; */
+        }
+        #icon-connected,
+        #icon-disconnected {
+            /* width: 50%; */
+            /* padding-left: 5px; */
+            float: right;
+            scale: 80%;
+            /* vertical-align: middle; */
+        }
+        h4 {
+            /* scale: 80%; */
+            font-size: 1.2em;
+        }
+    }
+    /* Small devices (landscape phones, less than 768px) */
+    
+    @media (max-width: 767.98px) {
+        #server-navbar {
+            /* grid-auto-rows: auto; */
+            /* scale: 80%; */
+            /* max-width: 5px; */
+            /* margin: -15px; */
+        }
+    }
+    /* .xs-hide {
+        display: none;
+        background: purple;
+        color: purple;
+    } */
