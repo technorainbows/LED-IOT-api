@@ -8,9 +8,9 @@
 
     // var apiURL = 'https://jsonplaceholder.typicode.com/posts' // test external json server
     // console.log('ledAPI running');
-    var deviceID = '' // current device
-    var devices = [] // devices online
-    var lastDevice = ''
+    var deviceID = ''; // current device
+    var devices = []; // devices online
+    var lastDevice = '';
 
     var nameMaxLength = 15;
 
@@ -19,11 +19,12 @@
      ************/
     var brightness;
     var ledState;
-    var deviceNames = []
-    var jsonString = ''
-        /************* 
-         * UI VARIABLES
-         *************/
+    var deviceNames = [];
+    var jsonString = '';
+
+    /************* 
+     * UI VARIABLES
+     *************/
 
     var brightSlider = document.getElementById('slider-brightness');
 
@@ -147,10 +148,12 @@
 
         /* when a btn-device button is clicked, change deviceID to ID of clicked button and enable/update corresponding content */
         $(document).on('click', '.btn-device', function(event) {
+
             //Process button click event
             console.log("device selected: ", this.id);
             lastDevice = deviceID;
             deviceID = this.id;
+
             // deviceID = (this.id).slice(3, this.id.length);
             $('#currentDeviceLabel').html(this.value);
             // $('#currentDeviceValue').html(this.value);
@@ -167,6 +170,9 @@
 
                 // $("#parameter-UI").show();
             }
+            document.getElementById(deviceID).classList.toggle('btn-current');
+            document.getElementById(lastDevice).classList.toggle('btn-current');
+            // document.getElementById('device_266A08DBF47456428F703EEDF1E208B7117785DF').classList.toggle('btn-primary')
         });
 
         // $("#device-name").submit(function(event){
@@ -345,6 +351,7 @@
             var deviceName = deviceShort;
         }
         // console.log("deviceName = ", deviceName);
+
         $("<input/>").attr({ type: "button", class: "btn-device", id: device, value: deviceName.slice(0, nameMaxLength) }).appendTo("#deviceList");
 
     }

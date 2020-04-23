@@ -161,12 +161,19 @@
     
     .btn-device {
         border-style: none;
-        border-width: 2px;
+        border-width: 1px;
         /* color: black; */
         margin: 5px;
         background-color: #6DAEDB;
         padding: 5px;
         border-radius: 10px;
+        color: #173753;
+        border-color: #173753;
+    }
+    
+    .btn-current {
+        background-color: white;
+        color: #173753;
     }
     
     .btn-device:hover,
