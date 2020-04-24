@@ -184,15 +184,11 @@
         background-color: white;
         color: #173753;
     }
-    /*.btn-success {
-  background-color: white;
-
-}
-*/
     
     .device-params {
         /* margin-bottom: 10px; */
         padding: 5px;
+        padding-bottom: 30px;
         /* margin: 10px; */
         /* vertical-align: middle; */
         background-color: #2892D7;
@@ -263,13 +259,15 @@
         padding: 7px;
         background-color: #006989;
         border-radius: 10px;
-        margin: 5px;
+        margin: 7px;
+        /* margin-top: 5px; */
         text-align: center;
         vertical-align: middle;
         align-content: middle;
         align-items: middle;
         -webkit-box-align: center;
-        /* max-height: 25px; */
+        max-height: 40px;
+        align-self: center;
         /*maring-left:-5px;*/
     }
     
@@ -419,3 +417,37 @@
         background: purple;
         color: purple;
     } */
+    /* footer {
+        padding-left: 10px;
+        padding-right: 10px;
+    } */
+    
+    iframe {
+        /* margin: -5px; */
+        /* vertical-align: right; */
+        /* float: right; */
+        /* justify-content: right; */
+        /* align-items: center; */
+        /* display: flex; */
+    }
+    
+    #frame-1 {
+        /* float: right; */
+        align-content: right;
+    }
+    
+    #frame-2 {
+        /* display: block; */
+        float: right;
+    }
+    
+    #frame-1 {
+        float: right;
+    }
+    
+    #frames {
+        margin-left: 30px;
+        margin-right: 30px;
+        /* display: block;
+        /* padding: 30px; */
+    }
