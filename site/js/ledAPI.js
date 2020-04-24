@@ -161,18 +161,25 @@
             console.log("deviceID set to: ", deviceID);
             $('#currentDeviceLabel').show();
             if (lastDevice == deviceID) {
+                // console.log("lastDevice = deviceID");
                 $('#brightness').toggleClass('look-disabled', false);
-                // $("#slider-brightness").prop('disabled',false);
-            } else {
-                $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
-                // $("#slider-brightness").prop('disabled',false);
-                $('#brightness').toggleClass('look-disabled', false);
+                document.getElementById(deviceID).classList.add('btn-current');
+                // document.getElementById(lastDevice).classList.remove('btn-current');
 
+            } else {
+                console.log("lastDevice != deviceID ---> " + lastDevice + " != " + deviceID);
+                $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
+                $('#brightness').toggleClass('look-disabled', false);
+                if (lastDevice && document.getElementById(lastDevice).classList.contains('btn-current')) {
+                    // console.log("removing btn-current from last device");
+                    document.getElementById(lastDevice).classList.remove('btn-current');
+
+                }
+                // 
                 // $("#parameter-UI").show();
             }
-            document.getElementById(deviceID).classList.toggle('btn-current');
-            document.getElementById(lastDevice).classList.toggle('btn-current');
-            // document.getElementById('device_266A08DBF47456428F703EEDF1E208B7117785DF').classList.toggle('btn-primary')
+            console.log("setting device button to current");
+            document.getElementById(deviceID).classList.add('btn-current');
         });
 
         // $("#device-name").submit(function(event){
@@ -315,6 +322,7 @@
 
             $("#currentDeviceLabel").show();
             $("#parameter-UI").toggleClass('look-disabled', false);
+
             // $('#brightness').toggleClass('look-disabled', false);
             // $('#brightness').removeClass('look-disabled');   
             // $(".slider-brightness").prop('disabled',false);
@@ -350,9 +358,10 @@
             console.error(error);
             var deviceName = deviceShort;
         }
-        // console.log("deviceName = ", deviceName);
-
+        console.log("deviceName = ", deviceName);
+        // if device == 
         $("<input/>").attr({ type: "button", class: "btn-device", id: device, value: deviceName.slice(0, nameMaxLength) }).appendTo("#deviceList");
+        // document.getElementById(deviceID).classList.toggle('btn-current');
 
     }
 
