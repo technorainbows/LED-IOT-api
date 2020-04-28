@@ -157,6 +157,8 @@
             // deviceID = (this.id).slice(3, this.id.length);
             $('#currentDeviceLabel').html(this.value);
             // $('#currentDeviceValue').html(this.value);
+            // $('#currentDeviceLabel').placeholder = this.value;
+            document.getElementById('currentDeviceLabel').value = this.value;
 
             console.log("deviceID set to: ", deviceID);
             $('#currentDeviceLabel').show();
@@ -210,7 +212,7 @@
             // $(deviceID).html(input);
             document.getElementById(deviceID).value = input.slice(0, nameMaxLength);
             // $(#inputName).attr("placeholder", "New device name.");
-            $('form').trigger("reset");
+            // $('form').trigger("reset");
         });
 
 
