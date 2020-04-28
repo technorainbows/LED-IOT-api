@@ -21,7 +21,26 @@
         <nav id="page-title" class="navbar navbar-light bg-light">
             <span class="navbar-brand col" id="title">LED Web Controller</span>
             <span class="navbar-brand col xs-hide"></span>
-            <span class="navbar-brand col" id="server-navbar"><label class="xs-hide" id="server-label">Server Status:</label><span id="serverStatus" class="align-right col-xs-auto col-sm-1 col-md-2 col-lg-2"><img src="https://img.icons8.com/ios/50/000000/cloud-cross.png" id="icon-disconnected"><img src="https://img.icons8.com/ios/50/000000/cloud-sync.png" id="icon-connected"> </span></span>
+            <span class="navbar-brand col" id="server-navbar">
+                <label class="xs-hide" id="server-label">Server Status:</label
+                    ><span id="serverStatus" class="align-right col-xs-auto col-sm-1 col-md-2 col-lg-2 no-wrap">
+                        <!-- <img src="https://img.icons8.com/ios/50/000000/cloud-cross.png" id="icon-disconnected"> -->
+                        <!-- <img src="https://img.icons8.com/ios/50/000000/cloud-sync.png" id="icon-connected">  -->
+                        <svg id="icon-disconnected" class="bi bi-x-circle align-top" width="1.4em" height="1.4em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm0 1A8 8 0 108 0a8 8 0 000 16z" clip-rule="evenodd"/>
+                            <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 010 .708l-7 7a.5.5 0 01-.708-.708l7-7a.5.5 0 01.708 0z" clip-rule="evenodd"/>
+                            <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 000 .708l7 7a.5.5 0 00.708-.708l-7-7a.5.5 0 00-.708 0z" clip-rule="evenodd"/>
+                          </svg>
+                        <svg id="icon-connected" class="bi bi-check-circle align-top" width="1.6em" height="1.6em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M15.354 2.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3-3a.5.5 0 11.708-.708L8 9.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>
+                <path fill-rule="evenodd" d="M8 2.5A5.5 5.5 0 1013.5 8a.5.5 0 011 0 6.5 6.5 0 11-3.25-5.63.5.5 0 11-.5.865A5.472 5.472 0 008 2.5z" clip-rule="evenodd"/>
+              </svg>
+            </span>
+
+            </span>
+            <span class="align-top" id="github-span">
+                <a href="https://github.com/technorainbows/LED-IOT-api "><img id="github" class="align-top float-right" src="images/github.svg "></a>
+            </span>
             <!-- <span class="navbar-brand col-mb-6 col-lg-8 col-sm-2 col-xs-2 h2" id="title">LED Web Controller</span>
             <span class="navbar-brand xs-hide col-md-3 col-xs-2 float-right align-right" id="server-navbar"><label id="server-label">Server Status:</label><span id="serverStatus" class="align-right col-xs-auto col-sm-1 col-md-2 col-lg-2"><img src="https://img.icons8.com/ios/50/000000/cloud-cross.png" id="icon-disconnected"><img src="https://img.icons8.com/ios/50/000000/cloud-sync.png" id="icon-connected"> </span></span> -->
         </nav>
@@ -131,26 +150,28 @@
     <!-- main content div close -->
     </div>
     <!-- <footer class="container">
-        <div class="row justify-content-center">
-            <div class="col-2"></div>
-            <div id="frames" class="col">
-                <iframe id="frame-1" src="https://ghbtns.com/github-btn.html?user=technorainbows&repo=LED-IOT-api&type=watch&count=true&v=2" frameborder="0" scrolling="0" width="170px" height="20px"></iframe>
-                <iframe id="frame-2" src="https://ghbtns.com/github-btn.html?user=technorainbows&repo=LED-IOT-api&type=star&count=true" frameborder="0" scrolling="0" width="170px" height="20px"></iframe>
-                <iframe id="frame-3" src="https://ghbtns.com/github-btn.html?user=technorainbows&type=follow&count=true" frameborder="0" scrolling="0" width="170px" height="20px"></iframe>
-                <div class="col-2"></div>
-            </div>
-        </div>
+        <div class="row  align-self-end">
+            <div class="col-2">
+                <a href="https://github.com/technorainbows/LED-IOT-api "><img class="float-right " src="images/github.svg "></a>
+            </div> -->
+    <!-- <div id="frames " class="col ">
+                <iframe id="frame-1 " src="https://ghbtns.com/github-btn.html?user=technorainbows&repo=LED-IOT-api&type=watch&count=true&v=2 " frameborder="0 " scrolling="0 " width="170px " height="20px "></iframe>
+                <iframe id="frame-2 " src="https://ghbtns.com/github-btn.html?user=technorainbows&repo=LED-IOT-api&type=star&count=true " frameborder="0 " scrolling="0 " width="170px " height="20px "></iframe>
+                <iframe id="frame-3 " src="https://ghbtns.com/github-btn.html?user=technorainbows&type=follow&count=true " frameborder="0 " scrolling="0 " width="170px " height="20px "></iframe>
+                <div class="col-2 "></div>
+            </div> -->
+    <!-- </div>
     </footer> -->
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script> -->
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-    <script src="js/apiUtils.js"></script>
-    <script src="js/ledAPI.js"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js " integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo " crossorigin="anonymous "></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js " integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1 " crossorigin="anonymous "></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js " integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM " crossorigin="anonymous "></script> -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js " integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n " crossorigin="anonymous "></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js " integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo " crossorigin="anonymous "></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js " integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6 " crossorigin="anonymous "></script>
+    <script src="js/apiUtils.js "></script>
+    <script src="js/ledAPI.js "></script>
 
 
 </body>
