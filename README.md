@@ -1,91 +1,37 @@
 # LED-IOT-API
-Simple REST API for controlling networked LED devices.
-
-
-
-
 <!-- PROJECT SHIELDS -->
 [![CircleCI](https://circleci.com/gh/technorainbows/LED-IOT-api.svg?style=svg)](https://circleci.com/gh/technorainbows/LED-IOT-api)
 [![LinkedIn][linkedin-shield]][linkedin-url]
 <!-- [![MIT License][license-shield]][license-url] -->
-
-
-
-<!-- PROJECT LOGO -->
-<br />
-<p align="center">
-  <a href="https://github.com/technorainbows/LED-IOT-api">
-    <!-- <img src="images/logo.png" alt="Logo" width="80" height="80"> -->
-  </a>
-
-  <h3 align="center">LED Web App - Demo Project</h3>
-
-  <p align="center">
-    This is a demo web app that controls networked LEDs.
-    <br />
-    <a href="https://github.com/technorainbows/LED-IOT-api"><strong>Explore the docs »</strong></a>
-    <!-- <br /> -->
-    <!-- <br /> -->
-    <!-- <a href="https://github.com/technorainbows/LED-IOT-api">View Demo</a> -->
-    <!-- ·
-    <a href="https://github.com/technorainbows/LED-IOT-api/issues">Bugs</a> -->
-    <!-- · -->
-    <!-- <a href="https://github.com/technorainbows/LED-IOT-api/issues">Request Feature</a>
-  </p> -->
-</p>
-
-
+A demo web app for controlling networked LED devices.
 
 <!-- TABLE OF CONTENTS -->
-## Table of Contents
-
+<!-- ## Table of Contents
 * [About the Project](#about-the-project)
-  * [Built With](#built-with)
+  * [Built With](#built-with) -->
 <!-- * [Getting Started](#getting-started) -->
   <!-- * [Prerequisites](#prerequisites) -->
   <!-- * [Installation](#installation) -->
 <!-- * [Usage](#usage) -->
-<!-- * [Roadmap](#roadmap) -->
-<!-- * [Contributing](#contributing) -->
-<!-- * [License](#license) -->
+<!-- * [Screenshots](#screenshots)
+* [Roadmap](#roadmap)
+* [License](#license)
 * [Contact](#contact)
-* [Acknowledgements](#acknowledgements)
+* [Acknowledgements](#acknowledgements) -->
 
 
 
 <!-- ABOUT THE PROJECT -->
-## About The Project
+<!-- ## About The Project
+The goal of this project has been two fold:  1) to teach myself  -->
 
-<!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
+### Technologies
 
+* **REST API**: Python 3, [flask restplus](https://flask-restplus.readthedocs.io/en/stable/), redis-py, pyjwt, [Okta](http://www.okta.com), Swagger
+* **Webpage**: Javascript + jQuery, Bootstrap 4, HTML5, CSS
+* **Arduino**: C, ESP32, [FastLED](http://fastled.io)
+* **CI/CD**: Docker, CircleCI, AWS, [Pytest](https://docs.pytest.org/en/latest/) + [Pytest-Flask](https://pypi.org/project/pytest-flask/)
 
-### Built With
-
-#### REST API
-* Python 3
-* [Flask RESTPlus](https://flask-restplus.readthedocs.io/en/stable/)
-* Redis
-* PyJwt
-
-#### Webpage
-* Javascript + jQuery
-* Bootstrap 4
-* HTML5
-* CSS
-
-#### Arduino
-* C
-* ESP32
-* [FastLED](http://fastled.io)
-
-#### Deployment
-* Docker
-* CircleCI
-* Amazon
-* [Pytest](https://docs.pytest.org/en/latest/) + [Pytest-Flask](https://pypi.org/project/pytest-flask/)
-
-#### Authentication
-* Okta
 
 
 
@@ -112,6 +58,23 @@ git clone https://github.com/technorainbows/LED-IOT-api.git
 
 
 
+### Usage
+<!-- 1. Users must first provide authentication credentials before accessing the app.
+![Login screen.](screenshots/logon-screen.png)
+
+2. Once a user is logged in, they are taken to the main page view. User is prompted to select an available online device.
+![Select a device.](screenshots/no-device-selected.png) -->
+
+<!-- 3. Once a device is selected, the user is able to turn the device's lights on and off, change the light's brightness, and rename the device. -->
+![Device settings | 50%](screenshots/device-selected.png)
+
+<!-- 4. To rename a device, a user simply clicks the device name and is able to type in the new name. Upon hitting enter, the name is saved and updated in the device list.
+![Renaming a device, part 1.](screenshots/renaming-device-1.png) 
+The device has now been renamed.
+![Renaming a device - device renamed.](screenshots/renaming-device-2.png)
+5. If the server where the API is hosted is down, the status will be displayed to the user. Until the server is up, the user will be unable to select or edit any device settings. 
+![Server disconnected.](screenshots/server-disconnected.png) -->
+
 
 <!-- USAGE EXAMPLES -->
 <!-- ## Usage -->
@@ -123,9 +86,8 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 
 <!-- ROADMAP -->
-<!-- ## Roadmap -->
-
-<!-- See the [open issues](https://github.com/technorainbows/LED-IOT-api/issues) for a list of proposed features (and known issues). -->
+### Roadmap
+See the [open issues](https://github.com/technorainbows/LED-IOT-api/issues) for a list of proposed features and known issues.
 
 
 
@@ -143,26 +105,22 @@ Contributions are what make the open source community such an amazing place to b
 
 
 <!-- LICENSE -->
-<!-- ## License -->
+### License
 
 <!-- See `LICENSE` for more information. -->
-
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/technorainbows/LED-IOT-api" property="cc:attributionName" rel="cc:attributionURL">Ashley Newton</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
 
 
 <!-- CONTACT -->
-## Contact
+<!-- ## Contact
 
-[Ashley Newton](http://www.ashleynewton.net) - [@technorainbows](https://github.com/technorainbows/) - [i@ashleynewton.net](mailto:i@ashleynewton.net)
-
-Project Link: [https://github.com/technorainbows/LED-IOT-api](https://github.com/technorainbows/LED-IOT-api)
+[Ashley Newton](http://www.ashleynewton.net) - [@technorainbows](https://github.com/technorainbows/) - [i@ashleynewton.net](mailto:i@ashleynewton.net) -->
 
 
 
 <!-- ACKNOWLEDGEMENTS -->
-## Acknowledgements
-
-* [@jmorris0x0](https://github.com/jmorris0x0/) for primary mentorship
-* [@cagerton](https://github.com/cagerton/) for support mentorship
+### Acknowledgements
+Thanks to [@jmorris0x0](https://github.com/jmorris0x0/) for primary mentorship and [@cagerton](https://github.com/cagerton/) for support mentorship.
 <!-- *  -->
 
 
