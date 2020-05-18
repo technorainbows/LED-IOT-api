@@ -6,6 +6,17 @@
         /* min-width: 300px; */
         /* display: block; */
     }
+    
+    h4 {
+        border-bottom-color: #6DAEDB;
+        /* border-width: 5px; */
+        border-bottom-style: dotted;
+        /* border-style: solid; */
+        /* border-bottom: 5px; */
+        border-bottom-width: 2px;
+        /* border-bottom: 80 */
+        /* border-color: black; */
+    }
     /**************** TOGGLE SWITCH CUSTOMIZATION ***********************/
     /* The switch - the box around the slider */
     
@@ -66,6 +77,14 @@
     input:focus+.slider {
         box-shadow: 0 0 1px #6DAEDB;
     }
+    
+    #label-onSwitch {
+        /* padding: 5px; */
+        align-content: left;
+        margin-top: 25px;
+        /* padding-top: 5px; */
+        /* background-color: */
+    }
     /************************************* SLIDER RANGE STUFF ****************************************/
     
     input[type=range] {
@@ -80,16 +99,16 @@
     input[type=range]::-webkit-slider-thumb {
         -webkit-appearance: none;
     }
+    /* Removes the blue border. */
     
     input[type=range]:focus {
         outline: none;
-        /* Removes the blue border. You should probably do some kind of focus styling for accessibility reasons though. */
     }
+    /* Hides the slider so custom styles can be added */
     
     input[type=range]::-ms-track {
         width: 100%;
         cursor: pointer;
-        /* Hides the slider so custom styles can be added */
         background: transparent;
         border-color: transparent;
         color: transparent;
@@ -109,7 +128,6 @@
         margin-top: -4px;
         /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
         box-shadow: 1px 1px 1px #1B4353, 0px 0px 1px #173753;
-        /* Add cool effects to your sliders! */
     }
     
     input[type=range]::-webkit-slider-runnable-track {
@@ -125,15 +143,41 @@
     input[type=range]:focus::-webkit-slider-runnable-track {
         background: #367ebd;
     }
-    /************* OTHER UI ELEMENTS **********************/
+    /***************** REUSABLE DISPLAY STUFF   *******************/
     
-    #label-onSwitch {
-        /* padding: 5px; */
-        align-content: left;
-        margin-top: 25px;
-        /* padding-top: 5px; */
-        /* background-color: */
+    #main-content {
+        display: none;
     }
+    
+    #main-content .row {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        width: 100%;
+        /* min-width: 400px; */
+    }
+    
+    .look-disabled {
+        opacity: 0.2;
+        pointer-events: none;
+    }
+    
+    .look-enabled {
+        opacity: 1;
+        pointer-events: all;
+    }
+    
+    .overlay {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /*position: absolute;*/
+        z-index: 30;
+        opacity: 80;
+        background: rgba(39, 42, 43, 0.8);
+        transition: opacity 200ms ease-in-out;
+        border-radius: 4px;
+    }
+    /************* OTHER UI ELEMENTS **********************/
     
     #device-info {
         color: #173753;
@@ -174,49 +218,6 @@
         /* margin: 10px; */
         /* vertical-align: middle; */
         background-color: #2892D7;
-    }
-    
-    .look-disabled {
-        opacity: 0.2;
-        pointer-events: none;
-    }
-    
-    .look-enabled {
-        opacity: 1;
-        pointer-events: all;
-    }
-    
-    .overlay {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        /*position: absolute;*/
-        z-index: 30;
-        opacity: 80;
-        background: rgba(39, 42, 43, 0.8);
-        transition: opacity 200ms ease-in-out;
-        border-radius: 4px;
-    }
-    
-    #github {
-        width: 35%;
-        margin-top: -5px;
-        /* vertical-align: top; */
-        /* scale: 10% */
-    }
-    
-    #icon-connected {
-        display: hidden;
-        /* padding-left: -5px; */
-        margin-left: -15px;
-        /* padding-top: 2px; */
-    }
-    
-    #icon-disconnected {
-        display: hidden;
-        /* padding: 10px; */
-        margin-left: -10px;
-        margin-top: 2px;
     }
     
     .label-current-device {
@@ -275,12 +276,6 @@
         /*maring-left:-5px;*/
     }
     
-    #inputName {
-        width: 100%;
-        border-radius: 5px;
-        /* padding-left: 2px; */
-    }
-    
     #device-name {
         margin-left: -20px;
         display: inline-block;
@@ -293,33 +288,6 @@
         margin-right: -20px;
     }
     
-    #save-name {
-        margin-left: 10px;
-        margin-right: 10px;
-        /*padding-left:10px;*/
-        /*padding-right:10px;*/
-        border-radius: 5px;
-    }
-    
-    #name-form {
-        /*margin-right: 10px;*/
-        /* padding-right: 10px; */
-        /* cursor: pointer; */
-        /* padding-bottom: 10px; */
-    }
-    
-    #main-content .row {
-        margin-top: 10px;
-        margin-bottom: 10px;
-        width: 100%;
-        /* min-width: 400px; */
-    }
-    
-    .form-control-range {
-        /* margin-left: 10px; */
-        /* margin-right: 10px; */
-    }
-    
     #currentDevice {
         /* margin-bottom: 10px; */
         /* padding-bottom: 5px; */
@@ -330,17 +298,6 @@
         margin-right: -5px;
         /* color: #006989; */
         color: white;
-    }
-    
-    h4 {
-        border-bottom-color: #6DAEDB;
-        /* border-width: 5px; */
-        border-bottom-style: dotted;
-        /* border-style: solid; */
-        /* border-bottom: 5px; */
-        border-bottom-width: 2px;
-        /* border-bottom: 80 */
-        /* border-color: black; */
     }
     
     .label-device {
@@ -370,7 +327,7 @@
         min-width: 270px;
         /*border-radius: 10px;*/
     }
-    /* NAV-BAR */
+    /********** NAV-BAR STUFF ************/
     
     #page-title {
         min-width: 400px;
@@ -385,6 +342,28 @@
         vertical-align: bottom;
         /* font-size: 1em; */
     }
+    
+    #github {
+        width: 35%;
+        margin-top: -5px;
+        /* vertical-align: top; */
+        /* scale: 10% */
+    }
+    
+    #icon-connected {
+        display: hidden;
+        /* padding-left: -5px; */
+        margin-left: -15px;
+        /* padding-top: 2px; */
+    }
+    
+    #icon-disconnected {
+        display: hidden;
+        /* padding: 10px; */
+        margin-left: -10px;
+        margin-top: 2px;
+    }
+    /************* MEDIA QUERIES ****************/
     /* Extra small devices (portrait phones, less than 576px) */
     
     @media (max-width: 575.98px) {
@@ -475,33 +454,3 @@
         padding-left: 10px;
         padding-right: 10px;
     } */
-    
-    iframe {
-        /* margin: -5px; */
-        /* vertical-align: right; */
-        /* float: right; */
-        /* justify-content: right; */
-        /* align-items: center; */
-        /* display: flex; */
-    }
-    
-    #frame-1 {
-        /* float: right; */
-        align-content: right;
-    }
-    
-    #frame-2 {
-        /* display: block; */
-        float: right;
-    }
-    
-    #frame-1 {
-        float: right;
-    }
-    
-    #frames {
-        margin-left: 30px;
-        margin-right: 30px;
-        /* display: block;
-        /* padding: 30px; */
-    }

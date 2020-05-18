@@ -146,6 +146,7 @@
             console.error(error);
 
             // TODO: write "displayErrrorOnPage" function and call that here
+
             // updateServerStatus(false);
             // errorHandler();
             return
@@ -159,11 +160,15 @@
      */
 
     apiUtils.getData = async function(url, deviceID, responseHandler, errorHandler) {
-        // url = apiURL;
+
+        // TODO: is there a better place to check for accessToken?
+        if (!accessToken) {
+            updateServerStatus(false);
+            errorHandler();
+            return;
+        }
+
         url += ("/" + deviceID);
-        // url += paramRoute;
-        console.log('GET request:' + url)
-            // GET
         const rec = fetch(url, {
             "credentials": "omit",
             "headers": {
@@ -195,10 +200,6 @@
             return
         }
 
-
-        // console.log('response recieved');
-        // console.dir(res);
-
         // if no error, then get response 
         let device = await res.json();
         // console.log("device returned: ", device);
@@ -220,9 +221,6 @@
         } else {
             $('#icon-disconnected').show();
             $('#icon-connected').hide();
-            // $('#serverStatus').toggleClass('icon-disconnected', true);
-            // $('#serverStatus').toggleClass('icon-connected', false);
-
         }
     }
 
