@@ -15,6 +15,14 @@ client_secrets = data['web']
 print("token loaded: ", client_secrets['auth_token'])
 
 
+def test_authorization(client):
+    """Make a test call to /Devices/<device>."""
+    response = client.get("/Devices/device200",
+                          headers={"Authorization": 'Bearer please '})
+
+    assert response.status_code == 403
+
+
 def test_get_device(client):
     """Make a test call to /Devices/<device>."""
     response = client.get("/Devices/device200",
