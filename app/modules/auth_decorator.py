@@ -73,17 +73,17 @@ def validate_access(func):
             access_token = request.headers['Authorization'].split(None, 1)[
                 1].strip()
             # print("token found: ", access_token)
-
-            header = jwt.get_unverified_header(access_token)
-            logging.info("unverified header: %s", header)
-
-            # if header validated, then decode/check claims
-            # assert(header['kid'] == kid)
             try:
+                header = jwt.get_unverified_header(access_token)
+                logging.info("unverified header: %s", header)
+
+                # if header validated, then decode/check claims
+                # assert(header['kid'] == kid)
+                # try:
                 claims = jwt.decode(
                     access_token, client_secrets['client_secret'], verify=False)
                 # print("claims = ", claims)
-
+                # try:
                 if (claims['cid'] == client_secrets['cid']) and (claims['aud'] == client_secrets['aud']):
                     logging.info("token validated!!")
 
@@ -95,14 +95,20 @@ def validate_access(func):
                         return make_response({'error': 'user not allowed'}, 403)
                 logging.error("claims not validated")
 
+            except ValueError:
+                logging.error("***********unable to decode header")
+                return {'ValueError': 'unable to decode header'}, 401
+
             except Exception as e:
                 logging.error("Invalid token: %s", str(e))
-                return make_response({'error': 'invalid token'}, 403)
+                return {'error': 'invalid token'}, 403
+
             # if we made it this far, we can continue with the main function
         else:
             logging.info("invalid token or no token provided")
             response_body = {'error': 'invalid token/not authorized'}
             return response_body, 401
+        logging.info("access_token validated: %s", str(access_token))
 
     return wrapper_validate_access
 
