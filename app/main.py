@@ -13,7 +13,7 @@ from flask_restplus import Api, Resource, fields
 import redis
 from redis.exceptions import WatchError
 # from redis.Connection
-from app.modules.auth_decorator import validate_access
+from modules.auth_decorator import validate_access
 
 
 # Set up simple logging.
