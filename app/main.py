@@ -13,7 +13,7 @@ from flask_restplus import Api, Resource, fields
 import redis
 from redis.exceptions import WatchError
 # from redis.Connection
-from modules.auth_decorator import validate_access
+from app.modules.auth_decorator import validate_access
 
 
 # Set up simple logging.
@@ -527,6 +527,13 @@ def server_error(error_rec):
     """Return server error message."""
     logging.error('Error: %s', error_rec)
     return (jsonify({'server error': str(error_rec)}), 500)
+
+
+@APP.errorhandler(403)
+def auth_error(error_rec):
+    """Return server error message."""
+    logging.error('Authentication Error: %s', error_rec)
+    return (jsonify({'Authentication error': str(error_rec)}), 403)
 
 
 if __name__ == '__main__':
