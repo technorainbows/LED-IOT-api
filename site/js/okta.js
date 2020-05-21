@@ -21,6 +21,7 @@ var oktaDomain = "https://dev-635623.okta.com"
 var clientId = "0oa1518xwoMoaewF64x6"
 
 $('#main-content').hide();
+$('#server-navbar').hide();
 
 if (oktaSignIn.hasTokensInUrl()) {
     console.log("has token in url");
@@ -88,12 +89,14 @@ if (oktaSignIn.hasTokensInUrl()) {
             console.log("got accessToken: ", accessToken);
             // document.getElementById("messageBox").innerHTML = "Hello, " + res.login + "! You are *still* logged in! :)";
             $('#main-content').show();
+            $('#server-navbar').show();
             // callMessagesApi(accessToken);
             return;
         }
 
         // No session, show the login form and hide main content
         $('#main-content').hide();
+        $('#server-navbar').hide();
         oktaSignIn.renderEl({ el: '#okta-login-container' },
             function success(res) {
                 // Nothing to do in this case, the widget will automatically redirect
