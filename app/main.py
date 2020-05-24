@@ -9,10 +9,8 @@ import json
 from flask_cors import CORS
 from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
-# from werkzeug.contrib.fixers import ProxyFix
 import redis
 from redis.exceptions import WatchError
-# from redis.Connection
 from modules.auth_decorator import validate_access
 
 
@@ -64,7 +62,7 @@ with open('./client_secrets.json', 'r') as myfile:
     DATA = myfile.read()
 DATA = json.loads(DATA)
 # logging.debug(data)
-client_secrets = DATA['web']
+CLIENT_SECRETS = DATA['web']
 
 
 class Server(object):
@@ -74,28 +72,11 @@ class Server(object):
         """Initialize Flask app and api."""
         logging.debug("initializing Sever app")
         self.app = Flask(__name__)
-        self.app.config.SWAGGER_UI_OAUTH_CLIENT_ID = client_secrets['client_id']
+        self.app.config.SWAGGER_UI_OAUTH_CLIENT_ID = CLIENT_SECRETS['client_id']
         self.app.config.SWAGGER_UI_OAUTH_REALM = '-'
         self.app.config.SWAGGER_UI_DOC_EXPANSION = 'list'
-        # self.app.config.SWAGGER_UI_OAUTH_APP_NAME = 'Demo'
-        # api = Api(app, security='Bearer Auth', authorizations=authorizations)
 
         authorizations = {
-            # 'OAuth2': {
-            #     'type': 'oauth2',
-            #     'flow': 'accessCode',
-            #     'authorizationUrl': client_secrets['auth_uri'],
-            #     'tokenUrl': client_secrets['token_uri'],
-            #     'clientId': self.app.config.SWAGGER_UI_OAUTH_CLIENT_ID,
-            #     'clientSecret': client_secrets['client_secret']
-            # },
-            # 'OAuth2': {
-            #     'type': 'oauth2',
-            #     'flow': 'implicit',
-            #     'authorizationUrl': client_secrets['auth_uri'],
-            #     'clientId': self.app.config.SWAGGER_UI_OAUTH_CLIENT_ID,
-            #     'clientSecret': client_secrets['client_secret']
-            # },
             'Bearer Auth': {
                 'type': 'apiKey',
                 'in': 'header',
@@ -128,14 +109,6 @@ server = Server()
 APP = server.app
 API = server.api
 CORS(APP)
-# APP = Flask(__name__)
-# APP.wsgi_app = ProxyFix(APP.wsgi_app)
-# API = Api(APP, version='0.4', title='LED API',
-#   description='A simple LED IOT API', doc='/docs'
-#   )
-
-
-# ns = API.namespace('devices', description='DEVICES operations')
 
 # Default device settings.
 DEFAULT = {
@@ -211,13 +184,11 @@ class Redis(object):
                         logging.warning("get: no device")
                         pipe.multi()
                         pipe.hmset(key, DEFAULT)
-                        # time.sleep(5)
                         pipe.execute()
                         device = DEFAULT
                         break
                     else:
                         device = pipe.hgetall(key)
-                        # logging.info("get: device found %s ", device)
                         # Initialising empty dictionary
                         new_dict = {}
 
@@ -249,9 +220,7 @@ class Redis(object):
                     if pipe.exists(key) == 0:
                         logging.warning("set: no device")
                         pipe.hmset(key, DEFAULT)
-                        print("field: ", field, " value: ", value)
                         pipe.hmset(key, {field: value})
-                        # time.sleep(5)
                         device = pipe.hgetall(key)
                         pipe.execute()
                         logging.info("set: device now: %s", str(device))
@@ -346,16 +315,14 @@ class Heartbeat(Resource):
         if response == []:
             logging.error('Error, unable to get device.')
             return ('Error, unable to get device', 500)
-        else:
-            return jsonify(response)
+
+        return jsonify(response)
 
     @API.response(201, 'Success')
-    # @API.param('heartbeat')
     @API.expect(HEARTBEAT, validate=False)
     @validate_access
     def post(self, device_id):
         """Set a heartbeat."""
-        # hbTime = 15
         heartbeat = "hb_" + device_id
         response = REDIS.set_hb(heartbeat)
         logging.info("HB post response = %s", response)
@@ -364,9 +331,9 @@ class Heartbeat(Resource):
         if response:
             logging.info("heartbeat set: %s", response)
             return jsonify(response)
-        else:
-            logging.error("Error, failed to set heartbeat")
-            return "Error, failed to set heartbeat.", 500
+
+        logging.error("Error, failed to set heartbeat")
+        return "Error, failed to set heartbeat.", 500
 
 
 @API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
@@ -375,7 +342,6 @@ class Heartbeats(Resource):
     """Monitor which devices are online or not via heartbeat."""
 
     @API.response(200, 'Success')
-    # @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
     @validate_access
     def get(self):
         """Return a list of all heartbeats."""
@@ -402,29 +368,23 @@ class Device(Resource):
     @API.response(200, 'Success: device retrieved.', DEVICE)
     def get(self, device_id):
         """Fetch a given resource."""
-        # abort_if_device_not_found(device_id)
         redis_get = REDIS.get(device_id)
-        # print("device_id: ", device_id)
-        # print('redis_get: ', redis_get)
         return jsonify(device_id, redis_get)
-        # return jsonify(DEVICES[device_id],200)
 
     @API.doc(responses={200: 'Device deleted'})
     @validate_access
     def delete(self, device_id):
         """Delete a given resource."""
-        # abort_if_device_not_found(device_id)
         response = REDIS.delete(device_id)
         logging.info("REDIS delete response: %s", str(response))
         if response:
             logging.info("Device deleted: %s", device_id)
             return jsonify('Device deleted', 200)
-        else:
-            logging.error('Error, device not found: %s', device_id)
-            return jsonify('Error: device not found', 404)
+
+        logging.error('Error, device not found: %s', device_id)
+        return jsonify('Error: device not found', 404)
 
     @API.expect(DEVICE, validate=True)
-    # @API.doc(parser=parser)
     @API.response(201, 'Success: device updated.', DEVICE)
     @validate_access
     def put(self, device_id):
@@ -432,21 +392,16 @@ class Device(Resource):
         logging.info("PUT request received")
         for field in DEVICE:
             if field in request.json:
-                # print("field found: ", field, "value = ", request.json.get(field))
-                # let value = request.json.get(field)
                 REDIS.set(device_id, field, request.json.get(field))
 
-        # print('returned redisSet = ', redisSet)
         return jsonify(device_id, REDIS.get(device_id), 201)
 
 
 ####################################
 # List of devices Response Methods #
 ####################################
-# @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
 @API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
 @API.route('/devices/')
-# @validate_access
 class DeviceList(Resource):
     """Shows a list of all devices, and lets you POST to add new tasks."""
 
@@ -466,14 +421,11 @@ class DeviceList(Resource):
         """Create a new device with next id."""
         # TODO: check if this does anything
         device_id = 'device%d' % (len(DEVICE) + 1)
-        # DEVICES[device_id] = device
         logging.info("json request received: %s", str(request.json))
 
         # Update a given resource's field with new property value received.
         for field in DEVICE:
-            # print("field: ", field)
             if field in request.json:
-                # print("field found: ", field, "value = ", request.json.get(field))
                 REDIS.set(device_id, field, request.json.get(field))
 
         return jsonify(device_id, REDIS.get(device_id), 201)
@@ -488,13 +440,12 @@ class Health(Resource):
         """Return health status of redis client."""
         redis_healthy = REDIS.health()
 
-        if (redis_healthy is True):
+        if redis_healthy is True:
             logging.info('Health: healthy')
             return 200
 
-        else:
-            logging.error('Health: %s', redis_healthy)
-            return {'Health': redis_healthy}, 500
+        logging.error('Health: %s', redis_healthy)
+        return {'Health': redis_healthy}, 500
 
 
 @APP.errorhandler(404)
@@ -521,4 +472,3 @@ def auth_error(error_rec):
 if __name__ == '__main__':
     logging.debug("attempting APP.run")
     APP.run(host='0.0.0.0', port=5000, debug=True)
-    # ssl_context=('app/certificates/testing.crt', 'app/certificates/testing.key'))
