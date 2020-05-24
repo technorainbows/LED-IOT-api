@@ -86,7 +86,7 @@ def test_post_devices(client):
 
 def test_check_health(client):
     """Make a test call to /"""
-    response = client.get("/Health")
+    response = client.get("/health")
     assert response.status_code == 200
 
 
@@ -100,7 +100,7 @@ def test_get_devicelist(client):
 
 def test_post_hb(client):
     """Make a test post to set heartbeat."""
-    response = client.post("/devices/HB/device100",
+    response = client.post("/devices/hb/device100",
                            data=json.dumps(
                                {"heartbeat": "device100"}),
                            content_type='application/json',
@@ -111,8 +111,8 @@ def test_post_hb(client):
 
 
 def test_get_hblist(client):
-    """Make a test call to /devices/HB"""
-    response = client.get("/devices/HB/",
+    """Make a test call to /devices/hb"""
+    response = client.get("/devices/hb/",
                           headers={"Authorization": 'Bearer ' + CLIENT_SECRETS['auth_token']})
 
     assert response.status_code == 200
@@ -120,13 +120,13 @@ def test_get_hblist(client):
 
 def test_full_hb(client):
     """Test posting and then getting a device heartbeat."""
-    client.post("/devices/HB/device100",
+    client.post("/devices/hb/device100",
                 data=json.dumps(
                     {"heartbeat": "device100"}),
                 content_type='application/json',
                 headers={"Authorization": 'Bearer ' + CLIENT_SECRETS['auth_token']})
 
-    response2 = client.get("/devices/HB/device100",
+    response2 = client.get("/devices/hb/device100",
                            headers={'Authorization': 'Bearer ' + CLIENT_SECRETS['auth_token']})
 
     assert response2.status_code == 200

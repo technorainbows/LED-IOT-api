@@ -13,7 +13,7 @@ from flask_restplus import Api, Resource, fields
 import redis
 from redis.exceptions import WatchError
 # from redis.Connection
-from app.modules.auth_decorator import validate_access
+from modules.auth_decorator import validate_access
 
 
 # Set up simple logging.
@@ -299,9 +299,8 @@ class Redis(object):
         keys = []
         try:
             for key in self.redis.scan_iter(match=param+"*"):
-                print("key: ", key)
+                logging.debug("key: %s", key)
                 keys.append(key.decode())
-            # logging.debug("keys returned: ", keys)
 
         except ConnectionError:
             logging.exception("Connection error")
@@ -332,7 +331,7 @@ REDIS = Redis()
 #########################
 # @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
 @API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
-@API.route('/devices/HB/<string:device_id>', methods=['GET', 'POST'])
+@API.route('/devices/hb/<string:device_id>', methods=['GET', 'POST'])
 class Heartbeat(Resource):
     """Update and check on a given device's heartbeat/online status."""
 
@@ -371,7 +370,7 @@ class Heartbeat(Resource):
 
 
 @API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
-@API.route('/devices/HB/', methods=['GET'])
+@API.route('/devices/hb/', methods=['GET'])
 class Heartbeats(Resource):
     """Monitor which devices are online or not via heartbeat."""
 
@@ -480,18 +479,8 @@ class DeviceList(Resource):
         return jsonify(device_id, REDIS.get(device_id), 201)
 
 
-# @API.route('/', methods=['GET'])
-# # @validate_access
-# class Home(Resource):
-#     # @API.response(300, 'nothing to see here.')
-#     def get(self):
-#         """Not for humans."""
-#         return 200
-        # return jsonify({'msg': 'this is not for humans.'}, 300)
-
-
 @API.doc(responses={200: 'Server healthy', 500: 'Server error'})
-@API.route('/Health', methods=['GET'])
+@API.route('/health', methods=['GET'])
 class Health(Resource):
     """Health check endpoint."""
 
@@ -508,18 +497,18 @@ class Health(Resource):
             return {'Health': redis_healthy}, 500
 
 
-# @APP.errorhandler(404)
-# def not_found(error_rec):
-#     """Return not found error message."""
-#     logging.error('Error: %s', error_rec)
-#     return (jsonify({'error_handler': str(error_rec)}), 404)
+@APP.errorhandler(404)
+def not_found(error_rec):
+    """Return not found error message."""
+    logging.error('Error: %s', error_rec)
+    return (jsonify({'error_handler': str(error_rec)}), 404)
 
 
-# @APP.errorhandler(418)
-# def not_found(error_rec):
-#     """Return nothing to see here."""
-#     # logging.error('Error: %s', error_rec)
-#     return ('nothing to see', 418)
+@APP.errorhandler(418)
+def not_found(error_rec):
+    """Return nothing to see here."""
+    logging.error('Error: %s', error_rec)
+    return ('nothing to see', 418)
 
 
 @APP.errorhandler(500)
