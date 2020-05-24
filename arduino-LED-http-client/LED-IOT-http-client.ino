@@ -43,12 +43,12 @@ SSD1306Wire display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board dispp
 // on vannet
 String IPaddress = "api.ashleynewton.net";
 // String IPaddress = "10.0.0.59";
-//String apiURL = "http://10.0.0.59:5000/Devices/";
+//String apiURL = "http://10.0.0.59:5000/devices/";
 //String controllerURL = "10.0.0.59/site/index.html";
 // #endif
 
 bool SERVER_SECURE = true; // global variable to indicate whether HTTPS or HTTP is used
-String apiURL = IPaddress + "/Devices/";
+String apiURL = IPaddress + "/devices/";
 String controllerURL = IPaddress + "site/index.html";
 
 String DEVICE_ID;
@@ -398,13 +398,13 @@ void loop()
   //  Serial.println("Setting brightness");
   //  delay(500);
   FastLED.setBrightness(brightVal);
-  FastLED.show();
-  updateLEDS();
 
+  updateLEDS();
+  FastLED.show();
   // insert a delay to keep the framerate modest
   FastLED.delay(1000 / FRAMES_PER_SECOND);
 
-  checkSSL();
+  // checkSSL();
 }
 
 /***************************************************************************
@@ -418,7 +418,7 @@ void insecure_connection(String protocol)
 
   ////// SET HEARTBEAT ////////////////
   Debug.print(DBG_INFO, "insecure: setting heartbeat");
-  String HB_URL = protocol + apiURL + "HB/" + DEVICE_ID;
+  String HB_URL = protocol + apiURL + "hb/" + DEVICE_ID;
   Debug.print(DBG_DEBUG, "insecure: HB_URL is %s", HB_URL);
 
   if (http.begin(HB_URL))
@@ -561,7 +561,7 @@ void secure_connection(String protocol)
     {
       ////// SET HEARTBEAT ////////////////
       Debug.print(DBG_VERBOSE, "secure: setting heartbeat");
-      String HB_URL = protocol + apiURL + "HB/" + DEVICE_ID;
+      String HB_URL = protocol + apiURL + "hb/" + DEVICE_ID;
       Debug.print(DBG_DEBUG, "secure: HB_URL is %s", HB_URL);
 
       if (http.begin(*client, HB_URL))
@@ -724,6 +724,7 @@ void updateLEDS()
     fill_rainbow(leds, NUM_LEDS, gHue, speed);
     EVERY_N_MILLISECONDS(10)
     {
+      Serial.println("updateLEDS: cycling rainbow hue");
       gHue++; // slowly cycle the "base color" through the rainbow
       FastLED.show();
     }
