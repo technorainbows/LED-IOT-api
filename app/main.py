@@ -504,13 +504,6 @@ def not_found(error_rec):
     return (jsonify({'error_handler': str(error_rec)}), 404)
 
 
-@APP.errorhandler(418)
-def not_found(error_rec):
-    """Return nothing to see here."""
-    logging.error('Error: %s', error_rec)
-    return ('nothing to see', 418)
-
-
 @APP.errorhandler(500)
 def server_error(error_rec):
     """Return server error message."""
