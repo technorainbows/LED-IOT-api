@@ -15,7 +15,7 @@ cat > /app/client_secrets.json <<EOF
         "userinfo_uri": "https://dev-635623.okta.com/oauth2/default/userinfo",
         "token_introspection_uri": "https://dev-635623.okta.com/oauth2/default/v1/introspect",
         "redirect_uris": [
-            "https://lights.ashleynewton.net", "http://lights.ashleynewton.net", "http://localhost:80/authorization-code/callback", "http://localhost:3002/authorization-code/callback", "http://localhost:3002/index.html", "http://localhost:3002/", "http://localhost:3002", "http://localhost:80", "http://localhost:80/api", "http://localhost:80/private", "http://localhost"
+            "https://lights.ashleynewton.net", "http://lights.ashleynewton.net", "http://localhost:3000/index.html", "http://localhost:3002/", "http://localhost:3000", "http://localhost:80", "http://localhost"
         ],
         "allowed_users": ["i@ashleynewton.net", "guest@ashleynewton.net"],
         "cid": "$CLIENT_ID",

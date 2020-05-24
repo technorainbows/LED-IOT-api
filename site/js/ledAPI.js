@@ -1,6 +1,6 @@
 (function(global) {
 
-    var apiUrl = 'https://api.ashleynewton.net/Devices'
+    var apiUrl = 'https://api.ashleynewton.net/devices'
 
     var deviceID = ''; // current device
     var devices = []; // devices online
@@ -13,7 +13,7 @@
     function checkConnection() {
 
         // Get list of devices online/available
-        $apiUtils.getData(apiUrl + "/HB", "", updateDeviceList, disableMainContent);
+        $apiUtils.getData(apiUrl + "/hb", "", updateDeviceList, disableMainContent);
 
         setTimeout(checkConnection, 5000);
     }

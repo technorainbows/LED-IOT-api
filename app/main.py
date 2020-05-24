@@ -13,7 +13,7 @@ from flask_restplus import Api, Resource, fields
 import redis
 from redis.exceptions import WatchError
 # from redis.Connection
-from modules.auth_decorator import validate_access
+from app.modules.auth_decorator import validate_access
 
 
 # Set up simple logging.
@@ -61,10 +61,10 @@ else:
 
 # load and parse client secrets file
 with open('./client_secrets.json', 'r') as myfile:
-    data = myfile.read()
-data = json.loads(data)
+    DATA = myfile.read()
+DATA = json.loads(DATA)
 # logging.debug(data)
-client_secrets = data['web']
+client_secrets = DATA['web']
 
 
 class Server(object):
@@ -135,7 +135,7 @@ CORS(APP)
 #   )
 
 
-# ns = API.namespace('Devices', description='DEVICES operations')
+# ns = API.namespace('devices', description='DEVICES operations')
 
 # Default device settings.
 DEFAULT = {
@@ -332,7 +332,7 @@ REDIS = Redis()
 #########################
 # @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
 @API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
-@API.route('/Devices/HB/<string:device_id>', methods=['GET', 'POST'])
+@API.route('/devices/HB/<string:device_id>', methods=['GET', 'POST'])
 class Heartbeat(Resource):
     """Update and check on a given device's heartbeat/online status."""
 
@@ -371,7 +371,7 @@ class Heartbeat(Resource):
 
 
 @API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
-@API.route('/Devices/HB/', methods=['GET'])
+@API.route('/devices/HB/', methods=['GET'])
 class Heartbeats(Resource):
     """Monitor which devices are online or not via heartbeat."""
 
@@ -390,7 +390,7 @@ class Heartbeats(Resource):
 # Single Device Response Methods #
 ##################################
 # TODO: add list of device_ids from redis to check if decive there
-@API.route('/Devices/<string:device_id>',
+@API.route('/devices/<string:device_id>',
            methods=['GET', 'POST', 'PUT', 'DELETE'])
 @API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'},
          params={'device_id': 'The Device ID'})
@@ -442,11 +442,11 @@ class Device(Resource):
 
 
 ####################################
-# List of Devices Response Methods #
+# List of devices Response Methods #
 ####################################
 # @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
 @API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
-@API.route('/Devices/')
+@API.route('/devices/')
 # @validate_access
 class DeviceList(Resource):
     """Shows a list of all devices, and lets you POST to add new tasks."""

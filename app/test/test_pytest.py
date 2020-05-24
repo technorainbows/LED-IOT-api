@@ -7,23 +7,23 @@ sys.path.append('../../LED-IOT-api')
 
 
 """Load client secrets."""
-with open('./CLIENT_SECRETS.json', 'r') as myfile:
+with open('./client_secrets.json', 'r') as myfile:
     DATA = myfile.read()
 DATA = json.loads(DATA)
 CLIENT_SECRETS = DATA['web']
 
 
 def test_authorization(client):
-    """Make a test call to /Devices/<device> with incorrect authorization headers."""
-    response = client.get("/Devices/device200",
+    """Make a test call to /devices/<device> with incorrect authorization headers."""
+    response = client.get("/devices/device200",
                           headers={"Authorization": 'Bearer please '})
 
     assert response.status_code == 403
 
 
 def test_get_device(client):
-    """Make a test call to /Devices/<device>."""
-    response = client.get("/Devices/device200",
+    """Make a test call to /devices/<device>."""
+    response = client.get("/devices/device200",
                           headers={"Authorization": 'Bearer ' + CLIENT_SECRETS['auth_token']})
 
     assert response.status_code == 200
@@ -38,8 +38,8 @@ def test_get_device(client):
 
 
 def test_delete_device(client):
-    """Make a test call to /Devices/<device>."""
-    response = client.delete("/Devices/device200",
+    """Make a test call to /devices/<device>."""
+    response = client.delete("/devices/device200",
                              headers={"Authorization": 'Bearer ' + CLIENT_SECRETS['auth_token']})
 
     assert response.status_code == 200
@@ -50,8 +50,8 @@ def test_delete_device(client):
 
 
 def test_put_device(client):
-    """Make a test put request to /Devices/<device>."""
-    response = client.put("/Devices/device50",
+    """Make a test put request to /devices/<device>."""
+    response = client.put("/devices/device50",
                           data=json.dumps({"brightness": "0"}),
                           content_type='application/json',
                           headers={"Authorization": 'Bearer ' + CLIENT_SECRETS['auth_token']})
@@ -69,8 +69,8 @@ def test_put_device(client):
 
 
 def test_post_devices(client):
-    """Make a test post to /Devices/."""
-    response = client.post("/Devices/",
+    """Make a test post to /devices/."""
+    response = client.post("/devices/",
                            data=json.dumps(
                                {"brightness": "100", "name": "New Device", "onState": "False"}),
                            content_type='application/json',
@@ -91,8 +91,8 @@ def test_check_health(client):
 
 
 def test_get_devicelist(client):
-    """Make a test call to /Devices/"""
-    response = client.get("/Devices/",
+    """Make a test call to /devices/"""
+    response = client.get("/devices/",
                           headers={"Authorization": 'Bearer ' + CLIENT_SECRETS['auth_token']})
 
     assert response.status_code == 200
@@ -100,7 +100,7 @@ def test_get_devicelist(client):
 
 def test_post_hb(client):
     """Make a test post to set heartbeat."""
-    response = client.post("/Devices/HB/device100",
+    response = client.post("/devices/HB/device100",
                            data=json.dumps(
                                {"heartbeat": "device100"}),
                            content_type='application/json',
@@ -111,8 +111,8 @@ def test_post_hb(client):
 
 
 def test_get_hblist(client):
-    """Make a test call to /Devices/HB"""
-    response = client.get("/Devices/HB/",
+    """Make a test call to /devices/HB"""
+    response = client.get("/devices/HB/",
                           headers={"Authorization": 'Bearer ' + CLIENT_SECRETS['auth_token']})
 
     assert response.status_code == 200
@@ -120,13 +120,13 @@ def test_get_hblist(client):
 
 def test_full_hb(client):
     """Test posting and then getting a device heartbeat."""
-    client.post("/Devices/HB/device100",
+    client.post("/devices/HB/device100",
                 data=json.dumps(
                     {"heartbeat": "device100"}),
                 content_type='application/json',
                 headers={"Authorization": 'Bearer ' + CLIENT_SECRETS['auth_token']})
 
-    response2 = client.get("/Devices/HB/device100",
+    response2 = client.get("/devices/HB/device100",
                            headers={'Authorization': 'Bearer ' + CLIENT_SECRETS['auth_token']})
 
     assert response2.status_code == 200
