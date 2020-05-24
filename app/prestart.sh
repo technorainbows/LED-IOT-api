@@ -3,32 +3,6 @@ set -e
 
 echo "########################## in docker-prestart file ###################"
 
-# cert_file=temp_cert.crt
-# key_file=testing.key
-
-# echo "######## Generate HTTPS certificates from environment ###########"
-# # touch /app/certificates/test.crt
-# mkdir -p /app/certificates
-
-# echo "#### create files #####"
-# # rm /app/certificates/$cert_file.crt
-# touch /app/certificates/$cert_file
-
-# # rm /app/certificates/$key_file
-# touch /app/certificates/$key_file
-
-# echo "# check variables exist"
-# echo $API_CERTIFICATE_B64   
-
-# echo $API_CERTIFICATE_B64 | base64 -di > /app/certificates/$cert_file
-# # mv /app/certificates/temp_cert.pem /app/certificates/testing.pem
-# cat /app/certificates/$cert_file
-
-# # cat /app/certificates/testing.key
-# echo $API_KEY_B64 | base64 -di > /app/certificates/$key_file
-# # mv /app/certificates/temp_key.key /app/certificates/testing.key
-# cat /app/certificates/$key_file
-
 ######## create client_secrets.json file from environment ###########
 cat > /app/client_secrets.json <<EOF
 {
@@ -52,12 +26,10 @@ cat > /app/client_secrets.json <<EOF
 EOF
 
 
-
-
 cat /app/client_secrets.json
 
 
-########### add https to nginx config ##############
+########### use if adding https to nginx config ##############
 # cat > /etc/nginx/conf.d/https.conf <<EOF
 
 # server {

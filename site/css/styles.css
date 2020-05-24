@@ -3,19 +3,12 @@
         color: white;
         background-color: #6DAEDB;
         font-family: Arial, sans-serif;
-        /* min-width: 300px; */
-        /* display: block; */
     }
     
     h4 {
         border-bottom-color: #6DAEDB;
-        /* border-width: 5px; */
         border-bottom-style: dotted;
-        /* border-style: solid; */
-        /* border-bottom: 5px; */
         border-bottom-width: 2px;
-        /* border-bottom: 80 */
-        /* border-color: black; */
     }
     /**************** TOGGLE SWITCH CUSTOMIZATION ***********************/
     /* The switch - the box around the slider */
@@ -124,7 +117,6 @@
         border-radius: 5px;
         background: #006989;
         cursor: pointer;
-        /* vertical-align: -webkit-baseline-middle; */
         margin-top: -4px;
         /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
         box-shadow: 1px 1px 1px #1B4353, 0px 0px 1px #173753;
@@ -134,16 +126,15 @@
         width: 100%;
         height: 12px;
         cursor: pointer;
-        /* box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d; */
         background: #6DAEDB;
         border-radius: 1.3px;
-        /* border: 0.2px solid #010101; */
     }
     
     input[type=range]:focus::-webkit-slider-runnable-track {
         background: #367ebd;
     }
     /***************** REUSABLE DISPLAY STUFF   *******************/
+    /* by default main-content is hidden */
     
     #main-content {
         display: none;
@@ -153,7 +144,6 @@
         margin-top: 10px;
         margin-bottom: 10px;
         width: 100%;
-        /* min-width: 400px; */
     }
     
     .look-disabled {
@@ -170,7 +160,6 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        /*position: absolute;*/
         z-index: 30;
         opacity: 80;
         background: rgba(39, 42, 43, 0.8);
@@ -188,7 +177,6 @@
     .btn-device {
         border-style: none;
         border-width: 1px;
-        /* color: black; */
         margin: 5px;
         background-color: #6DAEDB;
         padding: 5px;
@@ -212,60 +200,40 @@
     }
     
     .device-params {
-        /* margin-bottom: 10px; */
         padding: 5px;
         padding-bottom: 30px;
-        /* margin: 10px; */
-        /* vertical-align: middle; */
         background-color: #2892D7;
     }
     
     .label-current-device {
         border-style: none;
-        /* border-bottom-style: dotted; */
         font-weight: bold;
         font-size: 2em;
-        /* font-stretch: expanded; */
-        /* border-width: 4px; */
-        /* border-bottom-color: white; */
         color: white;
         margin-top: 5px;
-        /* margin-left: 10px; */
         align-content: middle;
-        /* padding-top: 15px; */
         background-color: #2892D7;
-        /* border-radius: 10px; */
-        /* width: 100% */
-        /*height:55px;*/
-        /* min-height: 60px; */
-        /* min-width: 270px; */
-        /* cursor: pointer; */
         vertical-align: top;
     }
     
     .label-current-device:hover {
-        /* background-color: #006989; */
         background-color: white;
         color: #173753;
         border-style: none;
         border-bottom-style: dotted;
         font-weight: bold;
         font-size: 2em;
-        /* font-stretch: expanded; */
-        /* border-width: 4px; */
         border-bottom-color: white;
     }
     
     .ui-label {
         border-style: none;
-        /* border-width: 5px; */
         border-color: #173753;
         color: white;
         padding: 7px;
         background-color: #006989;
         border-radius: 10px;
         margin: 7px;
-        /* margin-top: 5px; */
         text-align: center;
         vertical-align: middle;
         align-content: middle;
@@ -273,7 +241,6 @@
         -webkit-box-align: center;
         max-height: 40px;
         align-self: center;
-        /*maring-left:-5px;*/
     }
     
     #device-name {
@@ -289,14 +256,10 @@
     }
     
     #currentDevice {
-        /* margin-bottom: 10px; */
-        /* padding-bottom: 5px; */
         padding-top: 22px;
-        /* padding-top: -10px; */
         vertical-align: bottom;
         margin-left: 25px;
         margin-right: -5px;
-        /* color: #006989; */
         color: white;
     }
     
@@ -306,8 +269,6 @@
         border-color: white;
         background-color: white;
         color: #173753;
-        /*margin-left:5px;*/
-        /*margin-right:5px;*/
         margin: 5px;
         padding: 5px;
         border-radius: 10px;
@@ -315,17 +276,11 @@
     
     .label-heartbeat {
         border-style: none;
-        /*border-width:2px;*/
         border-color: white;
-        /* background-color: #006989; */
         background-color: #2892D7;
-        /* color: white; */
-        /* margin-left: 5px; */
-        /* margin-right: 5px; */
         padding: 10px;
         min-height: 60px;
         min-width: 270px;
-        /*border-radius: 10px;*/
     }
     /********** NAV-BAR STUFF ************/
     
@@ -338,28 +293,21 @@
     }
     
     #server-label {
-        /* margin-bottom: 5px; */
         vertical-align: bottom;
-        /* font-size: 1em; */
     }
     
     #github {
         width: 35%;
         margin-top: -5px;
-        /* vertical-align: top; */
-        /* scale: 10% */
     }
     
     #icon-connected {
         display: hidden;
-        /* padding-left: -5px; */
         margin-left: -15px;
-        /* padding-top: 2px; */
     }
     
     #icon-disconnected {
         display: hidden;
-        /* padding: 10px; */
         margin-left: -10px;
         margin-top: 2px;
     }
@@ -371,42 +319,24 @@
         .xs-hide {
             display: none;
             font-size: .7em;
-            /* background: purple; */
-            /* color: purple; */
         }
-        /* #server-label {
-            color: blue;
-        } */
         .navbar-brand {
             width: 50%;
-            /* font-size: 1em; */
             padding-right: 0px;
             max-width: 375px;
         }
-        /* .navbar {
-            width: 50%;
-        } */
         #icon-connected,
         #icon-disconnected {
-            /* width: 50%; */
-            /* padding-left: 5px; */
-            /* float: left; */
             scale: 80%;
-            /* padding-right: 0px; */
-            /* margin-right: -10px; */
-            /* vertical-align: middle; */
         }
         h4 {
-            /* scale: 80%; */
             font-size: 1.2em;
         }
         #github-span {
-            /* padding-left: -10px; */
             margin: -20px;
             margin-top: -10px;
             margin-left: -10px;
             padding-right: 10px;
-            /* margin-right: 10px; */
             align-self: center;
         }
         #github {
@@ -416,41 +346,13 @@
             align-self: center;
         }
     }
-    /* iphone x */
-    /*     
-    @media (max-width: 812px) {
-        #server-navbar {
-            margin-right: -20px;
-        }
-        #github-span {
-            margin-left: -60px;
-        }
-    } */
     /* Small devices (landscape phones, less than 768px) */
     
     @media (max-width: 767.98px) {
         #server-navbar {
-            /* grid-auto-rows: auto; */
-            /* scale: 80%; */
-            /* max-width: 5px; */
-            /* margin: -15px; */
             margin-right: -10px;
         }
         #github-span {
             margin-left: -40px;
-            /* padding-left: -10px; */
-            /* margin-right: -10px; */
-            /* scale: 80% */
-            /* padding-left: -10px; */
-            /* align-content: flex-end; */
         }
     }
-    /* .xs-hide {
-        display: none;
-        background: purple;
-        color: purple;
-    } */
-    /* footer {
-        padding-left: 10px;
-        padding-right: 10px;
-    } */

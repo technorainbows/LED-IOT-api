@@ -7,7 +7,6 @@ jobs:
           FLASK_CONFIG: testing
           REDIS_HOST: localhost
       - image: circleci/redis:5.0.7
-      # - image: koalaman/shellcheck-alpine:stable
     steps:
       - checkout
       - run:
@@ -35,7 +34,6 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout       
-      # - setup_remote_docker
       - run:
           name: Push Docker Repo
           command: |

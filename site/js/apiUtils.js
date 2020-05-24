@@ -1,20 +1,21 @@
+// TODO: Add "displayErrorOnPage" function
+// ?: Should postRequest, putRequest, and getRequest be merged to reduce code repetition?
+
 (function(global) {
 
     // set up namespace for our utility
     var apiUtils = {};
     accessToken = localStorage.getItem('accessToken');
     if (accessToken != null) {
-        console.log("got accesstoken in apiutils: ", accessToken);
-    } else { console.log("no accesstoken"); }
+        console.debug("got accesstoken in apiutils: ", accessToken);
+    } else { console.warn("no accesstoken"); }
+
     /*
-     * TODO: UPDATE - WILL NOT WORK ANYMORE
      * Sends POST request to URL+paramRoute with provided paramValue
      */
     apiUtils.postRequest = function(url, paramRoute, paramValue) {
-        // url = apiURL + "/" + state;
         url += ("/" + paramRoute + "/" + paramValue);
-        // url += paramRoute;
-        console.log('POST request: ' + url)
+        console.debug('POST request: ' + url)
         fetch(url, {
             "credentials": "omit",
             "headers": {
@@ -25,40 +26,37 @@
             },
             "referrer": url,
             "referrerPolicy": "no-referrer-when-downgrade",
-            // "body": JSON.stringify(paramValue),
             "method": "POST",
             "mode": "cors",
         })
 
         .then(function(response) {
-                // console.log(response);
+                console.debug(response);
                 return response.json();
 
             })
             .then(function(myJson) {
-                // console.log(JSON.stringify(myJson));
+                console.debug(JSON.stringify(myJson));
             });
 
     };
-
 
 
     /*
      * Sends PUT request to URL/deviceID with provided paramID and paramValue
      */
     apiUtils.putRequest = function(url, deviceID, paramID, paramValue) {
-        // url = apiURL + "/" + state;
         url += ("/" + deviceID);
-        console.log('PUT request: ' + url)
+        console.debug('PUT request: ' + url)
         var responseBody = {}
         if (paramID == 'name') {
-            console.log("param is name");
+            console.debug("param is name");
             responseBody[paramID] = paramValue;
         } else {
             responseBody[paramID] = JSON.stringify(paramValue);
         }
 
-        console.log('PUT body:' + JSON.stringify(responseBody))
+        console.debug('PUT body:' + JSON.stringify(responseBody))
         fetch(url, {
             "credentials": "omit",
             "headers": {
@@ -75,27 +73,20 @@
         })
 
         .then(function(response) {
-                // console.log(response);
+                console.debug("Response received - ", response);
                 return response.json();
 
             })
             .then(function(myJson) {
-                // console.log(JSON.stringify(myJson));
+                console.debug(JSON.stringify(myJson));
             });
 
     };
 
 
-
-
-
-
     apiUtils.getParam = async function(url, deviceID, parameter) {
-        // url = apiURL;
         url += ("/" + deviceID);
-        // url += paramRoute;
-        console.log('GET request:' + url)
-            // GET
+        console.debug('GET request:' + url)
         const rec = fetch(url, {
             "credentials": "omit",
             "headers": {
@@ -110,45 +101,29 @@
             "mode": "cors"
         });
 
-        // console.log('request started.');
-        // console.dir(rec);
-
         let res;
         try {
-            res = await rec; // if there is an error there will be a problem
+            res = await rec;
         } catch (error) {
             console.error("Error caught!")
             console.error(error);
-
-            // TODO: write "displayErrrorOnPage" function and call that here
-            // updateServerStatus(false);
-            // errorHandler();
+            updateServerStatus(false);
             return
         }
 
-
-        // console.log('response recieved');
-        // console.dir(res);
-
-        // if no error, then get response 
+        // if no error, then get response
         let device;
         try {
             device = await res.json();
-            console.log("device returned: ", device);
+            console.debug("device returned: ", device);
             let paramReq = device[1][parameter];
-            console.log("parameter = ", paramReq);
+            console.debug("parameter = ", paramReq);
             updateServerStatus(true);
-            // responseHandler(device);
-            console.log("")
+            console.debug("")
             return paramReq;
         } catch (error) {
-            console.error("Error caught!")
-            console.error(error);
-
-            // TODO: write "displayErrrorOnPage" function and call that here
-
-            // updateServerStatus(false);
-            // errorHandler();
+            console.error("Error caught!!! - ", error);
+            updateServerStatus(false);
             return
         }
 
@@ -184,36 +159,26 @@
             "mode": "cors"
         });
 
-        // console.log('request started.');
-        // console.dir(rec);
-
         let res;
         try {
-            res = await rec; // if there is an error there will be a problem
+            res = await rec;
         } catch (error) {
-            console.error("Error caught!")
-            console.error(error);
-
-            // TODO: write "displayErrrorOnPage" functoion and call that here
+            console.error("Error caught!!! - ", error);
             updateServerStatus(false);
             errorHandler();
             return
         }
 
-        // if no error, then get response 
+        // if no error, then get response
         let device = await res.json();
-        // console.log("device returned: ", device);
-        // let state = device[1]['onState'];
-        // console.log("state = ", state);
+
         updateServerStatus(true);
         responseHandler(device);
 
     };
 
-
-
     function updateServerStatus(status) {
-        // console.log("updating server status: " + status);
+        console.debug("updating server status: " + status);
 
         if (status) {
             $('#icon-disconnected').hide();
@@ -224,12 +189,7 @@
         }
     }
 
-
-
-
-
     // Expose utility to the global object
     global.$apiUtils = apiUtils;
-
 
 })(window);
