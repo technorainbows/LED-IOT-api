@@ -45,7 +45,7 @@ else:
 
 logging.getLogger().setLevel(LOG_LEVEL)
 
-with open('./CLIENT_SECRETS.json', 'r') as myfile:
+with open('./client_secrets.json', 'r') as myfile:
     DATA = myfile.read()
 
 # parse client secrets file
