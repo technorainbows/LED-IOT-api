@@ -164,11 +164,8 @@ class Redis(object):
                     "No redis password found, initializing without auth")
                 self.redis = redis.Redis(host=REDIS_HOST, port=6379, db=0)
         else:
-            try:
-                raise Exception
-            except Exception:
-                logging.error('REDIS_HOST not set.')
-                sys.exit("!!!Exiting. Please set REDIS_HOST in env & restart.")
+            logging.error('REDIS_HOST not set.')
+            sys.exit("!!!Exiting. Please set REDIS_HOST in env & restart.")
 
     def health(self):
         """Return a ping response from redis client."""
