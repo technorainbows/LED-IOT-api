@@ -3,7 +3,7 @@
 [![CircleCI](https://circleci.com/gh/technorainbows/LED-IOT-api.svg?style=svg)](https://circleci.com/gh/technorainbows/LED-IOT-api)
 [![LinkedIn][linkedin-shield]][linkedin-url]
 <!-- [![MIT License][license-shield]][license-url] -->
-A demo web app for controlling networked LED devices.
+A demo [web app](http://lights.ashleynewton.net) for controlling networked LED devices.
 
 <!-- TABLE OF CONTENTS -->
 <!-- ## Table of Contents
@@ -56,6 +56,9 @@ npm install npm@latest -g
 git clone https://github.com/technorainbows/LED-IOT-api.git
 ``` -->
 
+<!-- ### Local Installation
+1. Clone repository
+2.  -->
 
 
 ### Usage
