@@ -29,26 +29,30 @@ $('#server-navbar').hide();
 /* If token in URL, a user has just logged in, so extract it. If not, 
  * check if user is already logged in and get saved tokens, otherwise direct user to log in. */
 if (oktaSignIn.hasTokensInUrl()) {
-    console.info("has token in url. claims: ", res.claims);
+    // console.info("has token in url. claims: ", res.claims);
     oktaSignIn.authClient.token.parseFromUrl().then(function success(tokens) {
             // Save the tokens for later use, e.g. if the page gets refreshed:
             // Add the token to tokenManager to automatically renew the token when needed
 
             tokens.forEach(token => {
                 if (token.idToken) {
-                    oktaSignIn.authClient.tokenManager.add('idToken', token);
+                    oktaSignIn.authClient.tokenManager.add(
+                        'idToken', token);
                 }
                 if (token.accessToken) {
-                    oktaSignIn.authClient.tokenManager.add('accessToken', token);
+                    oktaSignIn.authClient.tokenManager.add(
+                        'accessToken', token);
                     localStorage.setItem('accessToken', token.accessToken);
-                    console.info("setting token in storage: ", localStorage.getItem('accessToken'));
+                    console.info("setting token in storage: ",
+                        localStorage.getItem('accessToken'));
 
 
                 }
             });
 
             // Say hello to the person who just signed in:
-            oktaSignIn.authClient.tokenManager.get('idToken').then(function(idToken) {
+            oktaSignIn.authClient.tokenManager.get('idToken').then(function(
+                idToken) {
                 console.info('Hello, ' + idToken.claims.email);
                 $('#main-content').show();
 
