@@ -5,11 +5,12 @@
  ********************************************************************************************************************/
 
 #include "Arduino_DebugUtils.h"
-#include <FastLED.h>
+// #define FASTLED_INTERRUPT_RETRY_COUNT 1
+
 #include "credentials.h" // wifi network credentials and authorization token stored in separate file
 #include "sha1.h"
 
-#define ESP32 // define board here - either ESP32 or ESP886
+#define ESP32 // define board here - either ESP32 or ESP8266
 
 #ifdef ESP32
 #include <WiFiMulti.h>
@@ -54,8 +55,9 @@ String controllerURL = IPaddress + "site/index.html";
 String DEVICE_ID;
 
 //RMT is an ESP hardware feature that offloads stuff like PWM and led strip protocol, it's rad
-//#define FASTLED_RMT_CORE_DRIVER true
-#define FASTLED_RMT_MAX_CHANNELS 1
+#define FASTLED_RMT_CORE_DRIVER true
+#define FASTLED_RMT_MAX_CHANNELS 2
+#include <FastLED.h>
 FASTLED_USING_NAMESPACE
 
 //#define LED_TYPE    WS2812B
@@ -66,24 +68,25 @@ FASTLED_USING_NAMESPACE
 String hostname = "Trianglez";
 #define COLOR_ORDER GRB //pixels
 #define COLOR_CORRECT TypicalLEDStrip
-#define NUM_LEDS 50
+#define NUM_LEDS 200
 #define MILLI_AMPS 1000
 #define BRIGHTNESS 100
-#define FRAMES_PER_SECOND 120
+#define FRAMES_PER_SECOND 400
 //#endif
 
 CRGB leds[NUM_LEDS];
 
-uint8_t speed = 7;
+uint8_t width = 5; // higher number = narrower rainbow
 
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+uint8_t speed = 1;
 
 boolean connectioWasAlive = true;
 String lastState = "false";
 String onState = "false";
 int brightVal = BRIGHTNESS;
 
-#define NUM_SECONDS_TO_WAIT 5
+#define NUM_SECONDS_TO_WAIT 2
 
 /****************************************************************************************
    setupAOTA: Set up wireless updating if using ESP32
@@ -283,7 +286,7 @@ void monitorWiFi()
       FastLED.show();
     }
     Serial.print(".");
-    delay(100);
+    delay(10);
   }
   else if (connectioWasAlive == false)
   {
@@ -301,12 +304,12 @@ void monitorWiFi()
 
 void loop()
 {
+
+  ArduinoOTA.handle();
+  // }
   EVERY_N_MILLISECONDS(500)
   {
     monitorWiFi();
-
-    ArduinoOTA.handle();
-
     // use HTTP or HTTPS depending on SERVER_SECURE state
     switch (SERVER_SECURE)
     {
@@ -323,11 +326,14 @@ void loop()
   }
 
   FastLED.setBrightness(brightVal);
-  FastLED.show();
   updateLEDS();
+  Serial.println("fastLED show");
+  FastLED.show();
 
   // insert a delay to keep the framerate modest
   FastLED.delay(1000 / FRAMES_PER_SECOND);
+  Serial.println("FastLED delay over");
+  // EVERY_N_MILLISECONDS(5) { updateLEDS(); }
 }
 
 /***************************************************************************
@@ -589,22 +595,26 @@ void updateLEDS()
 {
   Serial.println("updating LEDS");
 
-  if (onState == "false")
+  // if (onState == "false")
+
+  if (onState == "true")
+  {
+    Debug.print(DBG_VERBOSE, "updateLEDS: onState is true");
+    // fill_rainbow(leds, NUM_LEDS, gHue, width);
+    // EVERY_N_MILLISECONDS(5)
+    // {
+    Serial.println("updateLEDS: cycling rainbow hue");
+    gHue += speed; //  cycle the "base color" through the rainbow
+    Serial.print("gHue = ");
+    Serial.println(gHue);
+    fill_rainbow(leds, NUM_LEDS, gHue, width);
+    // }
+    FastLED.show();
+  }
+  else
   {
     fill_solid(leds, NUM_LEDS, CRGB::Black);
     Debug.print(DBG_VERBOSE, "updateLEDS: onstate is false");
-    FastLED.show();
-  }
-
-  else
-  {
-    Debug.print(DBG_VERBOSE, "updateLEDS: onState is true");
-    fill_rainbow(leds, NUM_LEDS, gHue, speed);
-    EVERY_N_MILLISECONDS(5)
-    {
-      Serial.println("updateLEDS: cycling rainbow hue");
-      gHue++; // slowly cycle the "base color" through the rainbow
-    }
     FastLED.show();
   }
   // FastLED.show();
