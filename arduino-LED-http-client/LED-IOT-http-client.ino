@@ -5,11 +5,18 @@
  ********************************************************************************************************************/
 
 #include "Arduino_DebugUtils.h"
-// #define FASTLED_INTERRUPT_RETRY_COUNT 1
-
 #include "credentials.h" // wifi network credentials and authorization token stored in separate file
 #include "sha1.h"
 
+// For OLED display
+#include "SSD1306Wire.h"         // legacy include: `#include "SSD1306.h"` //OLED screen
+SSD1306Wire display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board dispplay
+
+#include <SimpleHOTP.h>
+
+/****************************************************************
+ * Board-specific definitions
+ * *************************************************************/
 #define ESP32 // define board here - either ESP32 or ESP8266
 
 #ifdef ESP32
@@ -23,12 +30,7 @@ HTTPClient http;
 #include <WiFiClientSecure.h>
 #endif
 
-// For OLED display
-#include "SSD1306Wire.h"         // legacy include: `#include "SSD1306.h"` //OLED screen
-SSD1306Wire display(0x3c, 5, 4); //wifi bluetooth battery oled 18650 board dispplay
-
-#include <SimpleHOTP.h>
-
+// TODO: ESP8266 not presently useable -- need to update
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
@@ -37,8 +39,9 @@ ESP8266WiFiMulti wifiMulti;
 #include <ArduinoHttpClient.h>
 #endif
 
-#define NETWORK_VANNEST
-
+/************************************************ 
+ * API Settings / definitions
+************************************************/
 // #define DEVELOPMENT // enable this if developing locally
 
 #ifdef DEVELOPMENT
@@ -54,16 +57,33 @@ String controllerURL = IPaddress + "site/index.html";
 
 String DEVICE_ID;
 
+/**************************************************************
+ * FastLED definitions
+ * ***********************************************************/
+
 //RMT is an ESP hardware feature that offloads stuff like PWM and led strip protocol, it's rad
 #define FASTLED_RMT_CORE_DRIVER true
-#define FASTLED_RMT_MAX_CHANNELS 2
+// #define FASTLED_RMT_BUILTIN_DRIVER true
+// #define FASTLED_RMT_MAX_CHANNELS 2
+#define FASTLED_RMT_SHOW_TIMER true
+#define FASTLED_ESP32_FLASH_LOCK 1
+// #define FASTLED_INTERRUPT_RETRY_COUNT 1
 #include <FastLED.h>
 FASTLED_USING_NAMESPACE
 
 //#define LED_TYPE    WS2812B
 #define LED_TYPE WS2811
 
-//#ifdef DEV_LIGHTCONTROL_TRIANGLE
+/*******************************************************
+ * Specific device settings:
+ * Toggle based on device to be programmed (only one)
+ * ****************************************************/
+
+#define DEV_NEW_ESP32_OLED
+// #define DEV_TRIANGLE
+// #define DEV_PIXELS
+
+#ifdef DEV_TRIANGLE
 #define DATA_PIN 33
 String hostname = "Trianglez";
 #define COLOR_ORDER GRB //pixels
@@ -72,21 +92,45 @@ String hostname = "Trianglez";
 #define MILLI_AMPS 1000
 #define BRIGHTNESS 100
 #define FRAMES_PER_SECOND 400
-//#endif
+#endif
 
-CRGB leds[NUM_LEDS];
+#ifdef DEV_PIXELS
+#define DATA_PIN 33
+String hostname = "Pixels";
+#define COLOR_ORDER GRB //pixels
+#define COLOR_CORRECT TypicalLEDStrip
+#define NUM_LEDS 50
+#define MILLI_AMPS 1000
+#define BRIGHTNESS 100
+#define FRAMES_PER_SECOND 400
+#endif
 
-uint8_t width = 5; // higher number = narrower rainbow
+#ifdef DEV_NEW_ESP32_OLED
+#define DATA_PIN 12
+String hostname = "DEV_NEW_ESP32_OLED";
+#define COLOR_ORDER GRB //pixels
+#define COLOR_CORRECT TypicalLEDStrip
+#define NUM_LEDS 200
+#define MILLI_AMPS 1000
+#define BRIGHTNESS 100
+#define FRAMES_PER_SECOND 400
+#endif
 
-uint8_t gHue = 0; // rotating "base color" used by many of the patterns
-uint8_t speed = 1;
-
-boolean connectioWasAlive = true;
+/********** General LED settings **********/
+int brightVal = BRIGHTNESS;
 String lastState = "false";
 String onState = "false";
-int brightVal = BRIGHTNESS;
+CRGB leds[NUM_LEDS];
 
-#define NUM_SECONDS_TO_WAIT 2
+/******** rainbow pattern settings ********/
+uint8_t width = 5; // higher number = narrower rainbow
+uint8_t gHue = 0;  // rotating "base color" used by many of the patterns
+uint8_t speed = 2;
+
+// wifi
+#define NETWORK_VANNEST
+boolean connectioWasAlive = true;
+// #define NUM_SECONDS_TO_WAIT 2
 
 /****************************************************************************************
    setupAOTA: Set up wireless updating if using ESP32
@@ -131,7 +175,7 @@ void setupAOTA()
   ArduinoOTA.begin();
 }
 
-/* ****************************************************************************************
+/*****************************************************************************************
     setDeviceID: Generates a unique device ID based on performing SHA1 hashing of device's
                  MAC address.Returns this ID as a string variable.
  *****************************************************************************************/
@@ -304,12 +348,16 @@ void monitorWiFi()
 
 void loop()
 {
-
-  ArduinoOTA.handle();
-  // }
-  EVERY_N_MILLISECONDS(500)
+  EVERY_N_SECONDS(5)
   {
+    ArduinoOTA.handle();
+
     monitorWiFi();
+  }
+
+  EVERY_N_MILLISECONDS(200)
+  {
+
     // use HTTP or HTTPS depending on SERVER_SECURE state
     switch (SERVER_SECURE)
     {
@@ -324,15 +372,16 @@ void loop()
       break;
     }
   }
-
-  FastLED.setBrightness(brightVal);
-  updateLEDS();
-  Serial.println("fastLED show");
-  FastLED.show();
-
+  EVERY_N_MILLISECONDS(10)
+  {
+    FastLED.setBrightness(brightVal);
+    updateLEDS();
+    Serial.println("fastLED show");
+    FastLED.show();
+  }
   // insert a delay to keep the framerate modest
-  FastLED.delay(1000 / FRAMES_PER_SECOND);
-  Serial.println("FastLED delay over");
+  // FastLED.delay(1000 / FRAMES_PER_SECOND);
+  // Serial.println("FastLED delay over");
   // EVERY_N_MILLISECONDS(5) { updateLEDS(); }
 }
 
