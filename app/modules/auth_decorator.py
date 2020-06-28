@@ -82,22 +82,27 @@ def validate_access(func):
                         return func(*args, **kwargs)
                     else:
                         logging.warn("user not allowed")
-                        return make_response({'error': 'user not allowed'}, 403)
+                        return make_response({'message': 'user not allowed'}, 403)
                 logging.error("claims not validated")
 
             except ValueError:
                 logging.error("***********unable to decode header")
-                return {'ValueError': 'unable to decode header'}, 401
+                raise
+                # return {'ValueError': 'unable to decode header'}, 401
 
             except Exception as e:
                 logging.error("Invalid token: %s", str(e))
-                return {'error': 'invalid token'}, 403
+                raise
+                # return {'error': 'invalid token'}, 403
 
             # if we made it this far, we can continue with the main function
         else:
             logging.info("invalid token or no token provided")
-            response_body = {'error': 'invalid token/not authorized'}
+            response_body = {
+                'message': 'please log-in/provide authentication token'}
+            # return jwt.exceptions.InvalidTokenError
             return response_body, 401
+            # raise
         logging.info("access_token validated: %s", str(access_token))
-
+        return func(*args, **kwargs)
     return wrapper_validate_access
