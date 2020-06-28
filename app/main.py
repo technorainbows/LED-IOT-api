@@ -7,12 +7,13 @@ import logging
 import logging.config
 import json
 from flask_cors import CORS
-from flask import Flask, jsonify, request
-from flask_restplus import Api, Resource, fields
+from flask import Flask, jsonify, request, make_response
+from flask_restplus import Api, Resource, fields, abort
 import redis
-from redis.exceptions import WatchError
+from redis.exceptions import WatchError, ConnectionError, TimeoutError
 from modules.auth_decorator import validate_access
-
+import traceback
+from werkzeug.exceptions import HTTPException, NotFound
 
 # Set up simple logging.
 logging.basicConfig(
@@ -61,7 +62,6 @@ else:
 with open('./client_secrets.json', 'r') as myfile:
     DATA = myfile.read()
 DATA = json.loads(DATA)
-# logging.debug(data)
 CLIENT_SECRETS = DATA['web']
 
 
@@ -85,7 +85,6 @@ class Server(object):
         }
 
         self.api = Api(self.app,
-                       version='0.5',
                        title='LED API',
                        description='A simple LED IOT API',
                        host='api.ashleynewton.net',
@@ -108,7 +107,7 @@ class Server(object):
 server = Server()
 APP = server.app
 API = server.api
-CORS(APP)
+# CORS(APP)
 
 # Default device settings.
 DEFAULT = {
@@ -146,26 +145,34 @@ HEARTBEAT = API.model('Heartbeat', {
     'heartbeat': fields.String(required=False, description='Device heartbeat')
 })
 
+REDIS_LOCAL = True  # toggle this to use local redis client for development purposes
+
 
 class Redis(object):
     """Class for manipulating redis client."""
 
     def __init__(self):
         """Initialize Redis Object."""
-        if 'REDIS_HOST' in os.environ:
-            REDIS_HOST = os.environ['REDIS_HOST']
-            if 'REDIS_PASSWORD' in os.environ:
-                REDIS_PASSWORD = os.environ['REDIS_PASSWORD']
-                logging.info("Redis password found %s", REDIS_PASSWORD)
-                self.redis = redis.Redis(
-                    host=REDIS_HOST, port=6379, db=0, password=REDIS_PASSWORD)
-            else:
-                logging.info(
-                    "No redis password found, initializing without auth")
-                self.redis = redis.Redis(host=REDIS_HOST, port=6379, db=0)
+        if REDIS_LOCAL:
+            REDIS_HOST = '127.0.0.1'
+            self.redis = redis.Redis(
+                host=REDIS_HOST, port=6379, db=0)
+            logging.warning("Using local development REDIS")
         else:
-            logging.error('REDIS_HOST not set.')
-            sys.exit("!!!Exiting. Please set REDIS_HOST in env & restart.")
+            if 'REDIS_HOST' in os.environ:
+                REDIS_HOST = os.environ['REDIS_HOST']
+                if 'REDIS_PASSWORD' in os.environ:
+                    REDIS_PASSWORD = os.environ['REDIS_PASSWORD']
+                    logging.info("Redis password found %s", REDIS_PASSWORD)
+                    self.redis = redis.Redis(
+                        host=REDIS_HOST, port=6379, db=0, password=REDIS_PASSWORD)
+                else:
+                    logging.info(
+                        "No redis password found, initializing without auth")
+                    self.redis = redis.Redis(host=REDIS_HOST, port=6379, db=0)
+            else:
+                logging.error('REDIS_HOST not set.')
+                sys.exit("!!!Exiting. Please set REDISi s_HOST in env & restart.")
 
     def health(self):
         """Return a ping response from redis client."""
@@ -186,7 +193,6 @@ class Redis(object):
                         break
                     else:
                         device = pipe.hgetall(key)
-                        # Initialising empty dictionary
                         new_dict = {}
 
                         # Convert dictionary items from bytes to strings
@@ -199,13 +205,6 @@ class Redis(object):
                 except WatchError:
                     logging.warning("get: watcherror, trying again")
                     continue
-                except redis.ConnectionError:
-                    logging.exception("Connection error")
-                    return "Error: error connectiong to Redis host"
-
-                except Exception:
-                    logging.exception("Unexpected error")
-
         return device
 
     def set(self, key, field, value):
@@ -232,10 +231,6 @@ class Redis(object):
                 except WatchError:
                     logging.warning("set: watcherror, trying again")
                     continue
-                except ConnectionError:
-                    logging.exception("Connection error")
-                except Exception:
-                    logging.exception("Unexpected error occured")
 
             # Initialising empty dictionary
             new_dict = {}
@@ -250,41 +245,32 @@ class Redis(object):
 
     def delete(self, key):
         """Delete a key from Redis client."""
-        try:
-            response = self.redis.delete(key)
-            logging.info("response: %s", str(response))
+        response = self.redis.delete(key)
+        logging.info("REDIS_DELETE: response: %s", str(response))
 
-        except ConnectionError:
-            logging.exception("Connection error")
-        except Exception:
-            logging.exception("Unexpected error occured")
-        return response
+        if response == 0:
+            logging.debug("REDIS_DELETE: returning notfound")
+            raise NotFound("Device wasn't here. Ooops.")
+        logging.debug("REDIS_DELETE: returning 1")
+        return 1  # return 1 (true) if delete was successful
 
     def keys(self, param):
         """Return list of all keys matching parameter."""
         keys = []
-        try:
-            for key in self.redis.scan_iter(match=param+"*"):
-                logging.debug("key: %s", key)
-                keys.append(key.decode())
+        results = self.redis.scan_iter(match=param + "*")
+        logging.debug("KEYS: results = %s", str(results))
 
-        except ConnectionError:
-            logging.exception("Connection error")
-        except Exception:
-            logging.exception("Unexpected error occured")
+        for key in results:
+            logging.debug("key: %s", key)
+            keys.append(key.decode())
+        logging.debug("KEYS: returning keys: %s", keys)
         return keys
 
     def set_hb(self, heartbeat):
         """Set heartbeat key in redis that expires in provided time."""
-        try:
-            response = self.redis.setex(
-                heartbeat, HB_EXP, "none")  # name, time, value
-            logging.info("heartbeat set")
-
-        except ConnectionError:
-            logging.exception("Connection error")
-        except Exception:
-            logging.exception("Unexpected error")
+        response = self.redis.setex(
+            heartbeat, HB_EXP, "none")  # name, time, value
+        logging.info("SET_HB: heartbeat set")
         return response
 
 
@@ -296,56 +282,62 @@ REDIS = Redis()
 #   Heartbeat Methods   #
 #########################
 # @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
-@API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
+@API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 502: 'Server error'})
 @API.route('/devices/hb/<string:device_id>', methods=['GET', 'POST'])
 class Heartbeat(Resource):
     """Update and check on a given device's heartbeat/online status."""
 
     @validate_access
-    @API.response(200, 'Success')
+    @API.response(200, 'Found device', LIST_OF_DEVICES['id'])
     def get(self, device_id):
         """Check if a given heartbeat exists."""
         logging.debug("checking device HB")
         heartbeat = "hb_" + device_id
-        response = REDIS.keys(heartbeat)
-        logging.debug("HB get response = %s", str(response))
-        if response == []:
-            logging.error('Error, unable to get device.')
-            return ('Error, unable to get device', 500)
+        try:
+            response = REDIS.keys(heartbeat)
+            logging.debug("HB get response = %s", str(response))
+            return jsonify(response)
+        except Exception as error:
+            logging.error('Error getting keys')
+            raise error
 
-        return jsonify(response)
-
-    @API.response(201, 'Success')
+    @API.response(201, 'Successly set heartbeat for device')
     @API.expect(HEARTBEAT, validate=False)
     @validate_access
     def post(self, device_id):
         """Set a heartbeat."""
         heartbeat = "hb_" + device_id
-        response = REDIS.set_hb(heartbeat)
-        logging.info("HB post response = %s", response)
-        payload = API.payload
-        logging.info("payload = %s", payload)
-        if response:
-            logging.info("heartbeat set: %s", response)
-            return jsonify(response)
+        try:
+            response = REDIS.set_hb(heartbeat)
+            logging.info("HB post response = %s", response)
+            payload = API.payload
+            logging.info("payload = %s", payload)
+            if response:
+                logging.info("heartbeat set: %s", response)
+                return make_response(jsonify({'message': 'Heartbeat set'}), 201)
 
-        logging.error("Error, failed to set heartbeat")
-        return "Error, failed to set heartbeat.", 500
+        except Exception as error:
+            logging.error("error setting heartbeat: %s", type(error))
+            raise error
 
 
-@API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
+@API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 502: 'Server error'})
 @API.route('/devices/hb/', methods=['GET'])
 class Heartbeats(Resource):
     """Monitor which devices are online or not via heartbeat."""
 
-    @API.response(200, 'Success')
+    @API.response(200, 'Successly retreived device keys')
     @validate_access
     def get(self):
         """Return a list of all heartbeats."""
         logging.debug("Getting all HB keys")
-        keys = REDIS.keys("hb")
-        logging.debug("*******HB keys retrieved: %s", keys)
-        return jsonify(keys)
+        try:
+            keys = REDIS.keys("hb")
+            logging.debug("*******HB keys retrieved: %s", keys)
+            return jsonify(keys)
+        except Exception as error:
+            logging.error("HB_GET: ERROR getting keys")
+            raise error
 
 
 ##################################
@@ -354,32 +346,38 @@ class Heartbeats(Resource):
 # TODO: add list of device_ids from redis to check if decive there
 @API.route('/devices/<string:device_id>',
            methods=['GET', 'POST', 'PUT', 'DELETE'])
-@API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'},
+@API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 502: 'Server error'},
          params={'device_id': 'The Device ID'})
-@API.doc(description='device_id should be {}'.format(' '.join(REDIS.keys("device_"))))
+# @API.doc(description='device_id should be {}'.format(' '.join(REDIS.keys("device_"))))
 # @API.doc(params={'Authorization': {'in': 'header', 'description': 'Bearer ${api key}'}})
 class Device(Resource):
-    """Show a device's properties and let user delete or change properties."""
+    """Show a device's properties and let user delete `or change properties."""
 
     @validate_access
     @API.response(200, 'Success: device retrieved.', DEVICE)
     def get(self, device_id):
         """Fetch a given resource."""
-        redis_get = REDIS.get(device_id)
-        return jsonify(device_id, redis_get)
+        try:
+            redis_get = REDIS.get(device_id)
+            return jsonify(device_id, redis_get)
+        except Exception as error:
+            logging.error("Error encountered: %s", error)
+            raise error
 
-    @API.doc(responses={200: 'Device deleted'})
+    @API.doc(responses={200: 'Device deleted', 404: 'Device not found'})
     @validate_access
     def delete(self, device_id):
         """Delete a given resource."""
-        response = REDIS.delete(device_id)
-        logging.info("REDIS delete response: %s", str(response))
-        if response:
-            logging.info("Device deleted: %s", device_id)
-            return jsonify('Device deleted', 200)
+        logging.info("About to delete this thing... %s", device_id)
+        try:
+            response = REDIS.delete(device_id)
+            logging.info("REDIS delete response: %s", str(response))
+            logging.info("Success: device deleted: %s", device_id)
+            return jsonify({'message': 'Successly deleted device'})
 
-        logging.error('Error, device not found: %s', device_id)
-        return jsonify('Error: device not found', 404)
+        except Exception as error:
+            logging.error("DELETE: error encountered")
+            raise error
 
     @API.expect(DEVICE, validate=True)
     @API.response(201, 'Success: device updated.', DEVICE)
@@ -389,15 +387,23 @@ class Device(Resource):
         logging.info("PUT request received")
         for field in DEVICE:
             if field in request.json:
-                REDIS.set(device_id, field, request.json.get(field))
-
-        return jsonify(device_id, REDIS.get(device_id), 201)
-
+                try:
+                    REDIS.set(device_id, field, request.json.get(field))
+                except Exception as error:
+                    logging.error("REDIS.set error: %s",
+                                  traceback.format_exception_only(type(error), error))
+                    raise error
+        try:
+            return make_response(jsonify(device_id, REDIS.get(device_id)), 201)
+        except Exception as error:
+            logging.error("ERROR ENCOUNTERED: %s",
+                          traceback.format_exception_only(type(error), error))
+            raise error
 
 ####################################
 # List of devices Response Methods #
 ####################################
-@API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 500: 'Server error'})
+@API.doc(responses={401: 'Unauthorized', 404: 'Incorrect request', 502: 'Server error'})
 @API.route('/devices/')
 class DeviceList(Resource):
     """Shows a list of all devices, and lets you POST to add new tasks."""
@@ -407,9 +413,14 @@ class DeviceList(Resource):
     @API.response(200, 'Success', LIST_OF_DEVICES)
     def get(self):
         """Return a list of all devices and their properties."""
-        devices = REDIS.keys("device_")
-        logging.debug("returning Device List: %s", str(devices))
-        return jsonify(devices, 200)
+        try:
+            devices = REDIS.keys("device_")
+            logging.debug("returning Device List: %s", str(devices))
+            return make_response(jsonify(devices), 201)
+        except Exception as error:
+            logging.error("DEVICELIST/GET: %s",
+                          traceback.format_exception_only(type(error), error))
+            raise error
 
     @validate_access
     @API.expect(DEVICE, validate=True)
@@ -423,46 +434,51 @@ class DeviceList(Resource):
         # Update a given resource's field with new property value received.
         for field in DEVICE:
             if field in request.json:
-                REDIS.set(device_id, field, request.json.get(field))
+                try:
+                    REDIS.set(device_id, field, request.json.get(field))
+                except Exception as error:
+                    logging.error("Redis SET error")
+                    raise error
+        try:
+            return make_response(jsonify(device_id, REDIS.get(device_id)), 201)
+        except Exception as error:
+            logging.error("error getting device after creating")
+            raise error
 
-        return jsonify(device_id, REDIS.get(device_id), 201)
 
-
-@API.doc(responses={200: 'Server healthy', 500: 'Server error'})
+@API.doc(responses={200: 'Server healthy', 502: 'Server error'})
 @API.route('/health', methods=['GET'])
 class Health(Resource):
     """Health check endpoint."""
 
     def get(self):
         """Return health status of redis client."""
-        redis_healthy = REDIS.health()
+        try:
+            redis_healthy = REDIS.health()
 
-        if redis_healthy is True:
-            logging.info('Health: healthy')
-            return 200
+            if redis_healthy is True:
+                logging.info('Health: healthy')
+                return 200
 
-        logging.error('Health: %s', redis_healthy)
-        return {'Health': redis_healthy}, 500
-
-
-@APP.errorhandler(404)
-def not_found(error_rec):
-    """Return not found error message."""
-    logging.error('Error: %s', error_rec)
-    return (jsonify({'error_handler': str(error_rec)}), 404)
+            logging.error('Health: %s', redis_healthy)
+            return {'Health': redis_healthy}, 502
+        except Exception as error:
+            logging.error("GET Error encountered")
+            raise error
 
 
-@APP.errorhandler(500)
-def server_error(error_rec):
+@APP.errorhandler(ConnectionError)
+@API.errorhandler(ConnectionError)
+def connection_error(error_rec):
     """Return server error message."""
-    logging.error('Error: %s', error_rec)
-    return (jsonify({'server error': str(error_rec)}), 500)
+    logging.error('ERROR-HANDLER: ConnectionError')
+    return (jsonify({'message': 'ConnectionError'}), 502)
 
 
-@APP.errorhandler(403)
+@APP.errorhandler(401)
 def auth_error(error_rec):
     """Return server error message."""
-    logging.error('Authentication Error: %s', error_rec)
+    logging.error('ERROR-HANDLER: Authentication Error: %s', error_rec)
     return (jsonify({'Authentication error': str(error_rec)}), 403)
 
 
