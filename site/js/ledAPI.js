@@ -1,7 +1,7 @@
 (function(global) {
 
     var apiUrl = 'https://api.ashleynewton.net/devices'
-
+        // var apiUrl = 'http://localhost:5000/devices' // toggle for local development
     var deviceID = ''; // current device
     var devices = []; // devices online
     var lastDevice = '';
@@ -13,7 +13,8 @@
     function checkConnection() {
 
         // Get list of devices online/available
-        $apiUtils.getData(apiUrl + "/hb", "", updateDeviceList, disableMainContent);
+        $apiUtils.getData(apiUrl + "/hb", "", updateDeviceList,
+            disableMainContent);
 
         setTimeout(checkConnection, 5000);
     }
@@ -57,11 +58,13 @@
             switch (switchState) {
                 case true:
                     console.debug("PUT request: onState - ON");
-                    $apiUtils.putRequest(apiUrl, deviceID, 'onState', true);
+                    $apiUtils.putRequest(apiUrl, deviceID,
+                        'onState', true);
                     break;
                 case false:
                     console.debug("PUT request: onState - OFF");
-                    $apiUtils.putRequest(apiUrl, deviceID, 'onState', false);
+                    $apiUtils.putRequest(apiUrl, deviceID,
+                        'onState', false);
                     break;
             }
 
@@ -71,13 +74,15 @@
         $('input[name=slider-brightness]').change('mousestop', function() {
             var value = Number(this.value);
             console.debug("PUT request brightness value: ", value);
-            $apiUtils.putRequest(apiUrl, deviceID, 'brightness', value);
+            $apiUtils.putRequest(apiUrl, deviceID, 'brightness',
+                value);
         });
 
         /* display changed slider value to user */
         $(document).on('input change', '#slider-brightness', function() {
             var sValue = $(this).val();
-            console.debug("slider-brightness value changed: " + sValue);
+            console.debug("slider-brightness value changed: " +
+                sValue);
             $('#brightness-value').html(sValue);
 
         });
@@ -94,25 +99,32 @@
 
             /* update currentDeviceLabel shown to user */
             $('#currentDeviceLabel').html(this.value);
-            document.getElementById('currentDeviceLabel').value = this.value;
+            document.getElementById('currentDeviceLabel').value =
+                this.value;
             console.info("deviceID set to: ", deviceID);
             $('#currentDeviceLabel').show();
 
 
             /* If selected device is 'new', get device settings from server and update page */
             if (lastDevice != deviceID) {
-                console.debug("lastDevice != deviceID ---> " + lastDevice + " != " + deviceID);
+                console.debug("lastDevice != deviceID ---> " +
+                    lastDevice + " != " + deviceID);
 
-                $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
+                $apiUtils.getData(apiUrl, deviceID,
+                    updateMainContent, disableMainContent);
                 $('#brightness').toggleClass('look-disabled', false);
 
-                if (lastDevice && document.getElementById(lastDevice).classList.contains('btn-current')) {
-                    document.getElementById(lastDevice).classList.remove('btn-current');
+                if (lastDevice && document.getElementById(
+                        lastDevice).classList.contains(
+                        'btn-current')) {
+                    document.getElementById(lastDevice).classList.remove(
+                        'btn-current');
                 }
             }
 
             console.debug("setting device button to current");
-            document.getElementById(deviceID).classList.add('btn-current');
+            document.getElementById(deviceID).classList.add(
+                'btn-current');
         });
 
 
@@ -130,15 +142,19 @@
             $apiUtils.putRequest(apiUrl, deviceID, 'name', input);
 
             /*  update displayed name for device button */
-            $('#currentDeviceLabel').html(input.slice(0, nameMaxLength));
-            document.getElementById(deviceID).value = input.slice(0, nameMaxLength);
+            $('#currentDeviceLabel').html(input.slice(0,
+                nameMaxLength));
+            document.getElementById(deviceID).value = input.slice(0,
+                nameMaxLength);
 
         });
 
     }
 
     function updateOnButton(device) {
-        console.debug("updateOnButton: state received: ", device[1]['onState']);
+        console.debug("updateOnButton: state received: ", device[1][
+            'onState'
+        ]);
         switch (device[1]['onState']) {
             case "true":
                 $("#onSwitch").prop("checked", true);
@@ -164,7 +180,8 @@
 
         /* Identify old devices no longer online and remove */
         for (var i in devices) {
-            if (newDevices.indexOf(devices[i]) === -1) remove.push(devices[i]);
+            if (newDevices.indexOf(devices[i]) === -1) remove.push(devices[
+                i]);
         }
         remove.forEach(removeDevice);
 
@@ -174,10 +191,12 @@
             $("#parameter-UI").toggleClass('look-disabled', true);
             console.debug("hiding currentDeviceLabel");
         } else {
-            console.debug("getting/showing currentDeviceLabel and parameters");
+            console.debug(
+                "getting/showing currentDeviceLabel and parameters");
 
             /* if current device is in heartbeat list, get device info */
-            $apiUtils.getData(apiUrl, deviceID, updateMainContent, disableMainContent);
+            $apiUtils.getData(apiUrl, deviceID, updateMainContent,
+                disableMainContent);
 
             $("#currentDeviceLabel").show();
             $("#parameter-UI").toggleClass('look-disabled', false);
@@ -185,7 +204,8 @@
 
         /* Identify new devices received in order to add */
         for (var i in newDevices) {
-            if (devices.indexOf(newDevices[i]) === -1) add.push(newDevices[i]);
+            if (devices.indexOf(newDevices[i]) === -1) add.push(newDevices[
+                i]);
         }
         add.forEach(insertDevice);
 
@@ -203,13 +223,20 @@
          * If unable to, log error and set device name to shortened deviceID */
         try {
             console.debug("getting device name to insert");
-            var deviceName = await $apiUtils.getParam(apiUrl, device, "name");
+            var deviceName = await $apiUtils.getParam(apiUrl, device,
+                "name");
         } catch (error) {
             console.error("Error caught: ", error);
             var deviceName = device.slice(7, 15); // if device doesn't have a name already, create shortened name from ID
         }
         console.debug("deviceName = ", deviceName);
-        $("<input/>").attr({ type: "button", class: "btn-device", id: device, value: deviceName.slice(0, nameMaxLength) }).appendTo("#deviceList");
+        $("<input/>").attr({
+            type: "button",
+            class: "btn-device",
+            id: device,
+            value: deviceName.slice(0, nameMaxLength)
+        }).appendTo(
+            "#deviceList");
 
     }
 
