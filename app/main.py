@@ -416,7 +416,7 @@ class DeviceList(Resource):
         try:
             devices = REDIS.keys("device_")
             logging.debug("returning Device List: %s", str(devices))
-            return make_response(jsonify(devices), 201)
+            return make_response(jsonify(devices), 200)
         except Exception as error:
             logging.error("DEVICELIST/GET: %s",
                           traceback.format_exception_only(type(error), error))
