@@ -42,18 +42,19 @@ ESP8266WiFiMulti wifiMulti;
 /************************************************ 
  * API Settings / definitions
 ************************************************/
-// #define DEVELOPMENT // enable this if developing locally
+#define DEVELOPMENT // enable this if developing locally
 
 #ifdef DEVELOPMENT
-String IPaddress = "10.0.0.59";
-bool SERVER_SECURE = false; // global variable to indicate whether HTTPS or HTTP is used
+// String IPaddress = "10.0.0.59";
+String IPaddress = "192.168.7.54:5000"; // temp
+bool SERVER_SECURE = false;             // global variable to indicate whether HTTPS or HTTP is used
 #else
 String IPaddress = "api.ashleynewton.net";
 bool SERVER_SECURE = true; // global variable to indicate whether HTTPS or HTTP is used
 #endif
 
 String apiURL = IPaddress + "/devices/";
-String controllerURL = IPaddress + "site/index.html";
+//String controllerURL = IPaddress + "site/index.html";
 
 String DEVICE_ID;
 
@@ -110,7 +111,7 @@ String hostname = "Pixels";
 String hostname = "DEV_NEW_ESP32_OLED";
 #define COLOR_ORDER GRB //pixels
 #define COLOR_CORRECT TypicalLEDStrip
-#define NUM_LEDS 200
+#define NUM_LEDS 30
 #define MILLI_AMPS 1000
 #define BRIGHTNESS 100
 #define FRAMES_PER_SECOND 400
@@ -125,10 +126,10 @@ CRGB leds[NUM_LEDS];
 /******** rainbow pattern settings ********/
 uint8_t width = 5; // higher number = narrower rainbow
 uint8_t gHue = 0;  // rotating "base color" used by many of the patterns
-uint8_t speed = 2;
+uint8_t speed = 1;
 
 // wifi
-#define NETWORK_VANNEST
+// #define NETWORK_VANNEST
 boolean connectioWasAlive = true;
 // #define NUM_SECONDS_TO_WAIT 2
 
@@ -276,6 +277,7 @@ void setup()
   WiFi.mode(WIFI_STA);
   wifiMulti.addAP(ssid1, password1);
   wifiMulti.addAP(ssid2, password2);
+  wifiMulti.addAP(ssid3, password3);
 
   // allow reuse (if server supports it)
   // http.setReuse(true);
@@ -376,7 +378,7 @@ void loop()
   {
     FastLED.setBrightness(brightVal);
     updateLEDS();
-    Serial.println("fastLED show");
+    // Serial.println("fastLED show");
     FastLED.show();
   }
   // insert a delay to keep the framerate modest
@@ -392,12 +394,12 @@ void insecure_connection(String protocol)
 {
   HTTPClient http;
 
-  Debug.print(DBG_INFO, "insecure connection!");
+  // Debug.print(DBG_INFO, "insecure connection!");
 
   ////// SET HEARTBEAT ////////////////
   Debug.print(DBG_INFO, "insecure: setting heartbeat");
   String HB_URL = protocol + apiURL + "hb/" + DEVICE_ID;
-  Debug.print(DBG_DEBUG, "insecure: HB_URL is %s", HB_URL);
+  // Debug.print(DBG_DEBUG, "insecure: HB_URL is %s", HB_URL);
 
   if (http.begin(HB_URL))
   {
@@ -405,32 +407,32 @@ void insecure_connection(String protocol)
     http.addHeader("Authorization", "Bearer " + auth_token);
     Debug.print(DBG_INFO, "insecure: [HTTP] about to POST");
     int httpResponseCode = http.POST("{}"); //Send the actual POST request
+    Debug.print(DBG_INFO, "insecure: [HTTP] POST response code: %i", httpResponseCode);
 
     if (httpResponseCode > 0)
     {
-      String response = http.getString();                      //Get the response to the request
-      Debug.print(DBG_INFO, "insecure: %i", httpResponseCode); //Print return code
-      Debug.print(DBG_INFO, "insecure: %s", response);         //Print request answer
+      String response = http.getString(); //Get the response to the request
+      // Debug.print(DBG_INFO, "insecure response code >0: %i", httpResponseCode); //Print return code
+      // Debug.print(DBG_INFO, "insecure response: %s", response);                 //Print request answer
     }
     else
     {
-      Debug.print(DBG_ERROR, "insecure: [HTTP] Error on sending POST: ");
-      Debug.print(DBG_ERROR, "%s", http.errorToString(httpResponseCode).c_str());
-      SERVER_SECURE = true;
+      Debug.print(DBG_ERROR, "insecure: [HTTP] Error on sending POST: %s", http.errorToString(httpResponseCode).c_str());
+      // SERVER_SECURE = true;
     }
 
     http.end(); //Free resources
   }
   else
   {
-    Debug.print(DBG_ERROR, "insecure: [HTTP] Unable to connect\n");
-    SERVER_SECURE = true;
+    Debug.print(DBG_ERROR, "insecure: [HTTP] Unable to connect to %s \n", HB_URL);
+    // SERVER_SECURE = true;
   }
 
   /////////////////////// get device parameters ///////////////////
 
   String get_URL = protocol + apiURL + DEVICE_ID;
-  Debug.print(DBG_VERBOSE, "insecure: opening connection to %s", get_URL);
+  Debug.print(DBG_VERBOSE, "insecure: [GET] opening connection to %s", get_URL);
 
   if (http.begin(get_URL))
   {
@@ -439,6 +441,7 @@ void insecure_connection(String protocol)
     // Serial.print("[HTTPS] GET...\n");
 
     int httpCode = http.GET();
+    // Debug.print(DBG_VERBOSE, "GET httpCode = %i", httpCode);
 
     // Check returning httpCode -- will be negative on error
     if (httpCode > 0)
@@ -448,27 +451,50 @@ void insecure_connection(String protocol)
       // file found at server
       if (httpCode == HTTP_CODE_OK)
       {
-        Debug.print(DBG_INFO, "insecure: Found file at server: ");
+        Debug.print(DBG_INFO, "insecure [GET]: Found file at server: ");
         String payload = http.getString();
-        Debug.print(DBG_INFO, "insecure: %s", payload.c_str());
+        // Debug.print(DBG_INFO, "insecure [GET] payload: %s", payload.c_str());
 
         // parse payload
-
-        const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + 100;
+        const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + 110;
         DynamicJsonDocument doc(capacity);
+
+        // const char *json = "[\"device_266A0\",{\"brightness\":\"92\",\"name\":\"Default\",\"onState\":\"true\"}]";
+        // const char *root_0 = doc[0]; // "device_266A08DBF47456428F703EEDF1E208B7117785DF"
 
         deserializeJson(doc, payload);
 
-        const char *root_0 = doc[0]; // "device_266A08DBF47456428F703EEDF1E208B7117785DF"
+        const char *root_0 = doc[0]; // "device_266A0"
 
         JsonObject root_1 = doc[1];
-        const char *root_1_brightness = root_1["brightness"]; // "123"
-        const char *root_1_name = root_1["name"];             // "triangle"
+        const char *root_1_brightness = root_1["brightness"]; // "92"
+        const char *root_1_name = root_1["name"];             // "Default"
         const char *root_1_onState = root_1["onState"];       // "true"
+        // Serial.print("name = ");
+        // Serial.println(root_1["brightness"]);
+        // Serial.print("brightness = ");
+        // Serial.println(*root_1_brightness);
+        // Serial.print("onState = ");
+        // Serial.println(*root_1_onState);
+
+        // const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + 100;
+        // DynamicJsonDocument doc(capacity);
+
+        // deserializeJson(doc, payload);
+
+        // const char *root_0 = doc[0]; // "device_266A08DBF47456428F703EEDF1E208B7117785DF"pyy
+
+        // JsonObject root_1 = doc[1];
+        // const char *root_1_brightness = root_1["brightness"]; // "123"
+        // const char *root_1_name = root_1["name"];             // "triangle"
+        // const char *root_1_onState = root_1["onState"];       // "true"
         onState = root_1_onState;
-        int root_2 = doc[2]; // 200
+        // Serial.println(onState);
+        // int root_2 = doc[2]; // 200
 
         int newBright = atoi(root_1_brightness);
+        // Serial.print("newBrightness = ");
+        // Serial.println(newBright);
 
         if (onState != lastState)
         {
@@ -495,14 +521,14 @@ void insecure_connection(String protocol)
     else
     {
       Debug.print(DBG_ERROR, "insecure: [HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
-      SERVER_SECURE = true;
+      // SERVER_SECURE = true;
     }
     http.end(); // close connection
   }
   else
   {
     Serial.printf("insecure: [HTTP] Unable to connect\n");
-    SERVER_SECURE = true;
+    // SERVER_SECURE = true;
   }
 }
 
@@ -577,7 +603,7 @@ void secure_connection(String protocol)
             Debug.print(DBG_INFO, payload.c_str());
 
             // parse payload
-            const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + 100;
+            const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + 110;
             DynamicJsonDocument doc(capacity);
 
             deserializeJson(doc, payload);
@@ -652,10 +678,10 @@ void updateLEDS()
     // fill_rainbow(leds, NUM_LEDS, gHue, width);
     // EVERY_N_MILLISECONDS(5)
     // {
-    Serial.println("updateLEDS: cycling rainbow hue");
+    // Serial.println("updateLEDS: cycling rainbow hue");
     gHue += speed; //  cycle the "base color" through the rainbow
-    Serial.print("gHue = ");
-    Serial.println(gHue);
+    // Serial.print("gHue = ");
+    // Serial.println(gHue);
     fill_rainbow(leds, NUM_LEDS, gHue, width);
     // }
     FastLED.show();
