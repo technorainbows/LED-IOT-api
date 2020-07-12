@@ -7,6 +7,7 @@ import logging
 import logging.config
 from flask import Flask, request, make_response, jsonify
 import jwt
+from jwt.exceptions import DecodeError
 
 # Set up simple logging.
 logging.basicConfig(
@@ -89,6 +90,12 @@ def validate_access(func):
                 logging.error("***********unable to decode header")
                 raise
                 # return {'ValueError': 'unable to decode header'}, 401
+
+            except DecodeError as e:
+                logging.error("DecodeError: %s, ", str(e))
+                response_body = {
+                    'message': 'invalid login/token - please try again'}
+                return response_body, 403
 
             except Exception as e:
                 logging.error("Invalid token: %s", str(e))
