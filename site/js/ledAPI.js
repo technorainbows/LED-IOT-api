@@ -203,7 +203,10 @@
         }
 
         /* Identify new devices received in order to add */
-        for (var i in newDevices) {
+        const deviceSet = new Set(devices);
+        for (const device of newDevices)
+            if (!deviceSet.has(device)) 
+                add.push(device);
             if (devices.indexOf(newDevices[i]) === -1) add.push(newDevices[
                 i]);
         }
