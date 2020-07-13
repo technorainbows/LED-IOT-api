@@ -204,8 +204,8 @@
 
         /* Identify new devices received in order to add */
         const deviceSet = new Set(devices);
-        for (const device of newDevices)
-            if (!deviceSet.has(device)) 
+        for (const device of newDevices) {
+            if (!deviceSet.has(device))
                 add.push(device);
             if (devices.indexOf(newDevices[i]) === -1) add.push(newDevices[
                 i]);
@@ -224,8 +224,8 @@
 
         /* Try to retrieve device name from server. 
          * If unable to, log error and set device name to shortened deviceID */
-       let deviceName;
-       try {
+        let deviceName;
+        try {
             console.debug("getting device name to insert");
             deviceName = await $apiUtils.getParam(apiUrl, device,
                 "name");
