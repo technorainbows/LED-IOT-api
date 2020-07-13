@@ -179,9 +179,8 @@
         newDevices.sort();
 
         /* Identify old devices no longer online and remove */
-        for (var i of devices) {
-            if (newDevices.indexOf(devices[i]) === -1) remove.push(devices[
-                i]);
+        for (let device of devices) {
+            if (newDevices.indexOf(device) === -1) remove.push(device);
         }
         remove.forEach(removeDevice);
 
