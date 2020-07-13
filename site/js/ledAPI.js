@@ -224,13 +224,14 @@
 
         /* Try to retrieve device name from server. 
          * If unable to, log error and set device name to shortened deviceID */
-        try {
+       let deviceName;
+       try {
             console.debug("getting device name to insert");
-            var deviceName = await $apiUtils.getParam(apiUrl, device,
+            deviceName = await $apiUtils.getParam(apiUrl, device,
                 "name");
         } catch (error) {
             console.error("Error caught: ", error);
-            var deviceName = device.slice(7, 15); // if device doesn't have a name already, create shortened name from ID
+            deviceName = device.slice(7, 15); // if device doesn't have a name already, create shortened name from ID
         }
         console.debug("deviceName = ", deviceName);
         $("<input/>").attr({
