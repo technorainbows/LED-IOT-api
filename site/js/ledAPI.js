@@ -206,7 +206,7 @@
         for (let device of newDevices) {
             if (!deviceSet.has(device))
                 add.push(device);
-            if (devices.indexOf(device) === -1) add.push(device);
+            // if (devices.indexOf(device) === -1) add.push(device);
         }
         add.forEach(insertDevice);
 
