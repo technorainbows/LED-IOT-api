@@ -20,7 +20,8 @@ cat > ./client_secrets.json <<EOF
         "allowed_users": ["i@ashleynewton.net"],
         "cid": "$CLIENT_ID",
         "aud": "default",
-        "auth_token": "$AUTH_TOKEN"
+        "auth_token": "$AUTH_TOKEN",
+        "keys_uri": "https://dev-635623.okta.com/oauth2/default/v1/keys"
     }
 }
 EOF
