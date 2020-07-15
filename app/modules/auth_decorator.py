@@ -2,12 +2,14 @@
 
 import os
 import json
+import urllib.request
 from functools import wraps
 import logging
 import logging.config
 from flask import Flask, request, make_response, jsonify
 import jwt
 from jwt.exceptions import DecodeError
+from jwt.algorithms import RSAAlgorithm
 
 # Set up simple logging.
 logging.basicConfig(
@@ -52,6 +54,11 @@ with open('./client_secrets.json', 'r') as myfile:
 # parse client secrets file
 DATA = json.loads(DATA)
 CLIENT_SECRETS = DATA['web']
+web_key = urllib.request.urlopen(
+    CLIENT_SECRETS['keys_uri']).read().decode()
+json_keys = json.loads(web_key)
+# key1 = json.dumps(json_keys['keys'][0])
+# print("**********************JJJJJJJJJJJJjson_key = ", json_keys['keys'][0])
 
 
 def validate_access(func):
@@ -67,29 +74,45 @@ def validate_access(func):
             access_token = request.headers['Authorization'].split(None, 1)[
                 1].strip()
             logging.info("token found: %s", access_token)
+
             try:
+
                 header = jwt.get_unverified_header(access_token)
-                logging.info("unverified header: %s", header)
+                logging.info("unverified header: %s", header['kid'])
+                if json_keys['keys'][0]['kid'] == header['kid']:
+                    key = json.dumps(json_keys['keys'][0])
+                    # print("key0")
+                else:
+                    key = json.dumps(json_keys['keys'][1])
+                    # print("key1")
 
                 # if header validated, then decode/check claims
-                claims = jwt.decode(
-                    access_token, CLIENT_SECRETS['client_secret'], verify=False)
+                try:
+                    public_key = RSAAlgorithm.from_jwk(
+                        key)
+                    claims = jwt.decode(
+                        access_token, public_key, audience=CLIENT_SECRETS['aud'], algorithms='RS256')
 
-                if (claims['cid'] == CLIENT_SECRETS['cid']) and (claims['aud'] == CLIENT_SECRETS['aud']):
-                    logging.info("token validated!!")
+                    if (claims['cid'] == CLIENT_SECRETS['cid']) and (claims['aud'] == CLIENT_SECRETS['aud']):
+                        logging.info("token validated!!")
 
-                    if claims['sub'] in CLIENT_SECRETS['allowed_users']:
-                        logging.info("user permitted! - %s", claims['sub'])
-                        return func(*args, **kwargs)
-                    else:
-                        logging.warn("user not allowed")
-                        return make_response({'message': 'user not allowed'}, 403)
-                logging.error("claims not validated")
+                        if claims['sub'] in CLIENT_SECRETS['allowed_users']:
+                            logging.info("user permitted! - %s", claims['sub'])
+                            return func(*args, **kwargs)
+                        else:
+                            logging.warn("user not allowed")
+                            return make_response({'message': 'user not allowed'}, 403)
+                    logging.error("claims not validated")
+
+                except ValueError as error:
+                    logging.error("***ERROR VALIDATING CLAIMS")
+                    raise
+                    # raise
 
             except ValueError:
                 logging.error("***********unable to decode header")
-                raise
-                # return {'ValueError': 'unable to decode header'}, 401
+                # raise
+                return {'ValueError': 'unable to decode header'}, 401
 
             except DecodeError as e:
                 logging.error("DecodeError: %s, ", str(e))
