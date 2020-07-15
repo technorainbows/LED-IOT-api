@@ -54,12 +54,11 @@ with open('./client_secrets.json', 'r') as myfile:
 # parse client secrets file
 DATA = json.loads(DATA)
 CLIENT_SECRETS = DATA['web']
-print("CLIENT_SECRETS = ", CLIENT_SECRETS)
+logging.info("CLIENT_SECRETS loaded: %s", str(CLIENT_SECRETS))
 web_key = urllib.request.urlopen(
     CLIENT_SECRETS['keys_uri']).read().decode()
 json_keys = json.loads(web_key)
-# key1 = json.dumps(json_keys['keys'][0])
-# print("**********************JJJJJJJJJJJJjson_key = ", json_keys['keys'][0])
+logging.info("**********************json_key = %s", str(json_keys['keys'][0]))
 
 
 def validate_access(func):
@@ -82,10 +81,16 @@ def validate_access(func):
                 logging.info("unverified header: %s", header['kid'])
                 if json_keys['keys'][0]['kid'] == header['kid']:
                     key = json.dumps(json_keys['keys'][0])
-                    # print("key0")
-                else:
+                    logging.info("key #1 found")
+                elif json_keys['keys'][0]['kid'] == header['kid']:
                     key = json.dumps(json_keys['keys'][1])
-                    # print("key1")
+                    logging.info("key #2 found")
+                else:
+                    # print("header doesn't match any kids: ", header['kid'])
+                    logging.info("invalid header/no matching key found")
+                    response_body = {
+                        'message': 'please log-in/provide correct authentication token'}
+                    return response_body, 401
 
                 # if header validated, then decode/check claims
                 try:
@@ -108,7 +113,6 @@ def validate_access(func):
                 except ValueError as error:
                     logging.error("***ERROR VALIDATING CLAIMS")
                     raise
-                    # raise
 
             except ValueError:
                 logging.error("***********unable to decode header")
