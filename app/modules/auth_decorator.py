@@ -54,6 +54,7 @@ with open('./client_secrets.json', 'r') as myfile:
 # parse client secrets file
 DATA = json.loads(DATA)
 CLIENT_SECRETS = DATA['web']
+print("CLIENT_SECRETS = ", CLIENT_SECRETS)
 web_key = urllib.request.urlopen(
     CLIENT_SECRETS['keys_uri']).read().decode()
 json_keys = json.loads(web_key)
