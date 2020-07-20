@@ -5,7 +5,7 @@
 
     // set up namespace for our utility
     var apiUtils = {};
-    accessToken = localStorage.getItem('accessToken');
+    var accessToken = localStorage.getItem('accessToken');
     if (accessToken != null) {
         console.debug("got accesstoken in apiutils: ", accessToken);
     } else { console.warn("no accesstoken"); }
@@ -134,7 +134,8 @@
      * Success/fail state of fetch is also passed to updateServerStatus function. 
      */
 
-    apiUtils.getData = async function(url, deviceID, responseHandler, errorHandler) {
+    apiUtils.getData = async function(url, deviceID, responseHandler,
+        errorHandler) {
 
         // TODO: is there a better place to check for accessToken?
         if (!accessToken) {

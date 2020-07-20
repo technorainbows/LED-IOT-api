@@ -11,7 +11,7 @@ if (window.location.hostname === 'localhost') {
 
 /* Okta Widget parameters */
 var oktaSignIn = new OktaSignIn({
-    baseUrl: "https://dev-635623.okta.com",
+    baseUrl: oktaDomain,
     clientId: clientId,
     redirectUri: host + "/index.html",
     authParams: {
@@ -87,7 +87,7 @@ if (oktaSignIn.hasTokensInUrl()) {
         $('#main-content').hide();
         $('#server-navbar').hide();
         oktaSignIn.renderEl({ el: '#okta-login-container' },
-            function success(res) {
+            function success() {
                 // Nothing to do in this case, the widget will automatically redirect
                 // the user to Okta for authentication, then back to this page if successful
                 console.info("not logged in");
