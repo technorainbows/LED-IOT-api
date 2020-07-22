@@ -1,6 +1,14 @@
 (function() {
-    // var apiUrl = 'https://api.ashleynewton.net/devices'
-    var apiUrl = "http://localhost:5000/devices"; // toggle for local development
+    var host;
+
+    /* Set host address dynamically. */
+    if (window.location.hostname === "localhost") {
+        host = "http://" + window.location.host;
+    } else {
+        host = "http://lights.ashleynewton.net";
+    }
+
+    var apiUrl = host + "devices";
     var deviceID = ""; // current device
     var devices = []; // devices online
     var lastDevice = "";
@@ -77,7 +85,7 @@
         });
 
         /* when a device button is clicked, set current deviceID to button ID, 
-                            and retrieve device settings from server. */
+                                    and retrieve device settings from server. */
         $(document).on("click", ".btn-device", function selectDevice() {
             console.info("device selected: ", this.id);
             lastDevice = deviceID; // save current deviceID before updating it with new btn-device ID
@@ -237,8 +245,6 @@
         console.debug("Removing ", device);
         $("#" + device).remove();
     }
-
-    // TODO: ADD ERROR RENDERING FUNCTIONALITY TO UI
 
     document.addEventListener("DOMContentLoaded", startLoadingPage);
     checkConnection();
