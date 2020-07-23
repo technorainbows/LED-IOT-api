@@ -6,7 +6,6 @@ node_modules/
 .vscode/
 *.envrc
 package-lock.json
-package.json
 
 ### secrets ###
 client_secrets.json
