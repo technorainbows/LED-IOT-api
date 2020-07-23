@@ -42,20 +42,39 @@ ESP8266WiFiMulti wifiMulti;
 /************************************************ 
  * API Settings / definitions
 ************************************************/
-#define DEVELOPMENT // enable this if developing locally
+// #define DEVELOPMENT // enable this if developing locally
 
 #ifdef DEVELOPMENT
-// String IPaddress = "10.0.0.59";
-String IPaddress = "192.168.7.54:5000"; // temp
-bool SERVER_SECURE = false;             // global variable to indicate whether HTTPS or HTTP is used
+String IPaddress = "10.0.0.59";
+// String IPaddress = "192.168.7.54:5000"; // temp
+bool SERVER_SECURE = false; // global variable to indicate whether HTTPS or HTTP is used
 #else
 String IPaddress = "api.ashleynewton.net";
 bool SERVER_SECURE = true; // global variable to indicate whether HTTPS or HTTP is used
+const char *rootCACertificate =
+    "    -----BEGIN CERTIFICATE-----\n"
+    "MIIDQTCCAimgAwIBAgITBmyfz5m/jAo54vB4ikPmljZbyjANBgkqhkiG9w0BAQsF\n"
+    "ADA5MQswCQYDVQQGEwJVUzEPMA0GA1UEChMGQW1hem9uMRkwFwYDVQQDExBBbWF6\n"
+    "b24gUm9vdCBDQSAxMB4XDTE1MDUyNjAwMDAwMFoXDTM4MDExNzAwMDAwMFowOTEL\n"
+    "MAkGA1UEBhMCVVMxDzANBgNVBAoTBkFtYXpvbjEZMBcGA1UEAxMQQW1hem9uIFJv\n"
+    "b3QgQ0EgMTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALJ4gHHKeNXj\n"
+    "ca9HgFB0fW7Y14h29Jlo91ghYPl0hAEvrAIthtOgQ3pOsqTQNroBvo3bSMgHFzZM\n"
+    "9O6II8c+6zf1tRn4SWiw3te5djgdYZ6k/oI2peVKVuRF4fn9tBb6dNqcmzU5L/qw\n"
+    "IFAGbHrQgLKm+a/sRxmPUDgH3KKHOVj4utWp+UhnMJbulHheb4mjUcAwhmahRWa6\n"
+    "VOujw5H5SNz/0egwLX0tdHA114gk957EWW67c4cX8jJGKLhD+rcdqsq08p8kDi1L\n"
+    "93FcXmn/6pUCyziKrlA4b9v7LWIbxcceVOF34GfID5yHI9Y/QCB/IIDEgEw+OyQm\n"
+    "jgSubJrIqg0CAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMC\n"
+    "AYYwHQYDVR0OBBYEFIQYzIU07LwMlJQuCFmcx7IQTgoIMA0GCSqGSIb3DQEBCwUA\n"
+    "A4IBAQCY8jdaQZChGsV2USggNiMOruYou6r4lK5IpDB/G/wkjUu0yKGX9rbxenDI\n"
+    "U5PMCCjjmCXPI6T53iHTfIUJrU6adTrCC2qJeHZERxhlbI1Bjjt/msv0tadQ1wUs\n"
+    "N+gDS63pYaACbvXy8MWy7Vu33PqUXHeeE6V/Uq2V8viTO96LXFvKWlJbYK8U90vv\n"
+    "o/ufQJVtMVT8QtPHRh8jrdkPSHCa2XV4cdFyQzR1bldZwgJcJmApzyMZFo6IQ6XU\n"
+    "5MsI+yMRQ+hDKXJioaldXgjUkK642M4UwtBV8ob2xJNDd2ZhwLnoQdeXeGADbkpy\n"
+    "rqXRfboQnoZsG4q5WTP468SQvvG5\n"
+    "-----END CERTIFICATE-----\n";
 #endif
 
 String apiURL = IPaddress + "/devices/";
-//String controllerURL = IPaddress + "site/index.html";
-
 String DEVICE_ID;
 
 /**************************************************************
@@ -412,8 +431,6 @@ void insecure_connection(String protocol)
     if (httpResponseCode > 0)
     {
       String response = http.getString(); //Get the response to the request
-      // Debug.print(DBG_INFO, "insecure response code >0: %i", httpResponseCode); //Print return code
-      // Debug.print(DBG_INFO, "insecure response: %s", response);                 //Print request answer
     }
     else
     {
@@ -470,31 +487,9 @@ void insecure_connection(String protocol)
         const char *root_1_brightness = root_1["brightness"]; // "92"
         const char *root_1_name = root_1["name"];             // "Default"
         const char *root_1_onState = root_1["onState"];       // "true"
-        // Serial.print("name = ");
-        // Serial.println(root_1["brightness"]);
-        // Serial.print("brightness = ");
-        // Serial.println(*root_1_brightness);
-        // Serial.print("onState = ");
-        // Serial.println(*root_1_onState);
-
-        // const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + 100;
-        // DynamicJsonDocument doc(capacity);
-
-        // deserializeJson(doc, payload);
-
-        // const char *root_0 = doc[0]; // "device_266A08DBF47456428F703EEDF1E208B7117785DF"pyy
-
-        // JsonObject root_1 = doc[1];
-        // const char *root_1_brightness = root_1["brightness"]; // "123"
-        // const char *root_1_name = root_1["name"];             // "triangle"
-        // const char *root_1_onState = root_1["onState"];       // "true"
         onState = root_1_onState;
-        // Serial.println(onState);
-        // int root_2 = doc[2]; // 200
 
         int newBright = atoi(root_1_brightness);
-        // Serial.print("newBrightness = ");
-        // Serial.println(newBright);
 
         if (onState != lastState)
         {
@@ -506,7 +501,6 @@ void insecure_connection(String protocol)
         if (brightVal != newBright)
         {
           brightVal = newBright;
-          //            Serial.printf("brightVal = %d\n", brightVal);
 
           FastLED.setBrightness(brightVal);
           FastLED.show();
@@ -521,14 +515,12 @@ void insecure_connection(String protocol)
     else
     {
       Debug.print(DBG_ERROR, "insecure: [HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
-      // SERVER_SECURE = true;
     }
     http.end(); // close connection
   }
   else
   {
     Serial.printf("insecure: [HTTP] Unable to connect\n");
-    // SERVER_SECURE = true;
   }
 }
 
@@ -543,7 +535,7 @@ void secure_connection(String protocol)
   WiFiClientSecure *client = new WiFiClientSecure;
   if (client)
   {
-    // client->setCACert(rootCACertificate); // comment out this to skip verifying certificate -- less secure
+    client->setCACert(rootCACertificate); // comment out this to skip verifying certificate -- less secure
     Debug.print(DBG_DEBUG, "secure: [HTTPS] client created");
 
     {
@@ -554,7 +546,6 @@ void secure_connection(String protocol)
 
       if (http.begin(*client, HB_URL))
       {
-        //  http.begin(apiURL + "HB/" + DEVICE_ID); //Specify destination for HTTP request
         http.addHeader("Content-Type", "application/json"); //Specify content-type header
         http.addHeader("Authorization", "Bearer " + auth_token);
         Debug.print(DBG_DEBUG, "secure: [HTTPS] about to POST");
@@ -630,7 +621,6 @@ void secure_connection(String protocol)
             if (brightVal != newBright)
             {
               brightVal = newBright;
-              //            Serial.printf("brightVal = %d\n", brightVal);
 
               FastLED.setBrightness(brightVal);
               FastLED.show();
