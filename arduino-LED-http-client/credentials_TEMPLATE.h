@@ -1,3 +1,7 @@
+/******************************************************************************* 
+ * A template for certificate.h --> rename this file to certificate.h when using 
+ * *****************************************************************************/
+
 // Store as many network credentials as you desire here.
 
 const char *ssid1 = "INSERT_SSID1";
