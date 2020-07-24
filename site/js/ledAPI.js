@@ -8,7 +8,7 @@
         host = "http://lights.ashleynewton.net";
     }
 
-    var apiUrl = host + "devices";
+    var apiUrl = host + "/devices";
     var deviceID = ""; // current device
     var devices = []; // devices online
     var lastDevice = "";
