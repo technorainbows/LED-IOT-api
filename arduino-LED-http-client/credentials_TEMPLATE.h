@@ -17,4 +17,4 @@ const char *password3 = "password3";
 String auth_token = "INSERT_AUTH_TOKEN_HERE";
 
 // get rootCACertificate from host
-const char *rootCACertificate = "INSERT_CERTIFICATE_HERE;
+const char *rootCACertificate = "INSERT_CERTIFICATE_HERE";
