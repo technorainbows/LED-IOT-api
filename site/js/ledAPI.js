@@ -5,7 +5,7 @@
     if (window.location.hostname === "localhost") {
         host = "http://" + window.location.host;
     } else {
-        host = "http://lights.ashleynewton.net";
+        host = "http://api.ashleynewton.net";
     }
 
     var apiUrl = host + "/devices";
