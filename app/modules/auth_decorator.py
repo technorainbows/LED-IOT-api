@@ -58,7 +58,8 @@ logging.info("CLIENT_SECRETS loaded: %s", str(CLIENT_SECRETS))
 web_key = urllib.request.urlopen(
     CLIENT_SECRETS['keys_uri']).read().decode()
 json_keys = json.loads(web_key)
-logging.info("**********************json_key = %s", str(json_keys['keys'][0]))
+logging.info("**********************json_key1 = %s", str(json_keys['keys'][0]))
+logging.info("**********************json_key2 = %s", str(json_keys['keys'][1]))
 
 
 def validate_access(func):
@@ -82,7 +83,7 @@ def validate_access(func):
                 if json_keys['keys'][0]['kid'] == header['kid']:
                     key = json.dumps(json_keys['keys'][0])
                     logging.info("key #1 found")
-                elif json_keys['keys'][0]['kid'] == header['kid']:
+                elif json_keys['keys'][1]['kid'] == header['kid']:
                     key = json.dumps(json_keys['keys'][1])
                     logging.info("key #2 found")
                 else:
