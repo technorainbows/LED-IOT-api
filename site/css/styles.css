@@ -1,0 +1,358 @@
+    body {
+        font-size: 16px;
+        color: white;
+        background-color: #6DAEDB;
+        font-family: Arial, sans-serif;
+    }
+    
+    h4 {
+        border-bottom-color: #6DAEDB;
+        border-bottom-style: dotted;
+        border-bottom-width: 2px;
+    }
+    /**************** TOGGLE SWITCH CUSTOMIZATION ***********************/
+    /* The switch - the box around the slider */
+    
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+    /* Hide default HTML checkbox */
+    
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    /* The slider */
+    
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+        border-radius: 5px;
+    }
+    /* Off position */
+    
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: rgb(125, 144, 157);
+        -webkit-transition: .4s;
+        transition: .4s;
+        border-radius: 5px;
+    }
+    
+    input:checked+.slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+        background-color: #6DAEDB;
+    }
+    /* On position */
+    
+    input:checked+.slider {
+        background-color: #006989;
+    }
+    
+    input:focus+.slider {
+        box-shadow: 0 0 1px #6DAEDB;
+    }
+    
+    #label-onSwitch {
+        /* padding: 5px; */
+        align-content: left;
+        margin-top: 25px;
+        /* padding-top: 5px; */
+        /* background-color: */
+    }
+    /************************************* SLIDER RANGE STUFF ****************************************/
+    
+    input[type=range] {
+        -webkit-appearance: none;
+        /* Hides the slider so that custom slider can be made */
+        width: 100%;
+        /* Specific width is required for Firefox. */
+        background: transparent;
+        /* Otherwise white in Chrome */
+    }
+    
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+    }
+    /* Removes the blue border. */
+    
+    input[type=range]:focus {
+        outline: none;
+    }
+    /* Hides the slider so custom styles can be added */
+    
+    input[type=range]::-ms-track {
+        width: 100%;
+        cursor: pointer;
+        background: transparent;
+        border-color: transparent;
+        color: transparent;
+    }
+    /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+    /* Special styling for WebKit/Blink */
+    
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        border: 1px solid #1B4353;
+        height: 16px;
+        width: 16px;
+        border-radius: 5px;
+        background: #006989;
+        cursor: pointer;
+        margin-top: -4px;
+        /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
+        box-shadow: 1px 1px 1px #1B4353, 0px 0px 1px #173753;
+    }
+    
+    input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 12px;
+        cursor: pointer;
+        background: #6DAEDB;
+        border-radius: 1.3px;
+    }
+    
+    input[type=range]:focus::-webkit-slider-runnable-track {
+        background: #367ebd;
+    }
+    /***************** REUSABLE DISPLAY STUFF   *******************/
+    /* by default main-content is hidden */
+    
+    #main-content {
+        display: none;
+    }
+    
+    #main-content .row {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        width: 100%;
+    }
+    
+    .look-disabled {
+        opacity: 0.2;
+        pointer-events: none;
+    }
+    
+    .look-enabled {
+        opacity: 1;
+        pointer-events: all;
+    }
+    
+    .overlay {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 30;
+        opacity: 80;
+        background: rgba(39, 42, 43, 0.8);
+        transition: opacity 200ms ease-in-out;
+        border-radius: 4px;
+    }
+    /************* OTHER UI ELEMENTS **********************/
+    
+    #device-info {
+        color: #173753;
+        float: right;
+        margin-top: 20px;
+    }
+    
+    .btn-device {
+        border-style: none;
+        border-width: 1px;
+        margin: 5px;
+        background-color: #6DAEDB;
+        padding: 5px;
+        border-radius: 10px;
+        color: #173753;
+        border-color: #173753;
+    }
+    
+    .btn-current {
+        background-color: white;
+        color: #173753;
+    }
+    
+    .btn-device:hover,
+    .btn-device:focus,
+    .btn-device:active,
+    .btn-device.active,
+    .open>.dropdown-toggle.btn-device {
+        background-color: white;
+        color: #173753;
+    }
+    
+    .device-params {
+        padding: 5px;
+        padding-bottom: 30px;
+        background-color: #2892D7;
+    }
+    
+    .label-current-device {
+        border-style: none;
+        font-weight: bold;
+        font-size: 2em;
+        color: white;
+        margin-top: 5px;
+        align-content: middle;
+        background-color: #2892D7;
+        vertical-align: top;
+    }
+    
+    .label-current-device:hover {
+        background-color: white;
+        color: #173753;
+        border-style: none;
+        border-bottom-style: dotted;
+        font-weight: bold;
+        font-size: 2em;
+        border-bottom-color: white;
+    }
+    
+    .ui-label {
+        border-style: none;
+        border-color: #173753;
+        color: white;
+        padding: 7px;
+        background-color: #006989;
+        border-radius: 10px;
+        margin: 7px;
+        text-align: center;
+        vertical-align: middle;
+        align-content: middle;
+        align-items: middle;
+        -webkit-box-align: center;
+        max-height: 40px;
+        align-self: center;
+    }
+    
+    #device-name {
+        margin-left: -20px;
+        display: inline-block;
+        white-space: nowrap;
+    }
+    
+    #brightness-label {
+        padding-top: 10px;
+        margin-left: 5px;
+        margin-right: -20px;
+    }
+    
+    #currentDevice {
+        padding-top: 22px;
+        vertical-align: bottom;
+        margin-left: 25px;
+        margin-right: -5px;
+        color: white;
+    }
+    
+    .label-device {
+        border-style: none;
+        border-width: 2px;
+        border-color: white;
+        background-color: white;
+        color: #173753;
+        margin: 5px;
+        padding: 5px;
+        border-radius: 10px;
+    }
+    
+    .label-heartbeat {
+        border-style: none;
+        border-color: white;
+        background-color: #2892D7;
+        padding: 10px;
+        min-height: 60px;
+        min-width: 270px;
+    }
+    /********** NAV-BAR STUFF ************/
+    
+    #page-title {
+        min-width: 400px;
+    }
+    
+    #title {
+        min-width: 200px;
+    }
+    
+    #server-label {
+        vertical-align: bottom;
+    }
+    
+    #github {
+        width: 35%;
+        margin-top: -5px;
+    }
+    
+    #icon-connected {
+        display: hidden;
+        margin-left: -15px;
+    }
+    
+    #icon-disconnected {
+        display: hidden;
+        margin-left: -10px;
+        margin-top: 2px;
+    }
+    /************* MEDIA QUERIES ****************/
+    /* Extra small devices (portrait phones, less than 576px) */
+    
+    @media (max-width: 575.98px) {
+        /* @include media-breakpoint-down(xs) { */
+        .xs-hide {
+            display: none;
+            font-size: .7em;
+        }
+        .navbar-brand {
+            width: 50%;
+            padding-right: 0px;
+            max-width: 375px;
+        }
+        #icon-connected,
+        #icon-disconnected {
+            scale: 80%;
+        }
+        h4 {
+            font-size: 1.2em;
+        }
+        #github-span {
+            margin: -20px;
+            margin-top: -10px;
+            margin-left: -10px;
+            padding-right: 10px;
+            align-self: center;
+        }
+        #github {
+            width: 25%;
+            margin-top: -10px;
+            float: left;
+            align-self: center;
+        }
+    }
+    /* Small devices (landscape phones, less than 768px) */
+    
+    @media (max-width: 767.98px) {
+        #server-navbar {
+            margin-right: -10px;
+        }
+        #github-span {
+            margin-left: -40px;
+        }
+    }

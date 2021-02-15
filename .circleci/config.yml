@@ -1,0 +1,80 @@
+version: 2.1
+jobs:
+  test:
+    docker:
+      - image: circleci/python:3.7
+        environment:
+          FLASK_CONFIG: testing
+          REDIS_HOST: localhost
+      - image: circleci/redis:5.0.7
+    steps:
+      - checkout
+      - run:
+          name: Set Up Environment
+          command: | 
+            sudo python -m pip install -r /home/circleci/project/app/requirements.txt
+      - run:
+          name: Run Config Script
+          command: |
+            # sudo chmod +x load_secrets.sh
+            bash ./load_secrets.sh
+            cat ./client_secrets.json
+      - run: 
+          name: Test pylint and pycodestyle
+          command: |
+            pydocstyle /home/circleci/project/app/main.py
+            pylint --disable=C,W,R /home/circleci/project/app/main.py
+      - run:
+          name: Test API routes
+          command: |
+            python -m pytest
+
+  build:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout       
+      - run:
+          name: Push Docker Repo
+          command: |
+            docker build -t $DOCKER_USER/led_iot_api:$CIRCLE_SHA1 .
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            docker push $DOCKER_USER/led_iot_api:$CIRCLE_SHA1
+      
+
+  deploy:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - run:
+          name: Push Site to AWS S3
+          command: aws s3 sync ./site s3://lights.ashleynewton.net
+      - run:
+          name: Update Dockerrun.aws.json
+          command: |
+            sed -i "s/IMAGE_TAG_PLACEHOLDER/$CIRCLE_SHA1/g" ./deploy/Dockerrun.aws.json
+            cat ./deploy/Dockerrun.aws.json
+      - run:
+          name: Push Dockerrun.aws.json to AWS S3
+          command: aws s3 sync ./deploy/ s3://lights-deploy
+          
+
+workflows:
+  version: 2.1
+  test_build_deploy:
+    jobs:
+      - test
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+

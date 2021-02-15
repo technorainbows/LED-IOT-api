@@ -1,0 +1,33 @@
+version: "3.7"
+services:
+  rest-api:
+    volumes:
+      - ./app:/app
+
+    environment:
+      CLIENT_SECRET:
+      CLIENT_ID:
+      AUTH_TOKEN:
+      LOG_LEVEL: debug
+      HB_EXP: 30
+      REDIS_HOST:
+      REDIS_PASSWORD:
+      PYTHONUNBUFFERED: 1
+    build: ./
+    ports:
+      - "80:80"
+    depends_on:
+      - redis
+    networks:
+      - net_a
+  redis:
+    image: redis
+    networks:
+      - net_a
+    ports:
+      - "6379:6379"
+networks:
+  net_a:
+
+
+
