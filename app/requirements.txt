@@ -24,6 +24,6 @@ snowballstemmer == 2.0.0
 typed-ast == 1.4.1
 wcwidth == 0.1.8
 wrapt == 1.11
-pyjwt == 1.7.1
+pyjwt == 2.4.0
 awscli == 1.18.21
 urllib3 == 1.25.9
